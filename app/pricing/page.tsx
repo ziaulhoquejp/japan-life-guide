@@ -17,8 +17,8 @@ export default function PricingPage() {
       if (data.url) {
         window.location.href = data.url
       }
-    } catch (error) {
-      console.error(error)
+    } catch (err: unknown) {
+      console.error(err)
     }
     setLoading(false)
   }
@@ -67,7 +67,7 @@ export default function PricingPage() {
             ))}
           </div>
           <button
-            onClick={() => handleCheckout(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '')}
+            onClick={() => handleCheckout(process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID || '')}
             disabled={loading}
             style={{width:'100%',background:'#C42020',color:'white',border:'none',borderRadius:'8px',padding:'14px',fontWeight:'700',fontSize:'15px',cursor:'pointer'}}
           >

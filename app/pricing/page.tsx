@@ -67,7 +67,7 @@ export default function PricingPage() {
             ))}
           </div>
           <button
-            onClick={() => handleCheckout(process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID || '')}
+            onClick={() => handleCheckout('price_1TW5Bh0IwTjQCsgWP6btOq8j')}
             disabled={loading}
             style={{width:'100%',background:'#C42020',color:'white',border:'none',borderRadius:'8px',padding:'14px',fontWeight:'700',fontSize:'15px',cursor:'pointer'}}
           >

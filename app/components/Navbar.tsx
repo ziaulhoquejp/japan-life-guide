@@ -19,7 +19,7 @@ export default function Navbar() {
         <Link href="/chat" style={{color:'rgba(255,255,255,0.7)',textDecoration:'none',fontSize:'13px',fontWeight:'500'}}>🌸 Sakura AI</Link>
         <Link href="/community" style={{color:'rgba(255,255,255,0.7)',textDecoration:'none',fontSize:'13px',fontWeight:'500'}}>💬 Community</Link>
         <Link href="/dashboard" style={{color:'rgba(255,255,255,0.7)',textDecoration:'none',fontSize:'13px',fontWeight:'500'}}>📊 Dashboard</Link>
-        <Link href="/pricing" style={{color:'#F0A830',textDecoration:'none',fontSize:'13px',fontWeight:'700'}}>💎 Pricing</Link>
+        <Link href="/pricing"<Link href="/contact" style={{color:'rgba(255,255,255,0.7)',textDecoration:'none',fontSize:'13px',fontWeight:'500'}}>📧 Contact</Link> style={{color:'#F0A830',textDecoration:'none',fontSize:'13px',fontWeight:'700'}}>💎 Pricing</Link>
         <Link href="/login" style={{color:'rgba(255,255,255,0.7)',textDecoration:'none',fontSize:'13px',fontWeight:'500'}}>🔑 Login</Link>
         <Link href="/register" style={{background:'#C42020',color:'white',textDecoration:'none',fontSize:'12px',fontWeight:'700',padding:'7px 16px',borderRadius:'8px'}}>Join Free 🌸</Link>
       </div>

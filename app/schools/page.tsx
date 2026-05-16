@@ -1,60 +1,102 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { supabase } from '../../../lib/supabase'
-import { useParams } from 'next/navigation'
+import { supabase } from '../../lib/supabase'
 
-export default function SchoolDetailPage() {
-  const params = useParams()
-  const [school, setSchool] = useState<any>(null)
+export default function SchoolsPage() {
+  const [schools, setSchools] = useState<any[]>([])
+  const [filtered, setFiltered] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
+  const [city, setCity] = useState('')
+  const [dorm, setDorm] = useState(false)
+  const [jlpt, setJlpt] = useState(false)
+  const [scholar, setScholar] = useState(false)
+  const [favorites, setFavorites] = useState<string[]>([])
+  const [userId, setUserId] = useState<string | null>(null)
 
   useEffect(() => {
-    async function getSchool() {
-      const { data } = await supabase.from('schools').select('*').eq('id', params.id).single()
-      if (data) setSchool(data)
+    async function init() {
+      const { data: userData } = await supabase.auth.getUser()
+      if (userData.user) {
+        setUserId(userData.user.id)
+        const { data: favData } = await supabase.from('favorites').select('school_id').eq('user_id', userData.user.id)
+        if (favData) setFavorites(favData.map((f:any) => f.school_id))
+      }
+      const { data } = await supabase.from('schools').select('*').order('rating', { ascending: false })
+      if (data) { setSchools(data); setFiltered(data) }
       setLoading(false)
     }
-    getSchool()
-  }, [params.id])
+    init()
+  }, [])
 
-  if (loading) return <div style={{minHeight:'100vh',background:'#0D0907',display:'flex',alignItems:'center',justifyContent:'center',color:'white',fontSize:'24px'}}>🌸 Loading...</div>
+  useEffect(() => {
+    let result = schools
+    if (search) result = result.filter((s:any) => s.name_en.toLowerCase().includes(search.toLowerCase()) || s.city.toLowerCase().includes(search.toLowerCase()))
+    if (city) result = result.filter((s:any) => s.city.includes(city))
+    if (dorm) result = result.filter((s:any) => s.has_dorm)
+    if (jlpt) result = result.filter((s:any) => s.jlpt_prep)
+    if (scholar) result = result.filter((s:any) => s.scholarship)
+    setFiltered(result)
+  }, [search, city, dorm, jlpt, scholar, schools])
 
-  if (!school) return <div style={{minHeight:'100vh',background:'#0D0907',display:'flex',alignItems:'center',justifyContent:'center',color:'white',fontSize:'24px'}}>School not found</div>
+  async function toggleFavorite(e: React.MouseEvent, schoolId: string) {
+    e.preventDefault()
+    if (!userId) { window.location.href = '/login'; return }
+    if (favorites.includes(schoolId)) {
+      await supabase.from('favorites').delete().eq('user_id', userId).eq('school_id', schoolId)
+      setFavorites(prev => prev.filter(id => id !== schoolId))
+    } else {
+      await supabase.from('favorites').insert({ user_id: userId, school_id: schoolId })
+      setFavorites(prev => [...prev, schoolId])
+    }
+  }
+
+  if (loading) return <div style={{minHeight:'100vh',background:'#0D0907',display:'flex',alignItems:'center',justifyContent:'center',color:'white',fontSize:'24px'}}>Loading...</div>
 
   return (
     <main style={{minHeight:'100vh',background:'#0D0907',fontFamily:'sans-serif'}}>
-      <div style={{background:'#1A2035',padding:'40px',borderBottom:'3px solid #C42020'}}>
-        <a href="/schools" style={{color:'rgba(255,255,255,0.4)',textDecoration:'none',fontSize:'13px',marginBottom:'16px',display:'block'}}>← Back to Schools</a>
-        <div style={{display:'flex',gap:'20px',alignItems:'center',flexWrap:'wrap'}}>
-          <div style={{fontSize:'64px'}}>{school.icon}</div>
-          <div>
-            <h1 style={{color:'white',fontSize:'32px',fontWeight:'700',marginBottom:'4px'}}>{school.name_en}</h1>
-            <p style={{color:'#C42020',fontSize:'16px',letterSpacing:'2px',marginBottom:'8px'}}>{school.name_jp}</p>
-            <p style={{color:'rgba(255,255,255,0.4)',fontSize:'14px'}}>📍 {school.city} · {school.region}</p>
-          </div>
-        </div>
+      <div style={{background:'#1A2035',padding:'32px 40px',borderBottom:'3px solid #C42020'}}>
+        <h1 style={{color:'white',fontSize:'32px',fontWeight:'700',marginBottom:'8px'}}>Language Schools</h1>
+        <p style={{color:'rgba(255,255,255,0.4)',fontSize:'16px'}}>{filtered.length} schools found</p>
       </div>
-      <div style={{maxWidth:'900px',margin:'0 auto',padding:'40px 20px'}}>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(180px, 1fr))',gap:'14px',marginBottom:'32px'}}>
-          {[
-            {label:'Annual Fee',value:'¥' + school.annual_fee_jpy.toLocaleString(),color:'#F0A830'},
-            {label:'Rating',value:'⭐ ' + school.rating,color:'#F0A830'},
-            {label:'Region',value:school.region,color:'#4A8EFF'},
-            {label:'Status',value:school.status,color:'#2EC87A'},
-          ].map(stat=>(
-            <div key={stat.label} style={{background:'#1A2035',borderRadius:'12px',padding:'18px',textAlign:'center',border:'1px solid rgba(255,255,255,0.08)'}}>
-              <div style={{color:stat.color,fontSize:'20px',fontWeight:'700',marginBottom:'4px'}}>{stat.value}</div>
-              <div style={{color:'rgba(255,255,255,0.4)',fontSize:'12px'}}>{stat.label}</div>
+      <div style={{background:'#141E35',padding:'16px 40px',borderBottom:'1px solid rgba(255,255,255,0.08)',display:'flex',gap:'10px',flexWrap:'wrap',alignItems:'center'}}>
+        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search schools..." style={{flex:1,minWidth:'200px',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'10px 14px',color:'white',fontSize:'13px',outline:'none'}}/>
+        <select value={city} onChange={e=>setCity(e.target.value)} style={{background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'10px 12px',color:'white',fontSize:'13px',outline:'none',cursor:'pointer'}}>
+          <option value="">All Cities</option>
+          <option value="Tokyo">Tokyo</option>
+          <option value="Osaka">Osaka</option>
+          <option value="Kyoto">Kyoto</option>
+          <option value="Sapporo">Sapporo</option>
+          <option value="Fukuoka">Fukuoka</option>
+          <option value="Nagoya">Nagoya</option>
+        </select>
+        {[{label:'Dorm',val:dorm,set:setDorm},{label:'JLPT',val:jlpt,set:setJlpt},{label:'Scholarship',val:scholar,set:setScholar}].map(f=>(
+          <button key={f.label} onClick={()=>f.set(!f.val)} style={{background:f.val?'rgba(196,32,32,0.2)':'#0D0907',border:'1px solid ' + (f.val?'#C42020':'rgba(255,255,255,0.2)'),borderRadius:'8px',padding:'10px 14px',color:f.val?'#FF8070':'rgba(255,255,255,0.6)',fontSize:'13px',fontWeight:'600',cursor:'pointer'}}>
+            {f.label}
+          </button>
+        ))}
+      </div>
+      <div style={{padding:'24px 40px',display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))',gap:'16px',maxWidth:'1400px',margin:'0 auto'}}>
+        {filtered.map((school:any)=>(
+          <a key={school.id} href={'/schools/' + school.id} style={{textDecoration:'none'}}>
+            <div style={{background:'#1A2035',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'16px',overflow:'hidden',position:'relative',cursor:'pointer'}}>
+              <button onClick={e=>toggleFavorite(e,school.id)} style={{position:'absolute',top:'12px',right:'12px',background:'rgba(0,0,0,0.5)',border:'none',borderRadius:'50%',width:'32px',height:'32px',cursor:'pointer',fontSize:'16px',zIndex:1}}>
+                {favorites.includes(school.id) ? 'fav' : 'unfav'}
+              </button>
+              <div style={{background:'rgba(196,32,32,0.08)',padding:'28px',textAlign:'center',fontSize:'44px'}}>{school.icon}</div>
+              <div style={{padding:'16px'}}>
+                <h2 style={{color:'white',fontSize:'14px',fontWeight:'700',marginBottom:'3px'}}>{school.name_en}</h2>
+                <p style={{color:'#C42020',fontSize:'11px',marginBottom:'6px'}}>{school.name_jp}</p>
+                <p style={{color:'rgba(255,255,255,0.4)',fontSize:'12px',marginBottom:'12px'}}>{school.city}</p>
+                <div style={{display:'flex',justifyContent:'space-between',paddingTop:'12px',borderTop:'1px solid rgba(255,255,255,0.06)'}}>
+                  <span style={{color:'#F0A830',fontFamily:'monospace',fontSize:'13px'}}>Yen {school.annual_fee_jpy.toLocaleString()}</span>
+                  <span style={{color:'#F0A830',fontSize:'13px'}}>{school.rating} stars</span>
+                </div>
+              </div>
             </div>
-          ))}
-        </div>
-        <div style={{background:'#1A2035',borderRadius:'12px',padding:'24px',marginBottom:'20px',border:'1px solid rgba(255,255,255,0.08)'}}>
-          <h2 style={{color:'white',fontSize:'18px',fontWeight:'700',marginBottom:'16px'}}>Features</h2>
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'12px'}}>
-            {[
-              {icon:'🛏',label:'Dormitory',val:school.has_dorm},
-              {icon:'📝',label:'JLPT Prep',val:school.jlpt_prep},
-              {icon:'🎓',label:'Scholarship',val:school.scholarship},
-              {icon:'✅',label:'MEXT Accredited',val:true},
-            ].map(f=>(
-              <div key=
+          </a>
+        ))}
+      </div>
+    </main>
+  )
+}

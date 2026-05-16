@@ -18,6 +18,7 @@ export default function Navbar() {
         <Link href="/chat" style={{color:'rgba(255,255,255,0.7)',textDecoration:'none',fontSize:'13px',fontWeight:'500'}}>Sakura AI</Link>
         <Link href="/community" style={{color:'rgba(255,255,255,0.7)',textDecoration:'none',fontSize:'13px',fontWeight:'500'}}>Community</Link>
         <Link href="/dashboard" style={{color:'rgba(255,255,255,0.7)',textDecoration:'none',fontSize:'13px',fontWeight:'500'}}>Dashboard</Link>
+        <Link href="/blog" style={{color:'rgba(255,255,255,0.7)',textDecoration:'none',fontSize:'13px',fontWeight:'500'}}>Blog</Link>
         <Link href="/contact" style={{color:'rgba(255,255,255,0.7)',textDecoration:'none',fontSize:'13px',fontWeight:'500'}}>Contact</Link>
         <Link href="/pricing" style={{color:'#F0A830',textDecoration:'none',fontSize:'13px',fontWeight:'700'}}>Pricing</Link>
         <Link href="/login" style={{color:'rgba(255,255,255,0.7)',textDecoration:'none',fontSize:'13px',fontWeight:'500'}}>Login</Link>
@@ -25,30 +26,4 @@ export default function Navbar() {
       </div>
 
       <button onClick={() => setMenuOpen(!menuOpen)} style={{display:'none',background:'none',border:'none',color:'white',fontSize:'24px',cursor:'pointer'}} className="mobile-btn">
-        {menuOpen ? 'X' : '☰'}
-      </button>
-
-      {menuOpen && (
-        <div style={{position:'fixed',top:'60px',left:0,right:0,background:'#0D0907',borderBottom:'2px solid #C42020',padding:'20px',display:'flex',flexDirection:'column',gap:'12px',zIndex:99}} className="mobile-menu">
-          {[
-            {href:'/schools',label:'Schools'},
-            {href:'/visa',label:'Visa'},
-            {href:'/chat',label:'Sakura AI'},
-            {href:'/community',label:'Community'},
-            {href:'/dashboard',label:'Dashboard'},
-            {href:'/contact',label:'Contact'},
-            {href:'/pricing',label:'Pricing'},
-            {href:'/login',label:'Login'},
-          ].map(item=>(
-            <Link key={item.href} href={item.href} onClick={()=>setMenuOpen(false)} style={{color:'white',textDecoration:'none',fontSize:'16px',padding:'10px 0',borderBottom:'1px solid rgba(255,255,255,0.08)'}}>
-              {item.label}
-            </Link>
-          ))}
-          <Link href="/register" onClick={()=>setMenuOpen(false)} style={{background:'#C42020',color:'white',textDecoration:'none',fontSize:'15px',fontWeight:'700',padding:'12px',borderRadius:'8px',textAlign:'center'}}>
-            Join Free
-          </Link>
-        </div>
-      )}
-    </nav>
-  )
-}
+        {menuOp

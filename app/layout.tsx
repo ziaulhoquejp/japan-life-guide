@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
+import FeedbackButton from './components/FeedbackButton'
 import Script from 'next/script'
 
 export const metadata: Metadata = {
@@ -39,7 +40,7 @@ export default function RootLayout({
       <body style={{ margin: 0, padding: 0 }}>
         <Navbar />
         {children}
-        <Footer />
+        <Footer /><FeedbackButton />
       </body>
     </html>
   )

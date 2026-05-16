@@ -1,4 +1,5 @@
 'use client'
+import ShareButton from './components/ShareButton'
 import Link from 'next/link'
 
 export default function Home() {
@@ -85,7 +86,7 @@ export default function Home() {
           <Link href="/schools" style={{background:'rgba(255,255,255,0.08)',color:'white',textDecoration:'none',padding:'16px 32px',borderRadius:'10px',fontSize:'16px',border:'1px solid rgba(255,255,255,0.15)'}}>
             Browse Schools →
           </Link>
-        </div>
+        </div><ShareButton />
       </div>
 
     </main>

@@ -27,9 +27,21 @@ export default function SchoolsPage() {
   const [dorm, setDorm] = useState(false)
   const [jlpt, setJlpt] = useState(false)
   const [scholar, setScholar] = useState(false)
+  const [favorites, setFavorites] = useState<string[]>([])
+  const [userId, setUserId] = useState<string | null>(null)
 
   useEffect(() => {
-    async function getSchools() {
+    async function init() {
+      const { data: userData } = await supabase.auth.getUser()
+      if (userData.user) {
+        setUserId(userData.user.id)
+        const { data: favData } = await supabase
+          .from('favorites')
+          .select('school_id')
+          .eq('user_id', userData.user.id)
+        if (favData) setFavorites(favData.map(f => f.school_id))
+      }
+
       const { data } = await supabase
         .from('schools')
         .select('*')
@@ -40,7 +52,7 @@ export default function SchoolsPage() {
       }
       setLoading(false)
     }
-    getSchools()
+    init()
   }, [])
 
   useEffect(() => {
@@ -54,6 +66,20 @@ export default function SchoolsPage() {
     setFiltered(result)
   }, [search, city, maxFee, dorm, jlpt, scholar, schools])
 
+  async function toggleFavorite(schoolId: string) {
+    if (!userId) {
+      window.location.href = '/login'
+      return
+    }
+    if (favorites.includes(schoolId)) {
+      await supabase.from('favorites').delete().eq('user_id', userId).eq('school_id', schoolId)
+      setFavorites(prev => prev.filter(id => id !== schoolId))
+    } else {
+      await supabase.from('favorites').insert({ user_id: userId, school_id: schoolId })
+      setFavorites(prev => [...prev, schoolId])
+    }
+  }
+
   if (loading) return (
     <div style={{minHeight:'100vh',background:'#0D0907',display:'flex',alignItems:'center',justifyContent:'center',color:'white',fontSize:'24px'}}>
       🌸 Loading schools...
@@ -62,23 +88,21 @@ export default function SchoolsPage() {
 
   return (
     <main style={{minHeight:'100vh',background:'#0D0907',fontFamily:'sans-serif'}}>
-      <div style={{background:'#1A2035',padding:'32px 40px',borderBottom:'3px solid #C42020'}}>
-        <h1 style={{color:'white',fontSize:'32px',fontWeight:'700',marginBottom:'8px'}}>🏫 Language Schools</h1>
-        <p style={{color:'rgba(255,255,255,0.4)',fontSize:'16px'}}>{filtered.length} schools found</p>
+      <div style={{background:'#1A2035',padding:'32px 40px',borderBottom:'3px solid #C42020',display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:'12px'}}>
+        <div>
+          <h1 style={{color:'white',fontSize:'32px',fontWeight:'700',marginBottom:'8px'}}>🏫 Language Schools</h1>
+          <p style={{color:'rgba(255,255,255,0.4)',fontSize:'16px'}}>{filtered.length} schools found</p>
+        </div>
+        {favorites.length > 0 && (
+          <div style={{background:'rgba(196,32,32,0.15)',border:'1px solid rgba(196,32,32,0.3)',borderRadius:'8px',padding:'8px 16px',color:'#FF8070',fontSize:'13px',fontWeight:'600'}}>
+            ❤️ {favorites.length} Favorites
+          </div>
+        )}
       </div>
 
       <div style={{background:'#141E35',padding:'16px 40px',borderBottom:'1px solid rgba(255,255,255,0.08)',display:'flex',gap:'10px',flexWrap:'wrap',alignItems:'center'}}>
-        <input
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          placeholder="🔍 Search schools..."
-          style={{flex:1,minWidth:'200px',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'10px 14px',color:'white',fontSize:'13px',outline:'none'}}
-        />
-        <select
-          value={city}
-          onChange={e => setCity(e.target.value)}
-          style={{background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'10px 12px',color:'white',fontSize:'13px',outline:'none',cursor:'pointer'}}
-        >
+        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 Search schools..." style={{flex:1,minWidth:'200px',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'10px 14px',color:'white',fontSize:'13px',outline:'none'}}/>
+        <select value={city} onChange={e=>setCity(e.target.value)} style={{background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'10px 12px',color:'white',fontSize:'13px',outline:'none',cursor:'pointer'}}>
           <option value="">All Cities</option>
           <option value="Tokyo">Tokyo</option>
           <option value="Osaka">Osaka</option>
@@ -88,11 +112,7 @@ export default function SchoolsPage() {
           <option value="Nagoya">Nagoya</option>
           <option value="Yokohama">Yokohama</option>
         </select>
-        <select
-          value={maxFee}
-          onChange={e => setMaxFee(e.target.value)}
-          style={{background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'10px 12px',color:'white',fontSize:'13px',outline:'none',cursor:'pointer'}}
-        >
+        <select value={maxFee} onChange={e=>setMaxFee(e.target.value)} style={{background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'10px 12px',color:'white',fontSize:'13px',outline:'none',cursor:'pointer'}}>
           <option value="">Any Budget</option>
           <option value="500000">Under 500K</option>
           <option value="600000">Under 600K</option>
@@ -102,22 +122,22 @@ export default function SchoolsPage() {
           {label:'🛏 Dorm',val:dorm,set:setDorm},
           {label:'📝 JLPT',val:jlpt,set:setJlpt},
           {label:'🎓 Scholarship',val:scholar,set:setScholar},
-        ].map(f => (
-          <button
-            key={f.label}
-            onClick={() => f.set(!f.val)}
-            style={{background:f.val?'rgba(196,32,32,0.2)':'#0D0907',border:`1px solid ${f.val?'#C42020':'rgba(255,255,255,0.2)'}`,borderRadius:'8px',padding:'10px 14px',color:f.val?'#FF8070':'rgba(255,255,255,0.6)',fontSize:'13px',fontWeight:'600',cursor:'pointer'}}
-          >
+        ].map(f=>(
+          <button key={f.label} onClick={()=>f.set(!f.val)} style={{background:f.val?'rgba(196,32,32,0.2)':'#0D0907',border:`1px solid ${f.val?'#C42020':'rgba(255,255,255,0.2)'}`,borderRadius:'8px',padding:'10px 14px',color:f.val?'#FF8070':'rgba(255,255,255,0.6)',fontSize:'13px',fontWeight:'600',cursor:'pointer'}}>
             {f.label}
           </button>
         ))}
       </div>
 
       <div style={{padding:'24px 40px',display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))',gap:'16px',maxWidth:'1400px',margin:'0 auto'}}>
-        {filtered.map(school => (
-          <div key={school.id} style={{background:'#1A2035',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'16px',overflow:'hidden',transition:'transform 0.2s',cursor:'pointer'}}
-            onMouseEnter={e => (e.currentTarget.style.transform='translateY(-4px)')}
-            onMouseLeave={e => (e.currentTarget.style.transform='translateY(0)')}>
+        {filtered.map(school=>(
+          <div key={school.id} style={{background:'#1A2035',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'16px',overflow:'hidden',position:'relative'}}>
+            <button
+              onClick={()=>toggleFavorite(school.id)}
+              style={{position:'absolute',top:'12px',right:'12px',background:'rgba(0,0,0,0.5)',border:'none',borderRadius:'50%',width:'32px',height:'32px',cursor:'pointer',fontSize:'16px',zIndex:1}}
+            >
+              {favorites.includes(school.id) ? '❤️' : '🤍'}
+            </button>
             <div style={{background:'rgba(196,32,32,0.08)',padding:'28px',textAlign:'center',fontSize:'44px'}}>{school.icon}</div>
             <div style={{padding:'16px'}}>
               <h2 style={{color:'white',fontSize:'14px',fontWeight:'700',marginBottom:'3px'}}>{school.name_en}</h2>

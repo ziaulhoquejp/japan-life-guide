@@ -14,6 +14,7 @@ export default function Navbar() {
     {href:'/blog',label:'Blog'},
     {href:'/contact',label:'Contact'},
     {href:'/pricing',label:'Pricing'},
+    {href:'/profile',label:'Profile'},
     {href:'/login',label:'Login'},
   ]
 

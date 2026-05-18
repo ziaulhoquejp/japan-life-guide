@@ -7,11 +7,13 @@ export default function Navbar() {
 
   const links = [
     {href:'/schools',label:'Schools'},
+    {href:'/compare',label:'Compare'},
     {href:'/visa',label:'Visa'},
     {href:'/chat',label:'Sakura AI'},
     {href:'/community',label:'Community'},
     {href:'/dashboard',label:'Dashboard'},
     {href:'/blog',label:'Blog'},
+    {href:'/apply',label:'Apply'},
     {href:'/contact',label:'Contact'},
     {href:'/pricing',label:'Pricing'},
     {href:'/profile',label:'Profile'},
@@ -25,11 +27,11 @@ export default function Navbar() {
         <span style={{color:'white',fontSize:'16px',fontWeight:'700'}}>Japan Life Guide</span>
       </Link>
 
-      <div style={{display:'flex',gap:'14px',alignItems:'center'}} className="desktop-menu">
+      <div style={{display:'flex',gap:'12px',alignItems:'center'}} className="desktop-menu">
         {links.map(l=>(
-          <Link key={l.href} href={l.href} style={{color:'rgba(255,255,255,0.7)',textDecoration:'none',fontSize:'13px',fontWeight:'500'}}>{l.label}</Link>
+          <Link key={l.href} href={l.href} style={{color:'rgba(255,255,255,0.7)',textDecoration:'none',fontSize:'12px',fontWeight:'500'}}>{l.label}</Link>
         ))}
-        <Link href="/register" style={{background:'#C42020',color:'white',textDecoration:'none',fontSize:'12px',fontWeight:'700',padding:'7px 16px',borderRadius:'8px'}}>Join Free</Link>
+        <Link href="/register" style={{background:'#C42020',color:'white',textDecoration:'none',fontSize:'12px',fontWeight:'700',padding:'7px 14px',borderRadius:'8px'}}>Join Free</Link>
       </div>
 
       <button onClick={()=>setOpen(!open)} style={{display:'none',background:'none',border:'none',color:'white',fontSize:'24px',cursor:'pointer'}} className="mobile-btn">

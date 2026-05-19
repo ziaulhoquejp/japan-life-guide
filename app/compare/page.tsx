@@ -31,8 +31,8 @@ export default function ComparePage() {
     <main style={{minHeight:'100vh',background:'#0D0907',fontFamily:'sans-serif'}}>
       <div style={{background:'#1A2035',padding:'40px',borderBottom:'3px solid #C42020',textAlign:'center'}}>
         <h1 style={{color:'white',fontSize:'32px',fontWeight:'700',marginBottom:'8px'}}>Compare Schools</h1>
-        <p style={{color:'rgba(255,255,255,0.4)',fontSize:'16px'}}>Select up to 3 schools to compare side by side</p>
-        <p style={{color:'#C42020',fontSize:'14px',marginTop:'8px'}}>{selected.length}/3 schools selected</p>
+        <p style={{color:'rgba(255,255,255,0.4)',fontSize:'16px'}}>Select up to 3 schools to compare</p>
+        <p style={{color:'#C42020',fontSize:'14px',marginTop:'8px'}}>{selected.length}/3 selected</p>
       </div>
 
       <div style={{maxWidth:'1200px',margin:'0 auto',padding:'32px 20px'}}>
@@ -63,11 +63,15 @@ export default function ComparePage() {
                 ].map(row=>(
                   <tr key={row.label}>
                     <td style={{color:'rgba(255,255,255,0.5)',fontSize:'13px',padding:'12px 10px',borderBottom:'1px solid rgba(255,255,255,0.06)'}}>{row.label}</td>
-                    {selected.map(s=>(
-                      <td key={s.id} style={{color:'white',fontSize:'13px',padding:'12px 10px',textAlign:'center',borderBottom:'1px solid rgba(255,255,255,0.06)',color:row.key==='has_dorm'||row.key==='jlpt_prep'||row.key==='scholarship'?(s[row.key]?'#2EC87A':'rgba(255,255,255,0.3)'):'white'}}>
-                        {row.format(s[row.key])}
-                      </td>
-                    ))}
+                    {selected.map(s=>{
+                      const isBoolean = row.key==='has_dorm'||row.key==='jlpt_prep'||row.key==='scholarship'
+                      const cellColor = isBoolean ? (s[row.key]?'#2EC87A':'rgba(255,255,255,0.3)') : 'white'
+                      return (
+                        <td key={s.id} style={{fontSize:'13px',padding:'12px 10px',textAlign:'center',borderBottom:'1px solid rgba(255,255,255,0.06)',color:cellColor}}>
+                          {row.format(s[row.key])}
+                        </td>
+                      )
+                    })}
                   </tr>
                 ))}
               </tbody>
@@ -86,14 +90,15 @@ export default function ComparePage() {
         )}
 
         <div style={{marginBottom:'16px'}}>
-          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search schools to compare..." style={{width:'100%',background:'#1A2035',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px 16px',color:'white',fontSize:'14px',outline:'none'}}/>
+          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search schools..." style={{width:'100%',background:'#1A2035',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px 16px',color:'white',fontSize:'14px',outline:'none'}}/>
         </div>
 
         <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(240px, 1fr))',gap:'12px'}}>
           {filtered.map(school=>{
             const isSelected = selected.find(s=>s.id===school.id)
+            const isDisabled = selected.length>=3&&!isSelected
             return (
-              <div key={school.id} onClick={()=>toggleSchool(school)} style={{background:isSelected?'rgba(196,32,32,0.15)':'#1A2035',border:'2px solid ' + (isSelected?'#C42020':'rgba(255,255,255,0.08)'),borderRadius:'12px',padding:'16px',cursor:'pointer',transition:'all 0.2s',opacity:selected.length>=3&&!isSelected?0.5:1}}>
+              <div key={school.id} onClick={()=>toggleSchool(school)} style={{background:isSelected?'rgba(196,32,32,0.15)':'#1A2035',border:'2px solid ' + (isSelected?'#C42020':'rgba(255,255,255,0.08)'),borderRadius:'12px',padding:'16px',cursor:isDisabled?'not-allowed':'pointer',opacity:isDisabled?0.5:1}}>
                 <div style={{display:'flex',gap:'10px',alignItems:'center',marginBottom:'10px'}}>
                   <div style={{fontSize:'28px'}}>{school.icon}</div>
                   <div>

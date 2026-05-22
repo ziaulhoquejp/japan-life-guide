@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import FeedbackButton from './components/FeedbackButton'
+import PushNotification from './components/PushNotification'
 import Script from 'next/script'
 
 export const metadata: Metadata = {
@@ -41,6 +42,7 @@ export default function RootLayout({
         <Navbar />
         {children}
         <Footer /><FeedbackButton />
+        <PushNotification />
       </body>
     </html>
   )

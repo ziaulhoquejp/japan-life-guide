@@ -10,12 +10,12 @@ export default function Navbar() {
     {href:'/schools',label:'Schools'},
     {href:'/compare',label:'Compare'},
     {href:'/visa',label:'Visa'},
+    {href:'/visa-calculator',label:'Visa Calc'},
+    {href:'/jobs',label:'Jobs'},
+    {href:'/scholarships',label:'Scholarships'},
     {href:'/chat',label:'Sakura AI'},
     {href:'/community',label:'Community'},
-    {href:'/dashboard',label:'Dashboard'},
     {href:'/blog',label:'Blog'},
-    {href:'/apply',label:'Apply'},
-    {href:'/contact',label:'Contact'},
     {href:'/pricing',label:'Pricing'},
     {href:'/profile',label:'Profile'},
     {href:'/login',label:'Login'},
@@ -35,18 +35,18 @@ export default function Navbar() {
         <span style={{color:'white',fontSize:'16px',fontWeight:'700'}}>Japan Life Guide</span>
       </Link>
 
-      <div style={{display:'flex',gap:'12px',alignItems:'center'}} className="desktop-menu">
+      <div style={{display:'flex',gap:'10px',alignItems:'center'}} className="desktop-menu">
         {links.map(l=>(
-          <Link key={l.href} href={l.href} style={{color:'rgba(255,255,255,0.7)',textDecoration:'none',fontSize:'12px',fontWeight:'500'}}>{l.label}</Link>
+          <Link key={l.href} href={l.href} style={{color:'rgba(255,255,255,0.7)',textDecoration:'none',fontSize:'11px',fontWeight:'500'}}>{l.label}</Link>
         ))}
         <div style={{display:'flex',gap:'4px'}}>
           {langs.map(l=>(
-            <button key={l.code} onClick={()=>setLang(l.code)} style={{background:lang===l.code?'rgba(196,32,32,0.3)':'none',border:lang===l.code?'1px solid #C42020':'1px solid transparent',borderRadius:'6px',padding:'4px 6px',cursor:'pointer',fontSize:'16px'}}>
+            <button key={l.code} onClick={()=>setLang(l.code)} style={{background:lang===l.code?'rgba(196,32,32,0.3)':'none',border:lang===l.code?'1px solid #C42020':'1px solid transparent',borderRadius:'6px',padding:'4px 6px',cursor:'pointer',fontSize:'14px'}}>
               {l.flag}
             </button>
           ))}
         </div>
-        <Link href="/register" style={{background:'#C42020',color:'white',textDecoration:'none',fontSize:'12px',fontWeight:'700',padding:'7px 14px',borderRadius:'8px'}}>Join Free</Link>
+        <Link href="/register" style={{background:'#C42020',color:'white',textDecoration:'none',fontSize:'11px',fontWeight:'700',padding:'7px 12px',borderRadius:'8px'}}>Join Free</Link>
       </div>
 
       <button onClick={()=>setOpen(!open)} style={{display:'none',background:'none',border:'none',color:'white',fontSize:'24px',cursor:'pointer'}} className="mobile-btn">

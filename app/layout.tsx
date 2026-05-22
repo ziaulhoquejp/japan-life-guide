@@ -3,6 +3,7 @@ import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import FeedbackButton from './components/FeedbackButton'
 import PushNotification from './components/PushNotification'
+import ThemeToggle from './components/ThemeToggle'
 import Script from 'next/script'
 
 export const metadata: Metadata = {
@@ -43,6 +44,7 @@ export default function RootLayout({
         {children}
         <Footer /><FeedbackButton />
         <PushNotification />
+        <ThemeToggle />
       </body>
     </html>
   )

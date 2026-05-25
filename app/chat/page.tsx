@@ -79,7 +79,7 @@ export default function ChatPage() {
             Sakura AI
           </div>
           <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px' }}>
-            Powered by Claude · Online
+            Powered by NICHIBA · Online
           </div>
         </div>
 

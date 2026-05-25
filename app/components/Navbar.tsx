@@ -5,20 +5,34 @@ import { useState } from 'react'
 export default function Navbar() {
   const [open, setOpen] = useState(false)
   const [lang, setLang] = useState('en')
+  const [menuSection, setMenuSection] = useState('')
 
-  const links = [
+  const mainLinks = [
     {href:'/schools',label:'Schools'},
     {href:'/compare',label:'Compare'},
     {href:'/visa',label:'Visa'},
-    {href:'/visa-calculator',label:'Visa Calc'},
     {href:'/jobs',label:'Jobs'},
     {href:'/scholarships',label:'Scholarships'},
     {href:'/chat',label:'Sakura AI'},
     {href:'/community',label:'Community'},
-    {href:'/blog',label:'Blog'},
     {href:'/pricing',label:'Pricing'},
     {href:'/profile',label:'Profile'},
     {href:'/login',label:'Login'},
+  ]
+
+  const moreLinks = [
+    {href:'/visa-calculator',label:'Visa Calculator'},
+    {href:'/cost-calculator',label:'Cost Calculator'},
+    {href:'/compare',label:'School Compare'},
+    {href:'/apply',label:'Apply'},
+    {href:'/housing',label:'Housing'},
+    {href:'/prefectures',label:'Prefectures'},
+    {href:'/learn-japanese',label:'Learn Japanese'},
+    {href:'/news',label:'News'},
+    {href:'/faq',label:'FAQ'},
+    {href:'/blog',label:'Blog'},
+    {href:'/contact',label:'Contact'},
+    {href:'/admin',label:'Admin'},
   ]
 
   const langs = [
@@ -36,9 +50,23 @@ export default function Navbar() {
       </Link>
 
       <div style={{display:'flex',gap:'10px',alignItems:'center'}} className="desktop-menu">
-        {links.map(l=>(
+        {mainLinks.map(l=>(
           <Link key={l.href} href={l.href} style={{color:'rgba(255,255,255,0.7)',textDecoration:'none',fontSize:'11px',fontWeight:'500'}}>{l.label}</Link>
         ))}
+        <div style={{position:'relative'}}>
+          <button onClick={()=>setMenuSection(menuSection?'':' more')} style={{background:'rgba(255,255,255,0.08)',border:'none',borderRadius:'6px',padding:'5px 10px',color:'white',fontSize:'11px',cursor:'pointer'}}>
+            More ▼
+          </button>
+          {menuSection && (
+            <div style={{position:'absolute',top:'36px',right:0,background:'#1A2035',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'10px',padding:'8px',minWidth:'180px',zIndex:200}}>
+              {moreLinks.map(l=>(
+                <Link key={l.href} href={l.href} onClick={()=>setMenuSection('')} style={{display:'block',color:'rgba(255,255,255,0.7)',textDecoration:'none',fontSize:'12px',padding:'8px 12px',borderRadius:'6px'}}>
+                  {l.label}
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
         <div style={{display:'flex',gap:'4px'}}>
           {langs.map(l=>(
             <button key={l.code} onClick={()=>setLang(l.code)} style={{background:lang===l.code?'rgba(196,32,32,0.3)':'none',border:lang===l.code?'1px solid #C42020':'1px solid transparent',borderRadius:'6px',padding:'4px 6px',cursor:'pointer',fontSize:'14px'}}>
@@ -54,9 +82,9 @@ export default function Navbar() {
       </button>
 
       {open && (
-        <div style={{position:'fixed',top:'60px',left:0,right:0,background:'#0D0907',borderBottom:'2px solid #C42020',padding:'20px',display:'flex',flexDirection:'column',gap:'12px',zIndex:99}} className="mobile-menu">
-          {links.map(l=>(
-            <Link key={l.href} href={l.href} onClick={()=>setOpen(false)} style={{color:'white',textDecoration:'none',fontSize:'16px',padding:'10px 0',borderBottom:'1px solid rgba(255,255,255,0.08)'}}>{l.label}</Link>
+        <div style={{position:'fixed',top:'60px',left:0,right:0,background:'#0D0907',borderBottom:'2px solid #C42020',padding:'20px',display:'flex',flexDirection:'column',gap:'8px',zIndex:99,maxHeight:'80vh',overflowY:'auto'}}>
+          {[...mainLinks,...moreLinks].map(l=>(
+            <Link key={l.href} href={l.href} onClick={()=>setOpen(false)} style={{color:'white',textDecoration:'none',fontSize:'15px',padding:'8px 0',borderBottom:'1px solid rgba(255,255,255,0.06)'}}>{l.label}</Link>
           ))}
           <div style={{display:'flex',gap:'8px',padding:'10px 0'}}>
             {langs.map(l=>(
@@ -65,7 +93,7 @@ export default function Navbar() {
               </button>
             ))}
           </div>
-          <Link href="/register" onClick={()=>setOpen(false)} style={{background:'#C42020',color:'white',textDecoration:'none',fontSize:'15px',fontWeight:'700',padding:'12px',borderRadius:'8px',textAlign:'center'}}>Join Free</Link>
+          <Link href="/register" onClick={()=>setOpen(false)} style={{background:'#C42020',color:'white',textDecoration:'none',fontSize:'15px',fontWeight:'700',padding:'12px',borderRadius:'8px',textAlign:'center',marginTop:'8px'}}>Join Free</Link>
         </div>
       )}
     </nav>

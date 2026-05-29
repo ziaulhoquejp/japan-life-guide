@@ -36,7 +36,7 @@ export default function Home() {
             {val:'14K+',label:'Community Members'},
             {val:'4',label:'Languages'},
             {val:'47',label:'Prefectures'},
-            {val:'AI',label:'Powered by NICHIBA'},
+            {val:'AI',label:'Powered by ZIAUL HOQUE'},
           ].map(stat => (
             <div key={stat.label} style={{textAlign:'center',padding:'16px',borderRight:'1px solid rgba(255,255,255,0.06)'}}>
               <div style={{color:'#C42020',fontSize:'28px',fontWeight:'700'}}>{stat.val}</div>

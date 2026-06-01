@@ -4,6 +4,7 @@ import Footer from './components/Footer'
 import FeedbackButton from './components/FeedbackButton'
 import PushNotification from './components/PushNotification'
 import ThemeToggle from './components/ThemeToggle'
+import ServiceWorker from './components/ServiceWorker' 
 import Script from 'next/script'
 
 export const metadata: Metadata = {
@@ -22,6 +23,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#C42020" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Japan Life Guide" />
+<link rel="apple-touch-icon" href="/icon-192.png" />
+
         {gaId && (
           <>
             <Script

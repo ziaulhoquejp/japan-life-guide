@@ -9,9 +9,50 @@ import Script from 'next/script'
 
 export const metadata: Metadata = {
   title: 'Japan Life Guide — Study & Work in Japan',
-  description: 'The complete guide for Bangladesh and Nepal students going to Japan.',
-  keywords: 'Japan study, Japanese language school, student visa Japan',
-}
+  description: 'Complete guide for Bangladesh and Nepal students going to Japan. Find language schools, visa guides, jobs, scholarships and AI assistance.',
+  keywords: 'Japan study, Japanese language school, student visa Japan, Bangladesh Japan, Nepal Japan, SSW visa, JLPT, scholarships Japan',
+  authors: [{ name: 'Japan Life Guide' }],
+  creator: 'Japan Life Guide',
+  publisher: 'Japan Life Guide',
+  metadataBase: new URL('https://japanlifeguide.app'),
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    title: 'Japan Life Guide — Study & Work in Japan',
+    description: 'Complete guide for Bangladesh and Nepal students going to Japan. 200+ schools, AI chat, visa guide, jobs and scholarships.',
+    url: 'https://japanlifeguide.app',
+    siteName: 'Japan Life Guide',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Japan Life Guide',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Japan Life Guide — Study & Work in Japan',
+    description: 'Complete guide for Bangladesh and Nepal students going to Japan.',
+    images: ['/og-image.png'],
+    creator: '@japanlifeguide',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+}}
 
 export default function RootLayout({
   children,

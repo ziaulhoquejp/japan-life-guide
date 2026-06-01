@@ -32,6 +32,12 @@ export default function Navbar() {
     {href:'/faq',label:'FAQ'},
     {href:'/blog',label:'Blog'},
     {href:'/contact',label:'Contact'},
+    {href:'/halal',label:'Halal Guide'},
+    {href:'/culture',label:'Culture Guide'},
+    {href:'/emergency',label:'Emergency'},
+    {href:'/currency',label:'Currency'},
+    {href:'/flights',label:'Flights'},
+    {href:'/insurance',label:'Insurance'},
     {href:'/admin',label:'Admin'},
   ]
 

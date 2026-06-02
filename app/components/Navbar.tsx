@@ -5,11 +5,10 @@ import { useState } from 'react'
 export default function Navbar() {
   const [open, setOpen] = useState(false)
   const [lang, setLang] = useState('en')
-  const [menuSection, setMenuSection] = useState('')
+  const [menuOpen, setMenuOpen] = useState(false)
 
   const mainLinks = [
     {href:'/schools',label:'Schools'},
-    {href:'/compare',label:'Compare'},
     {href:'/visa',label:'Visa'},
     {href:'/jobs',label:'Jobs'},
     {href:'/scholarships',label:'Scholarships'},
@@ -21,24 +20,25 @@ export default function Navbar() {
   ]
 
   const moreLinks = [
-    {href:'/applications',label:'My Applications'},
     {href:'/visa-calculator',label:'Visa Calculator'},
     {href:'/cost-calculator',label:'Cost Calculator'},
-    {href:'/compare',label:'School Compare'},
-    {href:'/apply',label:'Apply'},
+    {href:'/compare',label:'Compare Schools'},
+    {href:'/apply',label:'Apply to School'},
+    {href:'/applications',label:'My Applications'},
+    {href:'/dashboard',label:'Dashboard'},
     {href:'/housing',label:'Housing'},
     {href:'/prefectures',label:'Prefectures'},
     {href:'/learn-japanese',label:'Learn Japanese'},
     {href:'/news',label:'News'},
     {href:'/faq',label:'FAQ'},
     {href:'/blog',label:'Blog'},
-    {href:'/contact',label:'Contact'},
     {href:'/halal',label:'Halal Guide'},
     {href:'/culture',label:'Culture Guide'},
     {href:'/emergency',label:'Emergency'},
     {href:'/currency',label:'Currency'},
     {href:'/flights',label:'Flights'},
     {href:'/insurance',label:'Insurance'},
+    {href:'/contact',label:'Contact'},
     {href:'/admin',label:'Admin'},
   ]
 
@@ -61,13 +61,13 @@ export default function Navbar() {
           <Link key={l.href} href={l.href} style={{color:'rgba(255,255,255,0.7)',textDecoration:'none',fontSize:'11px',fontWeight:'500'}}>{l.label}</Link>
         ))}
         <div style={{position:'relative'}}>
-          <button onClick={()=>setMenuSection(menuSection?'':' more')} style={{background:'rgba(255,255,255,0.08)',border:'none',borderRadius:'6px',padding:'5px 10px',color:'white',fontSize:'11px',cursor:'pointer'}}>
+          <button onClick={()=>setMenuOpen(!menuOpen)} style={{background:'rgba(255,255,255,0.08)',border:'none',borderRadius:'6px',padding:'5px 10px',color:'white',fontSize:'11px',cursor:'pointer'}}>
             More ▼
           </button>
-          {menuSection && (
-            <div style={{position:'absolute',top:'36px',right:0,background:'#1A2035',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'10px',padding:'8px',minWidth:'180px',zIndex:200}}>
+          {menuOpen && (
+            <div style={{position:'absolute',top:'36px',right:0,background:'#1A2035',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'10px',padding:'8px',minWidth:'200px',zIndex:200,maxHeight:'400px',overflowY:'auto'}}>
               {moreLinks.map(l=>(
-                <Link key={l.href} href={l.href} onClick={()=>setMenuSection('')} style={{display:'block',color:'rgba(255,255,255,0.7)',textDecoration:'none',fontSize:'12px',padding:'8px 12px',borderRadius:'6px'}}>
+                <Link key={l.href} href={l.href} onClick={()=>setMenuOpen(false)} style={{display:'block',color:'rgba(255,255,255,0.7)',textDecoration:'none',fontSize:'12px',padding:'8px 12px',borderRadius:'6px'}}>
                   {l.label}
                 </Link>
               ))}

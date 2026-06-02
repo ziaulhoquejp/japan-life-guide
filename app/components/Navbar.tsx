@@ -21,6 +21,7 @@ export default function Navbar() {
   ]
 
   const moreLinks = [
+    {href:'/applications',label:'My Applications'},
     {href:'/visa-calculator',label:'Visa Calculator'},
     {href:'/cost-calculator',label:'Cost Calculator'},
     {href:'/compare',label:'School Compare'},

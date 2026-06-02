@@ -4,12 +4,18 @@ const nextConfig: NextConfig = {
   images: {
     domains: ['japanlifeguide.app'],
     formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 60,
+    dangerouslyAllowSVG: true,
   },
   compress: true,
   poweredByHeader: false,
   reactStrictMode: true,
   experimental: {
     optimizeCss: true,
+  },
+  onDemandEntries: {
+    maxInactiveAge: 25 * 1000,
+    pagesBufferLength: 2,
   },
   headers: async () => [
     {
@@ -19,12 +25,31 @@ const nextConfig: NextConfig = {
         { key: 'X-Frame-Options', value: 'DENY' },
         { key: 'X-XSS-Protection', value: '1; mode=block' },
         { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+        { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
       ],
     },
     {
       source: '/api/(.*)',
       headers: [
         { key: 'Cache-Control', value: 'no-store' },
+      ],
+    },
+    {
+      source: '/(.*).png',
+      headers: [
+        { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+      ],
+    },
+    {
+      source: '/(.*).jpg',
+      headers: [
+        { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+      ],
+    },
+    {
+      source: '/(.*).svg',
+      headers: [
+        { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
       ],
     },
   ],

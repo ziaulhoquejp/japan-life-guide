@@ -1,26 +1,151 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0D0907;
+  --foreground: #ffffff;
+  --card: #1A2035;
+  --primary: #C42020;
+  --text-muted: rgba(255,255,255,0.4);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0D0907;
+}
+::-webkit-scrollbar-thumb {
+  background: #C42020;
+  border-radius: 3px;
+}
+
+/* Mobile Navigation */
+@media (max-width: 768px) {
+  .desktop-menu {
+    display: none !important;
+  }
+  .mobile-btn {
+    display: flex !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-menu {
+    display: none !important;
+  }
+}
+
+/* Mobile Typography */
+@media (max-width: 480px) {
+  h1 {
+    font-size: 24px !important;
+  }
+  h2 {
+    font-size: 20px !important;
+  }
+  p {
+    font-size: 14px !important;
+  }
+}
+
+/* Mobile Padding */
+@media (max-width: 768px) {
+  main > div:first-child {
+    padding: 24px 16px !important;
+  }
+}
+
+/* Button Touch Targets */
+button, a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:active {
+  opacity: 0.8;
+  transform: scale(0.98);
+}
+
+/* Card Hover Effects */
+@media (hover: hover) {
+  .card-hover:hover {
+    border-color: rgba(196,32,32,0.4) !important;
+    transform: translateY(-2px);
+    transition: all 0.2s;
+  }
+}
+
+/* Input Styles */
+input, textarea, select {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: #C42020 !important;
+}
+
+/* Animation */
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Grid Responsive */
+@media (max-width: 640px) {
+  [style*="gridTemplateColumns"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Table Responsive */
+@media (max-width: 640px) {
+  table {
+    font-size: 12px !important;
+  }
+  th, td {
+    padding: 8px 6px !important;
+  }
+}
+
+/* Image Optimization */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Link Styles */
+a:hover {
+  opacity: 0.85;
+  transition: opacity 0.2s;
+}
+
+/* Selection Color */
+::selection {
+  background: #C42020;
+  color: white;
 }

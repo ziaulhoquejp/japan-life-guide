@@ -1,94 +1,168 @@
 'use client'
-import ShareButton from './components/ShareButton'
+import { useState } from 'react'
 import Link from 'next/link'
+import ShareButton from './components/ShareButton'
+
+const content = {
+  en: {
+    hero: 'Your Journey to Japan Starts Here',
+    subtitle: 'Find language schools, navigate visas, get AI guidance — all in one place',
+    findSchools: 'Find Schools',
+    askSakura: 'Ask Sakura AI',
+    stats: ['250+ Schools', '4 Languages', 'AI Powered', 'Free to Join'],
+    features: [
+      {icon:'🏫',title:'250+ Language Schools',desc:'Search and compare Japanese language schools across Japan with detailed info on fees, dorms, and JLPT prep.'},
+      {icon:'🛂',title:'Visa Guide',desc:'Step-by-step visa guidance for student, SSW, and work visas. Know exactly what documents you need.'},
+      {icon:'🌸',title:'Sakura AI',desc:'Our AI assistant answers your questions in Bengali, Nepali, Japanese, and English 24/7.'},
+      {icon:'💼',title:'Jobs & Scholarships',desc:'Find part-time jobs, SSW opportunities, and scholarships available for Bangladesh and Nepal students.'},
+      {icon:'🧮',title:'Smart Calculators',desc:'Calculate your visa eligibility, monthly living costs, and currency conversions instantly.'},
+      {icon:'💬',title:'Community',desc:'Connect with other Bangladesh and Nepal students in Japan. Share experiences and get advice.'},
+    ],
+    cta: 'Start Free Today',
+    browsSchools: 'Browse Schools',
+    shareText: 'Share with friends:',
+  },
+  bn: {
+    hero: 'Japan-e Apnar Jatra Shuru Hok',
+    subtitle: 'Bhasha school khujun, visa navigate korun, AI guidance nun — shob ek jaygay',
+    findSchools: 'School Khujun',
+    askSakura: 'Sakura AI-ke Jiggesh Korun',
+    stats: ['250+ School', '4 Bhasha', 'AI Powered', 'Binamulye'],
+    features: [
+      {icon:'🏫',title:'250+ Bhasha School',desc:'Japan-er shokol school khujun ebong tulona korun. Fees, dorm, ebong JLPT er detail janan.'},
+      {icon:'🛂',title:'Visa Guide',desc:'Student, SSW, ebong work visa-r jonno dhap-e-dhap guidance. Exactly ki ki document lagbe janan.'},
+      {icon:'🌸',title:'Sakura AI',desc:'Amader AI assistant Bangla, Nepali, Japanese, ebong English-e 24/7 proshno-r uttor dey.'},
+      {icon:'💼',title:'Chakri & Bhritti',desc:'Part-time chakri, SSW shujogh, ebong Bangladesh students-der jonno scholarship khujun.'},
+      {icon:'🧮',title:'Calculator',desc:'Visa eligibility, maashik khoroch, ebong currency conversion tatkhonik hishab korun.'},
+      {icon:'💬',title:'Community',desc:'Japan-e Bangladesh ebong Nepal-er onyanyo students-der shathe jukto hun.'},
+    ],
+    cta: 'Binamulye Shuru Korun',
+    browsSchools: 'School Dekhun',
+    shareText: 'Bondhudder shathe share korun:',
+  },
+  ne: {
+    hero: 'Japan-ma Tapainko Yatra Suru Huncha',
+    subtitle: 'Bhasha vidyalaya khojnuhos, visa navigate garnuhos, AI guidance linuhos',
+    findSchools: 'Vidyalaya Khojnuhos',
+    askSakura: 'Sakura AI-lai Sodhnuhos',
+    stats: ['250+ Vidyalaya', '4 Bhasha', 'AI Powered', 'Nisulka'],
+    features: [
+      {icon:'🏫',title:'250+ Bhasha Vidyalaya',desc:'Japan-ka sabai vidyalaya khojnuhos ra tulana garnuhos. Shulk, dorm, ra JLPT ko detail thaha paaunuhos.'},
+      {icon:'🛂',title:'Visa Guide',desc:'Student, SSW, ra work visa ko lagi kadam-kadam guidance. Kun-kun kagajaat chaincha thaha paaunuhos.'},
+      {icon:'🌸',title:'Sakura AI',desc:'Hamro AI assistant Bangla, Nepali, Japanese, ra English-ma 24/7 prashna-ko jawab dincha.'},
+      {icon:'💼',title:'Kaam ra Chaatravitti',desc:'Part-time kaam, SSW mauka, ra Nepal students-ka lagi scholarship khojnuhos.'},
+      {icon:'🧮',title:'Calculator',desc:'Visa eligibility, mahinawar kharcha, ra currency conversion tatkaal hisab garnuhos.'},
+      {icon:'💬',title:'Samuday',desc:'Japan-ma Bangladesh ra Nepal-ka anya students-sanga jodinnuhos.'},
+    ],
+    cta: 'Nisulka Suru Garnuhos',
+    browsSchools: 'Vidyalaya Hernus',
+    shareText: 'Saathiharu-sanga share garnuhos:',
+  },
+  jp: {
+    hero: 'Nihon eno Tabi wa Koko kara Hajimaru',
+    subtitle: 'Gogakko wo sagashi, biza wo navigate shi, AI guidance wo eru',
+    findSchools: 'Gakko wo Sagasu',
+    askSakura: 'Sakura AI ni Kiku',
+    stats: ['250+ Gakko', '4 Gengo', 'AI Powered', 'Muryo'],
+    features: [
+      {icon:'🏫',title:'250+ Gogakko',desc:'Nihon zenkoku no gogakko wo kensaku, hikaku dekimasu. Jugyoryo, dorm, JLPT junbi no joho mo.'},
+      {icon:'🛂',title:'Biza Guide',desc:'Gakusei, SSW, rodo biza no step-by-step guidance. Hitsuyona shorui ga wakaru.'},
+      {icon:'🌸',title:'Sakura AI',desc:'AI assistant ga Bengali, Nepali, Nihongo, Eigo de 24/7 shitsumon ni kotaeru.'},
+      {icon:'💼',title:'Shigoto to Shogakukin',desc:'Arubaito, SSW kikai, Bangladesh Nepal gakusei muke shogakukin wo sagaseru.'},
+      {icon:'🧮',title:'Calculator',desc:'Biza tekisei, seikatsuhi, tsuka henkan wo sokuseki keisan.'},
+      {icon:'💬',title:'Community',desc:'Nihon ni iru Bangladesh Nepal no gakusei to tsunagaro.'},
+    ],
+    cta: 'Muryo de Hajimeru',
+    browsSchools: 'Gakko wo Miru',
+    shareText: 'Tomodachi ni share shite:',
+  },
+}
 
 export default function Home() {
+  const [lang, setLang] = useState<'en'|'bn'|'ne'|'jp'>('en')
+  const t = content[lang]
+
+  const langs = [
+    {code:'en' as const,flag:'🇬🇧'},
+    {code:'bn' as const,flag:'🇧🇩'},
+    {code:'ne' as const,flag:'🇳🇵'},
+    {code:'jp' as const,flag:'🇯🇵'},
+  ]
+
   return (
     <main style={{minHeight:'100vh',background:'#0D0907',fontFamily:'sans-serif'}}>
+      <div style={{background:'linear-gradient(135deg, #0D0907 0%, #1A2035 50%, #0D0907 100%)',padding:'80px 20px',textAlign:'center',borderBottom:'1px solid rgba(255,255,255,0.06)',position:'relative'}}>
+        <div style={{display:'flex',justifyContent:'center',gap:'8px',marginBottom:'32px'}}>
+          {langs.map(l=>(
+            <button key={l.code} onClick={()=>setLang(l.code)} style={{background:lang===l.code?'rgba(196,32,32,0.3)':'rgba(255,255,255,0.08)',border:lang===l.code?'2px solid #C42020':'2px solid transparent',borderRadius:'8px',padding:'6px 12px',cursor:'pointer',fontSize:'20px',transition:'all 0.2s'}}>
+              {l.flag}
+            </button>
+          ))}
+        </div>
 
-      {/* HERO */}
-      <div style={{background:'linear-gradient(135deg, #0D0907 0%, #1A0F0F 100%)',padding:'80px 40px',textAlign:'center',position:'relative',overflow:'hidden',borderBottom:'1px solid rgba(255,255,255,0.06)'}}>
-        <div style={{position:'absolute',width:'500px',height:'500px',borderRadius:'50%',background:'radial-gradient(circle, rgba(196,32,32,0.15) 0%, transparent 70%)',top:'-100px',left:'50%',transform:'translateX(-50%)'}}/> 
-        <div style={{width:'80px',height:'80px',borderRadius:'50%',background:'#C42020',boxShadow:'0 0 60px rgba(196,32,32,0.6)',margin:'0 auto 24px',position:'relative'}}/>
-        <div style={{color:'rgba(255,255,255,0.3)',fontSize:'12px',letterSpacing:'4px',marginBottom:'16px',position:'relative'}}>JAPAN LIFE GUIDE · 日本生活ガイド</div>
-        <h1 style={{color:'white',fontSize:'clamp(32px, 6vw, 64px)',fontWeight:'700',lineHeight:'1.1',marginBottom:'16px',position:'relative'}}>
-          Your Journey to<br/>
-          <span style={{color:'#C42020'}}>Japan</span> Starts Here
+        <div style={{display:'inline-flex',alignItems:'center',gap:'8px',background:'rgba(196,32,32,0.1)',border:'1px solid rgba(196,32,32,0.3)',borderRadius:'20px',padding:'6px 16px',marginBottom:'24px'}}>
+          <div style={{width:'8px',height:'8px',borderRadius:'50%',background:'#C42020',animation:'pulse 1.5s infinite'}}/>
+          <span style={{color:'#FF8070',fontSize:'12px',fontWeight:'600'}}>250+ Schools · AI Powered · Free</span>
+        </div>
+
+        <h1 style={{color:'white',fontSize:'clamp(28px, 5vw, 52px)',fontWeight:'800',lineHeight:'1.2',marginBottom:'20px',maxWidth:'800px',margin:'0 auto 20px'}}>
+          {t.hero}
         </h1>
-        <p style={{color:'rgba(255,255,255,0.5)',fontSize:'18px',maxWidth:'560px',margin:'0 auto 40px',lineHeight:'1.7',position:'relative'}}>
-          Find language schools, navigate visas, get AI guidance — everything you need to study and work in Japan.
+        <p style={{color:'rgba(255,255,255,0.5)',fontSize:'clamp(14px, 2vw, 18px)',marginBottom:'36px',maxWidth:'600px',margin:'0 auto 36px',lineHeight:'1.7'}}>
+          {t.subtitle}
         </p>
-        <div style={{display:'flex',gap:'14px',justifyContent:'center',flexWrap:'wrap',position:'relative'}}>
-          <Link href="/schools" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'16px 32px',borderRadius:'10px',fontSize:'16px',fontWeight:'700'}}>
-            🏫 Find Schools
+
+        <div style={{display:'flex',gap:'12px',justifyContent:'center',flexWrap:'wrap',marginBottom:'48px'}}>
+          <Link href="/register" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'14px 28px',borderRadius:'10px',fontWeight:'700',fontSize:'15px',boxShadow:'0 4px 20px rgba(196,32,32,0.4)'}}>
+            {t.cta} 🌸
           </Link>
-          <Link href="/chat" style={{background:'rgba(255,255,255,0.08)',color:'white',textDecoration:'none',padding:'16px 32px',borderRadius:'10px',fontSize:'16px',fontWeight:'600',border:'1px solid rgba(255,255,255,0.15)'}}>
-            🌸 Ask Sakura AI
+          <Link href="/schools" style={{background:'rgba(255,255,255,0.08)',color:'white',textDecoration:'none',padding:'14px 28px',borderRadius:'10px',fontSize:'15px',border:'1px solid rgba(255,255,255,0.15)'}}>
+            {t.browsSchools} →
           </Link>
         </div>
-      </div>
 
-      {/* STATS */}
-      <div style={{background:'#141E35',padding:'32px 40px',borderBottom:'1px solid rgba(255,255,255,0.06)'}}>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(160px, 1fr))',gap:'0',maxWidth:'800px',margin:'0 auto'}}>
-          {[
-            {val:'90+',label:'Language Schools'},
-            {val:'14K+',label:'Community Members'},
-            {val:'4',label:'Languages'},
-            {val:'47',label:'Prefectures'},
-            {val:'AI',label:'Powered by ZIAUL HOQUE'},
-          ].map(stat => (
-            <div key={stat.label} style={{textAlign:'center',padding:'16px',borderRight:'1px solid rgba(255,255,255,0.06)'}}>
-              <div style={{color:'#C42020',fontSize:'28px',fontWeight:'700'}}>{stat.val}</div>
-              <div style={{color:'rgba(255,255,255,0.4)',fontSize:'12px',marginTop:'4px'}}>{stat.label}</div>
+        <div style={{display:'flex',gap:'24px',justifyContent:'center',flexWrap:'wrap'}}>
+          {t.stats.map((stat,i)=>(
+            <div key={i} style={{textAlign:'center'}}>
+              <div style={{color:'white',fontSize:'18px',fontWeight:'700'}}>{stat}</div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* FEATURES */}
-      <div style={{padding:'64px 40px',maxWidth:'1200px',margin:'0 auto'}}>
-        <h2 style={{color:'white',fontSize:'32px',fontWeight:'700',textAlign:'center',marginBottom:'8px'}}>Everything You Need</h2>
-        <p style={{color:'rgba(255,255,255,0.4)',textAlign:'center',marginBottom:'48px',fontSize:'16px'}}>One platform for your entire Japan journey</p>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))',gap:'16px'}}>
-          {[
-            {icon:'🏫',title:'90+ Language Schools',desc:'Browse verified schools across all 47 prefectures. Filter by city, budget, dorm, JLPT prep, and scholarship.',href:'/schools',color:'#4A8EFF'},
-            {icon:'🌸',title:'Sakura AI Assistant',desc:'Ask anything about Japan in English, Japanese, Bengali, or Nepali. Powered by Claude AI.',href:'/chat',color:'#C42020'},
-            {icon:'🛂',title:'Visa Guide',desc:'Step-by-step student visa roadmap. From application to arrival in Japan.',href:'/visa',color:'#2EC87A'},
-            {icon:'💬',title:'Community Forum',desc:'Connect with 14,000+ students from Bangladesh, Nepal, and beyond who are going to Japan.',href:'/community',color:'#F0A830'},
-            {icon:'📊',title:'Personal Dashboard',desc:'Track your visa progress, manage documents, and monitor school applications.',href:'/dashboard',color:'#A855F7'},
-            {icon:'💎',title:'Pro Plan ¥980/mo',desc:'Unlimited AI, document tracker, priority matching, and email reminders.',href:'/pricing',color:'#F0A830'},
-          ].map(feature => (
-            <Link key={feature.title} href={feature.href} style={{textDecoration:'none'}}>
-              <div style={{background:'#1A2035',borderRadius:'14px',padding:'24px',border:`1px solid ${feature.color}20`,borderTop:`3px solid ${feature.color}`,cursor:'pointer',height:'100%',display:'block',transition:'transform 0.2s'}}
-                onMouseEnter={e => (e.currentTarget.style.transform='translateY(-4px)')}
-                onMouseLeave={e => (e.currentTarget.style.transform='translateY(0)')}>
-                <div style={{fontSize:'32px',marginBottom:'12px'}}>{feature.icon}</div>
-                <h3 style={{color:'white',fontSize:'16px',fontWeight:'700',marginBottom:'8px'}}>{feature.title}</h3>
-                <p style={{color:'rgba(255,255,255,0.5)',fontSize:'13px',lineHeight:'1.7'}}>{feature.desc}</p>
-              </div>
-            </Link>
+      <div style={{padding:'64px 20px',maxWidth:'1200px',margin:'0 auto'}}>
+        <h2 style={{color:'white',fontSize:'28px',fontWeight:'700',textAlign:'center',marginBottom:'40px'}}>
+          Everything You Need 🌸
+        </h2>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))',gap:'20px'}}>
+          {t.features.map((feature,i)=>(
+            <div key={i} style={{background:'#1A2035',borderRadius:'16px',padding:'24px',border:'1px solid rgba(255,255,255,0.08)',transition:'border-color 0.2s'}}
+              onMouseEnter={e=>(e.currentTarget.style.borderColor='rgba(196,32,32,0.4)')}
+              onMouseLeave={e=>(e.currentTarget.style.borderColor='rgba(255,255,255,0.08)')}>
+              <div style={{fontSize:'40px',marginBottom:'14px'}}>{feature.icon}</div>
+              <h3 style={{color:'white',fontSize:'16px',fontWeight:'700',marginBottom:'8px'}}>{feature.title}</h3>
+              <p style={{color:'rgba(255,255,255,0.5)',fontSize:'13px',lineHeight:'1.7'}}>{feature.desc}</p>
+            </div>
           ))}
         </div>
       </div>
 
-      {/* CTA */}
-      <div style={{background:'linear-gradient(135deg, #1A0F0F, #0D0907)',padding:'64px 40px',textAlign:'center',borderTop:'1px solid rgba(255,255,255,0.06)'}}>
-        <div style={{width:'60px',height:'60px',borderRadius:'50%',background:'#C42020',boxShadow:'0 0 40px rgba(196,32,32,0.5)',margin:'0 auto 24px'}}/>
-        <h2 style={{color:'white',fontSize:'32px',fontWeight:'700',marginBottom:'12px'}}>Ready to Go to Japan? 🇯🇵</h2>
-        <p style={{color:'rgba(255,255,255,0.5)',fontSize:'16px',marginBottom:'32px',maxWidth:'480px',margin:'0 auto 32px'}}>
-          Join thousands of students from Bangladesh and Nepal who are already on their Japan journey.
-        </p>
-        <div style={{display:'flex',gap:'14px',justifyContent:'center',flexWrap:'wrap'}}>
-          <Link href="/register" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'16px 32px',borderRadius:'10px',fontSize:'16px',fontWeight:'700'}}>
-            Start Free Today 🌸
+      <div style={{background:'#1A2035',padding:'64px 20px',textAlign:'center',borderTop:'1px solid rgba(255,255,255,0.06)'}}>
+        <h2 style={{color:'white',fontSize:'28px',fontWeight:'700',marginBottom:'12px'}}>Ready to Start? 🎌</h2>
+        <p style={{color:'rgba(255,255,255,0.4)',fontSize:'16px',marginBottom:'32px'}}>Join thousands of students from Bangladesh and Nepal</p>
+        <div style={{display:'flex',gap:'12px',justifyContent:'center',flexWrap:'wrap',marginBottom:'32px'}}>
+          <Link href="/register" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'14px 32px',borderRadius:'10px',fontWeight:'700',fontSize:'15px'}}>
+            {t.cta} 🌸
           </Link>
-          <Link href="/schools" style={{background:'rgba(255,255,255,0.08)',color:'white',textDecoration:'none',padding:'16px 32px',borderRadius:'10px',fontSize:'16px',border:'1px solid rgba(255,255,255,0.15)'}}>
-            Browse Schools →
+          <Link href="/chat" style={{background:'rgba(255,255,255,0.08)',color:'white',textDecoration:'none',padding:'14px 32px',borderRadius:'10px',fontSize:'15px',border:'1px solid rgba(255,255,255,0.15)'}}>
+            {t.askSakura} 🌸
           </Link>
-        </div><ShareButton />
+        </div>
+        <div style={{marginTop:'16px'}}>
+          <p style={{color:'rgba(255,255,255,0.3)',fontSize:'13px',marginBottom:'12px'}}>{t.shareText}</p>
+          <ShareButton />
+        </div>
       </div>
-
     </main>
   )
 }

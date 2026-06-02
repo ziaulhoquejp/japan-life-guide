@@ -4,7 +4,7 @@ import Footer from './components/Footer'
 import FeedbackButton from './components/FeedbackButton'
 import PushNotification from './components/PushNotification'
 import ThemeToggle from './components/ThemeToggle'
-import ServiceWorker from './components/ServiceWorker' 
+import ServiceWorker from './components/ServiceWorker'
 import Script from 'next/script'
 
 export const metadata: Metadata = {
@@ -15,22 +15,11 @@ export const metadata: Metadata = {
   creator: 'Japan Life Guide',
   publisher: 'Japan Life Guide',
   metadataBase: new URL('https://japanlifeguide.app'),
-  alternates: {
-    canonical: '/',
-  },
   openGraph: {
     title: 'Japan Life Guide — Study & Work in Japan',
     description: 'Complete guide for Bangladesh and Nepal students going to Japan. 200+ schools, AI chat, visa guide, jobs and scholarships.',
     url: 'https://japanlifeguide.app',
     siteName: 'Japan Life Guide',
-    images: [
-      {
-        url: '/og-image.png',
-        width: 1200,
-        height: 630,
-        alt: 'Japan Life Guide',
-      },
-    ],
     locale: 'en_US',
     type: 'website',
   },
@@ -38,21 +27,13 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Japan Life Guide — Study & Work in Japan',
     description: 'Complete guide for Bangladesh and Nepal students going to Japan.',
-    images: ['/og-image.png'],
     creator: '@japanlifeguide',
   },
   robots: {
     index: true,
     follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-    },
   },
-}}
+}
 
 export default function RootLayout({
   children,
@@ -64,20 +45,15 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-      <meta name="google-site-verification" content="ZOe050wotNJeisPcWW49d6iVWB-cBoqAGpifN8WEnac" />  
         <link rel="manifest" href="/manifest.json" />
-<meta name="theme-color" content="#C42020" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="Japan Life Guide" />
-<link rel="apple-touch-icon" href="/icon-192.png" />
-
+        <meta name="theme-color" content="#C42020" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Japan Life Guide" />
+        <link rel="apple-touch-icon" href="/icon-192.png" />
         {gaId && (
           <>
-            <Script
-              src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
-              strategy="afterInteractive"
-            />
+            <Script src={'https://www.googletagmanager.com/gtag/js?id=' + gaId} strategy="afterInteractive"/>
             <Script id="google-analytics" strategy="afterInteractive">
               {`
                 window.dataLayer = window.dataLayer || [];
@@ -92,9 +68,11 @@ export default function RootLayout({
       <body style={{ margin: 0, padding: 0 }}>
         <Navbar />
         {children}
-        <Footer /><FeedbackButton />
+        <Footer />
+        <FeedbackButton />
         <PushNotification />
         <ThemeToggle />
+        <ServiceWorker />
       </body>
     </html>
   )

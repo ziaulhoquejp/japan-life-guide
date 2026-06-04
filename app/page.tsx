@@ -9,9 +9,9 @@ const content = {
     subtitle: 'Find language schools, navigate visas, get AI guidance — all in one place',
     findSchools: 'Find Schools',
     askSakura: 'Ask Sakura AI',
-    stats: ['250+ Schools', '4 Languages', 'AI Powered', 'Free to Join'],
+    stats: ['500+ Schools', '4 Languages', 'AI Powered', 'Free to Join'],
     features: [
-      {icon:'🏫',title:'250+ Language Schools',desc:'Search and compare Japanese language schools across Japan with detailed info on fees, dorms, and JLPT prep.'},
+      {icon:'🏫',title:'500+ Language Schools',desc:'Search and compare Japanese language schools across Japan with detailed info on fees, dorms, and JLPT prep.'},
       {icon:'🛂',title:'Visa Guide',desc:'Step-by-step visa guidance for student, SSW, and work visas. Know exactly what documents you need.'},
       {icon:'🌸',title:'Sakura AI',desc:'Our AI assistant answers your questions in Bengali, Nepali, Japanese, and English 24/7.'},
       {icon:'💼',title:'Jobs & Scholarships',desc:'Find part-time jobs, SSW opportunities, and scholarships available for Bangladesh and Nepal students.'},
@@ -27,7 +27,7 @@ const content = {
     subtitle: 'Bhasha school khujun, visa navigate korun, AI guidance nun — shob ek jaygay',
     findSchools: 'School Khujun',
     askSakura: 'Sakura AI-ke Jiggesh Korun',
-    stats: ['250+ School', '4 Bhasha', 'AI Powered', 'Binamulye'],
+    stats: ['500+ School', '4 Bhasha', 'AI Powered', 'Binamulye'],
     features: [
       {icon:'🏫',title:'250+ Bhasha School',desc:'Japan-er shokol school khujun ebong tulona korun. Fees, dorm, ebong JLPT er detail janan.'},
       {icon:'🛂',title:'Visa Guide',desc:'Student, SSW, ebong work visa-r jonno dhap-e-dhap guidance. Exactly ki ki document lagbe janan.'},
@@ -45,7 +45,7 @@ const content = {
     subtitle: 'Bhasha vidyalaya khojnuhos, visa navigate garnuhos, AI guidance linuhos',
     findSchools: 'Vidyalaya Khojnuhos',
     askSakura: 'Sakura AI-lai Sodhnuhos',
-    stats: ['250+ Vidyalaya', '4 Bhasha', 'AI Powered', 'Nisulka'],
+    stats: ['500+ Vidyalaya', '4 Bhasha', 'AI Powered', 'Nisulka'],
     features: [
       {icon:'🏫',title:'250+ Bhasha Vidyalaya',desc:'Japan-ka sabai vidyalaya khojnuhos ra tulana garnuhos. Shulk, dorm, ra JLPT ko detail thaha paaunuhos.'},
       {icon:'🛂',title:'Visa Guide',desc:'Student, SSW, ra work visa ko lagi kadam-kadam guidance. Kun-kun kagajaat chaincha thaha paaunuhos.'},
@@ -63,7 +63,7 @@ const content = {
     subtitle: 'Gogakko wo sagashi, biza wo navigate shi, AI guidance wo eru',
     findSchools: 'Gakko wo Sagasu',
     askSakura: 'Sakura AI ni Kiku',
-    stats: ['250+ Gakko', '4 Gengo', 'AI Powered', 'Muryo'],
+    stats: ['500+ Gakko', '4 Gengo', 'AI Powered', 'Muryo'],
     features: [
       {icon:'🏫',title:'250+ Gogakko',desc:'Nihon zenkoku no gogakko wo kensaku, hikaku dekimasu. Jugyoryo, dorm, JLPT junbi no joho mo.'},
       {icon:'🛂',title:'Biza Guide',desc:'Gakusei, SSW, rodo biza no step-by-step guidance. Hitsuyona shorui ga wakaru.'},

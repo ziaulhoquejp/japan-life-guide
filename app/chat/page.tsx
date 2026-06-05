@@ -103,7 +103,7 @@ export default function ChatPage() {
             <h1 style={{color:'white',fontSize:'18px',fontWeight:'700',marginBottom:'2px'}}>Sakura AI</h1>
             <div style={{display:'flex',alignItems:'center',gap:'6px'}}>
               <div style={{width:'8px',height:'8px',borderRadius:'50%',background:'#2EC87A'}}/>
-              <span style={{color:'#2EC87A',fontSize:'11px',fontWeight:'600'}}>Online · Powered by Claude</span>
+              <span style={{color:'#2EC87A',fontSize:'11px',fontWeight:'600'}}>Online · Powered by ZH</span>
             </div>
           </div>
         </div>

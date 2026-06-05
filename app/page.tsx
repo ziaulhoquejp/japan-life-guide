@@ -29,7 +29,7 @@ const content = {
     askSakura: 'Sakura AI-ke Jiggesh Korun',
     stats: ['500+ School', '4 Bhasha', 'AI Powered', 'Binamulye'],
     features: [
-      {icon:'🏫',title:'250+ Bhasha School',desc:'Japan-er shokol school khujun ebong tulona korun. Fees, dorm, ebong JLPT er detail janan.'},
+      {icon:'🏫',title:'500+ Bhasha School',desc:'Japan-er shokol school khujun ebong tulona korun. Fees, dorm, ebong JLPT er detail janan.'},
       {icon:'🛂',title:'Visa Guide',desc:'Student, SSW, ebong work visa-r jonno dhap-e-dhap guidance. Exactly ki ki document lagbe janan.'},
       {icon:'🌸',title:'Sakura AI',desc:'Amader AI assistant Bangla, Nepali, Japanese, ebong English-e 24/7 proshno-r uttor dey.'},
       {icon:'💼',title:'Chakri & Bhritti',desc:'Part-time chakri, SSW shujogh, ebong Bangladesh students-der jonno scholarship khujun.'},
@@ -47,7 +47,7 @@ const content = {
     askSakura: 'Sakura AI-lai Sodhnuhos',
     stats: ['500+ Vidyalaya', '4 Bhasha', 'AI Powered', 'Nisulka'],
     features: [
-      {icon:'🏫',title:'250+ Bhasha Vidyalaya',desc:'Japan-ka sabai vidyalaya khojnuhos ra tulana garnuhos. Shulk, dorm, ra JLPT ko detail thaha paaunuhos.'},
+      {icon:'🏫',title:'500+ Bhasha Vidyalaya',desc:'Japan-ka sabai vidyalaya khojnuhos ra tulana garnuhos. Shulk, dorm, ra JLPT ko detail thaha paaunuhos.'},
       {icon:'🛂',title:'Visa Guide',desc:'Student, SSW, ra work visa ko lagi kadam-kadam guidance. Kun-kun kagajaat chaincha thaha paaunuhos.'},
       {icon:'🌸',title:'Sakura AI',desc:'Hamro AI assistant Bangla, Nepali, Japanese, ra English-ma 24/7 prashna-ko jawab dincha.'},
       {icon:'💼',title:'Kaam ra Chaatravitti',desc:'Part-time kaam, SSW mauka, ra Nepal students-ka lagi scholarship khojnuhos.'},
@@ -65,7 +65,7 @@ const content = {
     askSakura: 'Sakura AI ni Kiku',
     stats: ['500+ Gakko', '4 Gengo', 'AI Powered', 'Muryo'],
     features: [
-      {icon:'🏫',title:'250+ Gogakko',desc:'Nihon zenkoku no gogakko wo kensaku, hikaku dekimasu. Jugyoryo, dorm, JLPT junbi no joho mo.'},
+      {icon:'🏫',title:'500+ Gogakko',desc:'Nihon zenkoku no gogakko wo kensaku, hikaku dekimasu. Jugyoryo, dorm, JLPT junbi no joho mo.'},
       {icon:'🛂',title:'Biza Guide',desc:'Gakusei, SSW, rodo biza no step-by-step guidance. Hitsuyona shorui ga wakaru.'},
       {icon:'🌸',title:'Sakura AI',desc:'AI assistant ga Bengali, Nepali, Nihongo, Eigo de 24/7 shitsumon ni kotaeru.'},
       {icon:'💼',title:'Shigoto to Shogakukin',desc:'Arubaito, SSW kikai, Bangladesh Nepal gakusei muke shogakukin wo sagaseru.'},
@@ -102,7 +102,7 @@ export default function Home() {
 
         <div style={{display:'inline-flex',alignItems:'center',gap:'8px',background:'rgba(196,32,32,0.1)',border:'1px solid rgba(196,32,32,0.3)',borderRadius:'20px',padding:'6px 16px',marginBottom:'24px'}}>
           <div style={{width:'8px',height:'8px',borderRadius:'50%',background:'#C42020',animation:'pulse 1.5s infinite'}}/>
-          <span style={{color:'#FF8070',fontSize:'12px',fontWeight:'600'}}>250+ Schools · AI Powered · Free</span>
+          <span style={{color:'#FF8070',fontSize:'12px',fontWeight:'600'}}>500+ Schools · AI Powered · Free</span>
         </div>
 
         <h1 style={{color:'white',fontSize:'clamp(28px, 5vw, 52px)',fontWeight:'800',lineHeight:'1.2',marginBottom:'20px',maxWidth:'800px',margin:'0 auto 20px'}}>

@@ -40,6 +40,8 @@ export default function Navbar() {
     {href:'/insurance',label:'Insurance'},
     {href:'/contact',label:'Contact'},
     {href:'/notifications',label:'Notifications'},
+    {href:'/videos',label:'Video Guides'},
+{href:'/notifications',label:'Notifications'},
     {href:'/admin',label:'Admin'},
   ]
 

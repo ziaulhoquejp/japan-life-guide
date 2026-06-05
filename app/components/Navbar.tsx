@@ -39,6 +39,7 @@ export default function Navbar() {
     {href:'/flights',label:'Flights'},
     {href:'/insurance',label:'Insurance'},
     {href:'/contact',label:'Contact'},
+    {href:'/notifications',label:'Notifications'},
     {href:'/admin',label:'Admin'},
   ]
 

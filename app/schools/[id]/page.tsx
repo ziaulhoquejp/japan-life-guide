@@ -282,6 +282,13 @@ export default function Page() {
                 <p style={{color:'rgba(255,255,255,0.5)',fontSize:'13px',marginBottom:'12px'}}>
                   Located in {school.city}, {school.region}, Japan
                 </p>
+                <iframe
+  src={'https://maps.google.com/maps?q=' + encodeURIComponent(school.name_en + ' ' + school.city + ' Japan') + '&output=embed&z=14'}
+  width="100%"
+  height="300"
+  style={{border:'none',borderRadius:'10px',marginBottom:'12px'}}
+  loading="lazy"
+/>
                 <a href={'https://www.google.com/maps/search/' + encodeURIComponent(school.name_en + ' ' + school.city + ' Japan')} target="_blank" rel="noopener noreferrer" style={{background:'#4A8EFF',color:'white',textDecoration:'none',padding:'10px 20px',borderRadius:'8px',fontSize:'13px',fontWeight:'700'}}>
                   View on Google Maps
                 </a>

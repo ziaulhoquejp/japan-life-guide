@@ -61,8 +61,7 @@ export default function Page() {
   if (!school) return <div style={{minHeight:'100vh',background:'#0D0907',display:'flex',alignItems:'center',justifyContent:'center',color:'white',fontSize:'24px'}}>Not found</div>
 
   const avgRating = reviews.length > 0 ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1) : school.rating
-
-  const tabs = ['overview', 'reviews', 'requirements', 'location']
+  const tabs = ['overview', 'details', 'reviews', 'requirements', 'location']
 
   return (
     <main style={{minHeight:'100vh',background:'#0D0907',fontFamily:'sans-serif'}}>
@@ -88,7 +87,12 @@ export default function Page() {
             <button onClick={toggleFavorite} style={{background:isFavorite?'rgba(196,32,32,0.2)':'rgba(255,255,255,0.08)',color:isFavorite?'#FF8070':'white',border:'1px solid ' + (isFavorite?'#C42020':'rgba(255,255,255,0.2)'),borderRadius:'8px',padding:'10px 20px',fontSize:'13px',fontWeight:'700',cursor:'pointer'}}>
               {isFavorite ? '❤️ Saved' : '🤍 Save'}
             </button>
-            <a href={'/applications'} style={{background:'#C42020',color:'white',textDecoration:'none',borderRadius:'8px',padding:'10px 20px',fontSize:'13px',fontWeight:'700',textAlign:'center'}}>
+            {school.website_url && (
+              <a href={school.website_url} target="_blank" rel="noopener noreferrer" style={{background:'#2EC87A',color:'white',textDecoration:'none',borderRadius:'8px',padding:'10px 20px',fontSize:'13px',fontWeight:'700',textAlign:'center'}}>
+                🌐 Official Site
+              </a>
+            )}
+            <a href="/applications" style={{background:'#C42020',color:'white',textDecoration:'none',borderRadius:'8px',padding:'10px 20px',fontSize:'13px',fontWeight:'700',textAlign:'center'}}>
               Apply Now
             </a>
           </div>
@@ -96,7 +100,7 @@ export default function Page() {
       </div>
 
       <div style={{maxWidth:'900px',margin:'0 auto',padding:'32px 20px'}}>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(160px, 1fr))',gap:'12px',marginBottom:'28px'}}>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(150px, 1fr))',gap:'12px',marginBottom:'28px'}}>
           {[
             {label:'Annual Fee',value:'¥' + school.annual_fee_jpy.toLocaleString(),color:'#F0A830'},
             {label:'Monthly Fee',value:'¥' + Math.round(school.annual_fee_jpy/12).toLocaleString(),color:'#F0A830'},
@@ -156,20 +160,41 @@ export default function Page() {
             </div>
 
             <div style={{display:'flex',gap:'10px',flexWrap:'wrap'}}>
-              {school.website_url && (
-  <a href={school.website_url} target="_blank" rel="noopener noreferrer" style={{background:'#2EC87A',color:'white',textDecoration:'none',borderRadius:'10px',padding:'14px 28px',fontSize:'15px',fontWeight:'700',textAlign:'center'}}>
-    🌐 Official Website
-  </a>
-)}
-              <a href={'/applications'} style={{background:'#C42020',color:'white',textDecoration:'none',borderRadius:'10px',padding:'14px 28px',fontSize:'15px',fontWeight:'700',flex:1,textAlign:'center'}}>
+              <a href="/applications" style={{background:'#C42020',color:'white',textDecoration:'none',borderRadius:'10px',padding:'14px 28px',fontSize:'15px',fontWeight:'700',flex:1,textAlign:'center'}}>
                 Apply to This School
               </a>
               <a href="/chat" style={{background:'rgba(255,255,255,0.08)',color:'white',textDecoration:'none',borderRadius:'10px',padding:'14px 28px',fontSize:'15px',border:'1px solid rgba(255,255,255,0.15)',flex:1,textAlign:'center'}}>
                 Ask Sakura AI
               </a>
               <a href={'/compare?school=' + school.id} style={{background:'rgba(255,255,255,0.08)',color:'white',textDecoration:'none',borderRadius:'10px',padding:'14px 28px',fontSize:'15px',border:'1px solid rgba(255,255,255,0.15)',flex:1,textAlign:'center'}}>
-                Compare Schools
+                Compare
               </a>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'details' && (
+          <div style={{background:'#1A2035',borderRadius:'12px',padding:'24px',border:'1px solid rgba(255,255,255,0.08)'}}>
+            <h2 style={{color:'white',fontSize:'18px',fontWeight:'700',marginBottom:'16px'}}>School Details</h2>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(200px, 1fr))',gap:'12px'}}>
+              {[
+                {icon:'📅',label:'Course Duration',value:school.course_duration||'6 months - 2 years'},
+                {icon:'👥',label:'Class Size',value:school.class_size||'15-20 students'},
+                {icon:'🌍',label:'Student Nationalities',value:school.nationality_ratio||'International mix'},
+                {icon:'💼',label:'Job Placement Rate',value:school.job_placement||'80%+'},
+                {icon:'✅',label:'Acceptance Rate',value:school.acceptance_rate||'85%+'},
+                {icon:'🏛️',label:'Accreditation',value:school.accreditation||'MEXT Accredited'},
+                {icon:'📍',label:'Nearest Station',value:school.nearest_station||'Central Station'},
+                {icon:'🌐',label:'Official Website',value:school.website_url?'Available':'Contact School'},
+              ].map(detail=>(
+                <div key={detail.label} style={{background:'#0D0907',borderRadius:'8px',padding:'12px'}}>
+                  <div style={{display:'flex',gap:'8px',alignItems:'center',marginBottom:'4px'}}>
+                    <span style={{fontSize:'16px'}}>{detail.icon}</span>
+                    <span style={{color:'rgba(255,255,255,0.4)',fontSize:'11px'}}>{detail.label}</span>
+                  </div>
+                  <div style={{color:'white',fontSize:'13px',fontWeight:'600'}}>{detail.value}</div>
+                </div>
+              ))}
             </div>
           </div>
         )}
@@ -228,7 +253,7 @@ export default function Page() {
               <h2 style={{color:'white',fontSize:'18px',fontWeight:'700',marginBottom:'16px'}}>Application Requirements</h2>
               {[
                 {icon:'📘',req:'Valid passport (minimum 1 year validity remaining)'},
-                {icon:'💰',req:'Bank statement showing minimum 2,000,000 Yen (about 1,500 USD)'},
+                {icon:'💰',req:'Bank statement showing minimum 2,000,000 Yen'},
                 {icon:'🎓',req:'Academic certificates - graduation or enrollment certificate'},
                 {icon:'📝',req:'Japanese language proficiency documents (if any)'},
                 {icon:'🏥',req:'Medical certificate from licensed doctor'},
@@ -274,7 +299,7 @@ export default function Page() {
                   {label:'City',value:school.city},
                   {label:'Region',value:school.region},
                   {label:'Country',value:'Japan'},
-                  {label:'Nearest Station',value:'Central Station'},
+                  {label:'Nearest Station',value:school.nearest_station||'Central Station'},
                 ].map(info=>(
                   <div key={info.label} style={{background:'#0D0907',borderRadius:'8px',padding:'12px'}}>
                     <div style={{color:'rgba(255,255,255,0.4)',fontSize:'11px',marginBottom:'4px'}}>{info.label}</div>
@@ -282,40 +307,16 @@ export default function Page() {
                   </div>
                 ))}
               </div>
-              <div style={{background:'#0D0907',borderRadius:'10px',padding:'20px',textAlign:'center',border:'1px solid rgba(255,255,255,0.06)'}}>
-                <div style={{fontSize:'48px',marginBottom:'12px'}}>🗾</div>
-                <p style={{color:'rgba(255,255,255,0.5)',fontSize:'13px',marginBottom:'12px'}}>
-                  Located in {school.city}, {school.region}, Japan
-                </p>
-                <iframe
-  src={'https://maps.google.com/maps?q=' + encodeURIComponent(school.name_en + ' ' + school.city + ' Japan') + '&output=embed&z=14'}
-  width="100%"
-  height="300"
-  style={{border:'none',borderRadius:'10px',marginBottom:'12px'}}
-  loading="lazy"
-/>
-                <a href={'https://www.google.com/maps/search/' + encodeURIComponent(school.name_en + ' ' + school.city + ' Japan')} target="_blank" rel="noopener noreferrer" style={{background:'#4A8EFF',color:'white',textDecoration:'none',padding:'10px 20px',borderRadius:'8px',fontSize:'13px',fontWeight:'700'}}>
-                  View on Google Maps
-                </a>
-              </div>
-            </div>
-
-            <div style={{background:'#1A2035',borderRadius:'12px',padding:'24px',border:'1px solid rgba(255,255,255,0.08)'}}>
-              <h2 style={{color:'white',fontSize:'18px',fontWeight:'700',marginBottom:'16px'}}>Area Information</h2>
-              {[
-                {icon:'🚇',label:'Transport',desc:'Well connected by train and bus. IC card (Suica/Pasmo) recommended.'},
-                {icon:'🏪',label:'Convenience',desc:'Convenience stores, supermarkets, and restaurants nearby.'},
-                {icon:'🏥',label:'Healthcare',desc:'Local clinics and hospitals accessible. National Health Insurance accepted.'},
-                {icon:'🕌',label:'Muslim Facilities',desc:'Halal restaurants and mosques available in the area.'},
-              ].map(item=>(
-                <div key={item.label} style={{display:'flex',gap:'12px',padding:'12px 0',borderBottom:'1px solid rgba(255,255,255,0.06)'}}>
-                  <span style={{fontSize:'22px',flexShrink:0}}>{item.icon}</span>
-                  <div>
-                    <div style={{color:'white',fontSize:'13px',fontWeight:'600',marginBottom:'2px'}}>{item.label}</div>
-                    <div style={{color:'rgba(255,255,255,0.5)',fontSize:'12px'}}>{item.desc}</div>
-                  </div>
-                </div>
-              ))}
+              <iframe
+                src={'https://maps.google.com/maps?q=' + encodeURIComponent(school.name_en + ' ' + school.city + ' Japan') + '&output=embed&z=14'}
+                width="100%"
+                height="300"
+                style={{border:'none',borderRadius:'10px',marginBottom:'12px'}}
+                loading="lazy"
+              />
+              <a href={'https://www.google.com/maps/search/' + encodeURIComponent(school.name_en + ' ' + school.city + ' Japan')} target="_blank" rel="noopener noreferrer" style={{background:'#4A8EFF',color:'white',textDecoration:'none',padding:'10px 20px',borderRadius:'8px',fontSize:'13px',fontWeight:'700',display:'inline-block'}}>
+                View on Google Maps
+              </a>
             </div>
           </div>
         )}

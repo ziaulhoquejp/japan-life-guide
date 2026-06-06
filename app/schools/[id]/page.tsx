@@ -156,6 +156,11 @@ export default function Page() {
             </div>
 
             <div style={{display:'flex',gap:'10px',flexWrap:'wrap'}}>
+              {school.website_url && (
+  <a href={school.website_url} target="_blank" rel="noopener noreferrer" style={{background:'#2EC87A',color:'white',textDecoration:'none',borderRadius:'10px',padding:'14px 28px',fontSize:'15px',fontWeight:'700',textAlign:'center'}}>
+    🌐 Official Website
+  </a>
+)}
               <a href={'/applications'} style={{background:'#C42020',color:'white',textDecoration:'none',borderRadius:'10px',padding:'14px 28px',fontSize:'15px',fontWeight:'700',flex:1,textAlign:'center'}}>
                 Apply to This School
               </a>

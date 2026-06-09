@@ -17,6 +17,11 @@ export default function Navbar() {
     {href:'/pricing',label:'Pricing'},
     {href:'/profile',label:'Profile'},
     {href:'/login',label:'Login'},
+    {href:'/ranking',label:'School Ranking'},
+{href:'/reviews',label:'All Reviews'},
+{href:'/cities',label:'City Guide'},
+{href:'/jlpt-test',label:'JLPT Test'},
+{href:'/calendar',label:'Deadline Calendar'},
   ]
 
   const moreLinks = [

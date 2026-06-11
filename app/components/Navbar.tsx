@@ -43,11 +43,11 @@ export default function Navbar() {
     {href:'/contact',label:'Contact'},
     {href:'/notifications',label:'Notifications'},
     {href:'/videos',label:'Video Guides'},
-{href:'/notifications',label:'Notifications'},
-{href:'/reviews',label:'All Reviews'},
-{href:'/cities',label:'City Guide'},
-{href:'/jlpt-test',label:'JLPT Test'},
-{href:'/calendar',label:'Deadline Calendar'},
+    {href:'/notifications',label:'Notifications'},
+    {href:'/reviews',label:'All Reviews'},
+    {href:'/cities',label:'City Guide'},
+    {href:'/jlpt-test',label:'JLPT Test'},
+    {href:'/calendar',label:'Deadline Calendar'},
     {href:'/admin',label:'Admin'},
   ]
 

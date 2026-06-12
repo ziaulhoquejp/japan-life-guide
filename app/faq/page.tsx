@@ -126,9 +126,9 @@ export default function FAQPage() {
           <div style={{display:'flex',gap:'10px',justifyContent:'center',flexWrap:'wrap'}}>
             <a href="/chat" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'10px 20px',borderRadius:'8px',fontSize:'13px',fontWeight:'700'}}>Ask Sakura AI</a>
             <a href="/contact" style={{background:'rgba(255,255,255,0.08)',color:'white',textDecoration:'none',padding:'10px 20px',borderRadius:'8px',fontSize:'13px',border:'1px solid rgba(255,255,255,0.15)'}}>Contact Us</a>
-          <a href="https://www.jlpt.jp/e/application/index.html" target="_blank" rel="noopener noreferrer" style={{color:'#4A8EFF',fontSize:'12px',textDecoration:'none',display:'block',marginTop:'8px'}}>
-  Register for JLPT Official →
-</a>
+            <a href="https://www.jlpt.jp/e/application/index.html" target="_blank" rel="noopener noreferrer" style={{color:'#4A8EFF',fontSize:'12px',textDecoration:'none',display:'block',marginTop:'8px'}}>
+            Register for JLPT Official →
+            </a>
           </div>
         </div>
       </div>

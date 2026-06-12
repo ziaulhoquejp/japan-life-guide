@@ -182,7 +182,7 @@ export default function JLPTTestPage() {
 </div>
               </div>
             </div>
-          </div>
+        
         ) : (
           <div style={{background:'#1A2035',borderRadius:'16px',padding:'32px',border:'1px solid rgba(255,255,255,0.08)'}}>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'20px'}}>

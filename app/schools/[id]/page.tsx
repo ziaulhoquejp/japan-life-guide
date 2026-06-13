@@ -4,6 +4,9 @@ import { supabase } from '../../../lib/supabase'
 import { useParams } from 'next/navigation'
 
 export default function Page() {
+  const params = new URLSearchParams(window.location.search)
+const schoolId = params.get('school')
+if (schoolId) setForm(prev=>({...prev, preferredSchool: schoolId}))
   const params = useParams()
   const [school, setSchool] = useState<any>(null)
   const [reviews, setReviews] = useState<any[]>([])
@@ -92,9 +95,9 @@ export default function Page() {
                 🌐 Official Site
               </a>
             )}
-            <a href="/applications" style={{background:'#C42020',color:'white',textDecoration:'none',borderRadius:'8px',padding:'10px 20px',fontSize:'13px',fontWeight:'700',textAlign:'center'}}>
-              Apply Now
-            </a>
+            <a href={'/apply?school=' + school.id} style={{background:'#C42020',color:'white',textDecoration:'none',borderRadius:'8px',padding:'10px 20px',fontSize:'13px',fontWeight:'700',textAlign:'center'}}>
+  Apply Now
+</a>
           </div>
         </div>
       </div>

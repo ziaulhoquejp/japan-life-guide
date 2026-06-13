@@ -4,9 +4,6 @@ import { supabase } from '../../../lib/supabase'
 import { useParams } from 'next/navigation'
 
 export default function Page() {
-  const params = new URLSearchParams(window.location.search)
-const schoolId = params.get('school')
-if (schoolId) setForm(prev=>({...prev, preferredSchool: schoolId}))
   const params = useParams()
   const [school, setSchool] = useState<any>(null)
   const [reviews, setReviews] = useState<any[]>([])
@@ -21,6 +18,10 @@ if (schoolId) setForm(prev=>({...prev, preferredSchool: schoolId}))
 
   useEffect(() => {
     async function getData() {
+      const params = new URLSearchParams(window.location.search)
+const schoolId = params.get('school')
+if (schoolId) setForm(prev=>({...prev, preferredSchool: schoolId}))
+      
       const [schoolData, reviewsData, userData] = await Promise.all([
         supabase.from('schools').select('*').eq('id', params.id).single(),
         supabase.from('reviews').select('*').eq('school_id', params.id).order('created_at', { ascending: false }),

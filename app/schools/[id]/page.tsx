@@ -18,10 +18,6 @@ export default function Page() {
 
   useEffect(() => {
     async function getData() {
-      const params = new URLSearchParams(window.location.search)
-const schoolId = params.get('school')
-if (schoolId) setForm(prev=>({...prev, preferredSchool: schoolId}))
-      
       const [schoolData, reviewsData, userData] = await Promise.all([
         supabase.from('schools').select('*').eq('id', params.id).single(),
         supabase.from('reviews').select('*').eq('school_id', params.id).order('created_at', { ascending: false }),

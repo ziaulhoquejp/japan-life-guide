@@ -31,6 +31,10 @@ export default function ApplyPage() {
 
   useEffect(() => {
     async function getData() {
+      const params = new URLSearchParams(window.location.search)
+const schoolId = params.get('school')
+if (schoolId) setForm(prev=>({...prev, preferredSchool: schoolId}))
+
       const { data: userData } = await supabase.auth.getUser()
       if (userData.user) {
         setUser(userData.user)

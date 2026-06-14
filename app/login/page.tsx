@@ -40,6 +40,11 @@ export default function LoginPage() {
               <label style={{color:'rgba(255,255,255,0.6)',fontSize:'12px',display:'block',marginBottom:'6px'}}>Password</label>
               <input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Your password" onKeyDown={e=>e.key==='Enter'&&handleLogin()} style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none'}}/>
             </div>
+            <div style={{textAlign:'right',marginTop:'-8px'}}>
+  <a href="/forgot-password" style={{color:'rgba(255,255,255,0.4)',fontSize:'12px',textDecoration:'none'}}>
+    Forgot Password?
+  </a>
+</div>
             {error && (
               <div style={{background:'rgba(196,32,32,0.1)',border:'1px solid rgba(196,32,32,0.3)',borderRadius:'8px',padding:'10px 14px'}}>
                 <p style={{color:'#FF6B6B',fontSize:'13px',margin:0}}>{error}</p>

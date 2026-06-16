@@ -7,12 +7,19 @@ export default function ApplicationsPage() {
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
   const [filter, setFilter] = useState('all')
+  const [isProRequired, setIsProRequired] = useState(false)
 
   useEffect(() => {
     async function getData() {
+      
       const { data: userData } = await supabase.auth.getUser()
       if (!userData.user) { window.location.href = '/login'; return }
       setUser(userData.user)
+      const { data: profile } = await supabase.from('profiles').select('plan').eq('id', userData.user.id).single()
+const isPro = profile?.plan === 'pro' || profile?.plan === 'lifetime'
+if (!isPro && data && data.length >= 1) {
+  setIsProRequired(true)
+}
       const { data } = await supabase
         .from('applications')
         .select('*, schools(name_en, name_jp, city, icon, annual_fee_jpy, website_url, region)')
@@ -56,6 +63,15 @@ export default function ApplicationsPage() {
           <p style={{color:'rgba(255,255,255,0.4)',fontSize:'14px'}}>{applications.length} total applications</p>
         </div>
         <a href="/apply" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'12px 24px',borderRadius:'10px',fontSize:'14px',fontWeight:'700'}}>
+         {isProRequired && (
+  <div style={{background:'rgba(196,32,32,0.1)',border:'1px solid rgba(196,32,32,0.3)',borderRadius:'10px',padding:'16px',marginBottom:'16px',display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:'8px'}}>
+    <div>
+      <p style={{color:'white',fontSize:'14px',fontWeight:'700',marginBottom:'4px'}}>Free Plan Limit Reached!</p>
+      <p style={{color:'rgba(255,255,255,0.5)',fontSize:'12px'}}>Upgrade to Pro for unlimited applications</p>
+    </div>
+    <a href="/pricing" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'8px 16px',borderRadius:'8px',fontSize:'13px',fontWeight:'700'}}>Upgrade to Pro 💎</a>
+  </div>
+)}
           + New Application
         </a>
       </div>

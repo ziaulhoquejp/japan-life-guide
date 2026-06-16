@@ -36,15 +36,23 @@ export default function Page() {
   }, [params.id])
 
   async function toggleFavorite() {
-    if (!user) { window.location.href = '/login'; return }
-    if (isFavorite) {
-      await supabase.from('favorites').delete().eq('user_id', user.id).eq('school_id', params.id)
-      setIsFavorite(false)
-    } else {
-      await supabase.from('favorites').insert({ user_id: user.id, school_id: params.id })
-      setIsFavorite(true)
+  if (!user) { window.location.href = '/login'; return }
+  if (isFavorite) {
+    await supabase.from('favorites').delete().eq('user_id', user.id).eq('school_id', params.id)
+    setIsFavorite(false)
+  } else {
+    const { data: favCount } = await supabase.from('favorites').select('id', { count: 'exact' }).eq('user_id', user.id)
+    const { data: profile } = await supabase.from('profiles').select('plan').eq('id', user.id).single()
+    const isPro = profile?.plan === 'pro' || profile?.plan === 'lifetime'
+    if (!isPro && (favCount?.length || 0) >= 3) {
+      alert('Free plan allows 3 favorites only. Upgrade to Pro for unlimited!')
+      window.location.href = '/pricing'
+      return
     }
+    await supabase.from('favorites').insert({ user_id: user.id, school_id: params.id })
+    setIsFavorite(true)
   }
+}
 
   async function submitReview() {
     if (!user) { window.location.href = '/login'; return }

@@ -16,13 +16,25 @@ export default function ComparePage() {
     })
   }, [])
 
-  function toggleSchool(school: any) {
-    if (selected.find(s => s.id === school.id)) {
-      setSelected(prev => prev.filter(s => s.id !== school.id))
-    } else if (selected.length < 3) {
+  async function toggleSchool(school: any) {
+  if (selected.find(s => s.id === school.id)) {
+    setSelected(prev => prev.filter(s => s.id !== school.id))
+  } else {
+    const { data: userData } = await supabase.auth.getUser()
+    if (userData.user) {
+      const { data: profile } = await supabase.from('profiles').select('plan').eq('id', userData.user.id).single()
+      const isPro = profile?.plan === 'pro' || profile?.plan === 'lifetime'
+      if (!isPro && selected.length >= 2) {
+        alert('Free plan allows comparing 2 schools only. Upgrade to Pro to compare 3 schools!')
+        window.location.href = '/pricing'
+        return
+      }
+    }
+    if (selected.length < 3) {
       setSelected(prev => [...prev, school])
     }
   }
+}
 
   const regions = ['Kanto', 'Kansai', 'Kyushu', 'Hokkaido', 'Tohoku', 'Chubu', 'Okinawa']
 

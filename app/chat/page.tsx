@@ -1,5 +1,6 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
+import { useProStatus } from '../../lib/useProStatus'
 
 type Message = {
   role: 'user' | 'assistant'
@@ -36,6 +37,9 @@ Always be encouraging, warm, and provide practical, actionable advice. Keep resp
 }
 
 export default function ChatPage() {
+  const { isPro, loading: proLoading } = useProStatus()
+const [messageCount, setMessageCount] = useState(0)
+const FREE_LIMIT = 10
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -60,6 +64,8 @@ export default function ChatPage() {
   }, [lang])
 
   async function sendMessage(content?: string) {
+    if (!isPro && messageCount >= FREE_LIMIT) return
+setMessageCount(prev => prev + 1)
     const messageText = content || input.trim()
     if (!messageText || loading) return
 
@@ -143,6 +149,25 @@ export default function ChatPage() {
             </div>
           ))}
           {loading && (
+            {!isPro && (
+  <div style={{background:'rgba(196,32,32,0.1)',border:'1px solid rgba(196,32,32,0.2)',borderRadius:'8px',padding:'10px 16px',marginBottom:'12px',display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:'8px'}}>
+    <span style={{color:'rgba(255,255,255,0.6)',fontSize:'12px'}}>
+      Free: {messageCount}/{FREE_LIMIT} messages used
+    </span>
+    <a href="/pricing" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'6px 12px',borderRadius:'6px',fontSize:'12px',fontWeight:'700'}}>
+      Upgrade to Pro 💎
+    </a>
+  </div>
+)}
+{!isPro && messageCount >= FREE_LIMIT && (
+  <div style={{background:'rgba(196,32,32,0.15)',border:'1px solid rgba(196,32,32,0.3)',borderRadius:'12px',padding:'20px',textAlign:'center',marginBottom:'16px'}}>
+    <p style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'8px'}}>Free limit reached!</p>
+    <p style={{color:'rgba(255,255,255,0.5)',fontSize:'13px',marginBottom:'12px'}}>Upgrade to Pro for unlimited Sakura AI chat</p>
+    <a href="/pricing" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'10px 24px',borderRadius:'8px',fontSize:'14px',fontWeight:'700'}}>
+      Upgrade to Pro — ¥980/month
+    </a>
+  </div>
+)}
             <div style={{display:'flex',gap:'10px',alignItems:'flex-start'}}>
               <div style={{width:'32px',height:'32px',borderRadius:'50%',background:'#C42020',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'14px'}}>🌸</div>
               <div style={{background:'#1A2035',borderRadius:'4px 16px 16px 16px',padding:'12px 16px',border:'1px solid rgba(255,255,255,0.08)'}}>

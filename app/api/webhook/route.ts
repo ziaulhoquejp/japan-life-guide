@@ -30,7 +30,7 @@ export async function POST(req: Request) {
 
   switch (event.type) {
     case 'checkout.session.completed': {
-      const session = event.data.object as Stripe.CheckoutSession
+      const session = event.data.object as any
       const userId = session.metadata?.userId
       const email = session.customer_email
 
@@ -62,7 +62,7 @@ export async function POST(req: Request) {
     }
 
     case 'customer.subscription.deleted': {
-      const subscription = event.data.object as Stripe.Subscription
+      const subscription = event.data.object as any
       const customerId = subscription.customer as string
 
       const { data: profile } = await supabase
@@ -82,7 +82,7 @@ export async function POST(req: Request) {
     }
 
     case 'invoice.payment_failed': {
-      const invoice = event.data.object as Stripe.Invoice
+      const invoice = event.data.object as any
       const customerId = invoice.customer as string
 
       const { data: profile } = await supabase

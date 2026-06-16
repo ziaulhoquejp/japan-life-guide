@@ -300,6 +300,7 @@ export default function Page() {
                   {label:'Region',value:school.region},
                   {label:'Country',value:'Japan'},
                   {label:'Nearest Station',value:school.nearest_station||'Central Station'},
+{label:'Address',value:school.address||school.city + ', Japan'},
                 ].map(info=>(
                   <div key={info.label} style={{background:'#0D0907',borderRadius:'8px',padding:'12px'}}>
                     <div style={{color:'rgba(255,255,255,0.4)',fontSize:'11px',marginBottom:'4px'}}>{info.label}</div>
@@ -308,11 +309,15 @@ export default function Page() {
                 ))}
               </div>
               <iframe
-                src={'https://maps.google.com/maps?q=' + encodeURIComponent(school.name_en + ' ' + school.city + ' Japan') + '&output=embed&z=14'}
-                width="100%"
-                height="300"
-                style={{border:'none',borderRadius:'10px',marginBottom:'12px'}}
-                loading="lazy"
+  src={school.latitude && school.longitude
+    ? `https://maps.google.com/maps?q=${school.latitude},${school.longitude}&output=embed&z=15`
+    : `https://maps.google.com/maps?q=${encodeURIComponent(school.name_en + ' ' + school.city + ' Japan')}&output=embed&z=14`
+  }
+  width="100%"
+  height="300"
+  style={{border:'none',borderRadius:'10px',marginBottom:'12px'}}
+  loading="lazy"
+
               />
               <a href={'https://www.google.com/maps/search/' + encodeURIComponent(school.name_en + ' ' + school.city + ' Japan')} target="_blank" rel="noopener noreferrer" style={{background:'#4A8EFF',color:'white',textDecoration:'none',padding:'10px 20px',borderRadius:'8px',fontSize:'13px',fontWeight:'700',display:'inline-block'}}>
                 View on Google Maps

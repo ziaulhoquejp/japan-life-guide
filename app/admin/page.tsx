@@ -12,12 +12,11 @@ export default function AdminPage() {
   const [feedback, setFeedback] = useState<any[]>([])
   const [activeTab, setActiveTab] = useState('stats')
 
-  const ADMIN_EMAIL = 'ziaulhoquejps@gmail.com'
-
+  const ADMIN_EMAILS = ['ziaulhoquejp@gmail.com', 'sacrifice4ever@gmail.com']
   useEffect(() => {
     async function getData() {
       const { data: userData } = await supabase.auth.getUser()
-      if (!userData.user || userData.user.email !== ADMIN_EMAIL) {
+      if (!userData.user || !ADMIN_EMAILS.includes(userData.user.email!)) {
         window.location.href = '/'
         return
       }

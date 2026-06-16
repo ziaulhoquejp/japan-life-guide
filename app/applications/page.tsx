@@ -11,21 +11,25 @@ export default function ApplicationsPage() {
 
   useEffect(() => {
     async function getData() {
-      
       const { data: userData } = await supabase.auth.getUser()
       if (!userData.user) { window.location.href = '/login'; return }
       setUser(userData.user)
-      const { data: profile } = await supabase.from('profiles').select('plan').eq('id', userData.user.id).single()
-const isPro = profile?.plan === 'pro' || profile?.plan === 'lifetime'
-if (!isPro && data && data.length >= 1) {
-  setIsProRequired(true)
-}
-      const { data } = await supabase
+
+      const { data: profileData } = await supabase.from('profiles').select('plan').eq('id', userData.user.id).single()
+      const isPro = profileData?.plan === 'pro' || profileData?.plan === 'lifetime'
+
+      const { data: appData } = await supabase
         .from('applications')
         .select('*, schools(name_en, name_jp, city, icon, annual_fee_jpy, website_url, region)')
         .eq('user_id', userData.user.id)
         .order('created_at', { ascending: false })
-      if (data) setApplications(data)
+
+      if (appData) {
+        setApplications(appData)
+        if (!isPro && appData.length >= 1) {
+          setIsProRequired(true)
+        }
+      }
       setLoading(false)
     }
     getData()
@@ -50,7 +54,6 @@ if (!isPro && data && data.length >= 1) {
   }
 
   const statusSteps = ['pending', 'applied', 'accepted']
-
   const filtered = applications.filter(a => filter === 'all' || a.status === filter)
 
   if (loading) return <div style={{minHeight:'100vh',background:'#0D0907',display:'flex',alignItems:'center',justifyContent:'center',color:'white',fontSize:'24px'}}>Loading...</div>
@@ -63,20 +66,21 @@ if (!isPro && data && data.length >= 1) {
           <p style={{color:'rgba(255,255,255,0.4)',fontSize:'14px'}}>{applications.length} total applications</p>
         </div>
         <a href="/apply" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'12px 24px',borderRadius:'10px',fontSize:'14px',fontWeight:'700'}}>
-         {isProRequired && (
-  <div style={{background:'rgba(196,32,32,0.1)',border:'1px solid rgba(196,32,32,0.3)',borderRadius:'10px',padding:'16px',marginBottom:'16px',display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:'8px'}}>
-    <div>
-      <p style={{color:'white',fontSize:'14px',fontWeight:'700',marginBottom:'4px'}}>Free Plan Limit Reached!</p>
-      <p style={{color:'rgba(255,255,255,0.5)',fontSize:'12px'}}>Upgrade to Pro for unlimited applications</p>
-    </div>
-    <a href="/pricing" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'8px 16px',borderRadius:'8px',fontSize:'13px',fontWeight:'700'}}>Upgrade to Pro 💎</a>
-  </div>
-)}
           + New Application
         </a>
       </div>
 
       <div style={{maxWidth:'900px',margin:'0 auto',padding:'32px 20px'}}>
+        {isProRequired && (
+          <div style={{background:'rgba(196,32,32,0.1)',border:'1px solid rgba(196,32,32,0.3)',borderRadius:'10px',padding:'16px',marginBottom:'16px',display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:'8px'}}>
+            <div>
+              <p style={{color:'white',fontSize:'14px',fontWeight:'700',marginBottom:'4px'}}>Free Plan Limit Reached!</p>
+              <p style={{color:'rgba(255,255,255,0.5)',fontSize:'12px'}}>Upgrade to Pro for unlimited applications</p>
+            </div>
+            <a href="/pricing" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'8px 16px',borderRadius:'8px',fontSize:'13px',fontWeight:'700'}}>Upgrade to Pro 💎</a>
+          </div>
+        )}
+
         <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(140px,1fr))',gap:'10px',marginBottom:'24px'}}>
           {[
             {label:'Total',value:applications.length,color:'#4A8EFF'},

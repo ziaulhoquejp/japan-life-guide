@@ -21,30 +21,22 @@ const SUGGESTED_QUESTIONS = [
 ]
 
 const SYSTEM_PROMPTS: any = {
-  en: `You are Sakura, a friendly and knowledgeable AI assistant for Japan Life Guide. You help students from Bangladesh and Nepal who want to study or work in Japan. You have expertise in:
-- Japanese student visas and SSW visas
-- Japanese language schools (there are 500+ schools in our database)
-- Living costs and budgeting in Japan
-- JLPT preparation
-- Part-time work rules for students
-- Halal food and Muslim life in Japan
-- Cultural tips for living in Japan
-- Scholarships including MEXT and JASSO
-Always be encouraging, warm, and provide practical, actionable advice. Keep responses concise but helpful. End with a follow-up question to continue the conversation.`,
-  bn: `You are Sakura, a helpful AI assistant for Japan Life Guide. Respond in simple English but acknowledge you understand Bengali context. Help Bangladeshi students with Japan study and work information. Be warm and encouraging.`,
-  ne: `You are Sakura, a helpful AI assistant for Japan Life Guide. Help Nepali students with Japan study and work information. Be warm and encouraging. Respond in English but acknowledge Nepali context.`,
-  jp: `You are Sakura, a helpful AI assistant for Japan Life Guide. Help students with Japan study information. Be warm and encouraging. Respond in English.`,
+  en: `You are Sakura, a friendly and knowledgeable AI assistant for Japan Life Guide. You help students from Bangladesh and Nepal who want to study or work in Japan.`,
+  bn: `You are Sakura, a helpful AI assistant for Japan Life Guide. Help Bangladeshi students with Japan study and work information.`,
+  ne: `You are Sakura, a helpful AI assistant for Japan Life Guide. Help Nepali students with Japan study and work information.`,
+  jp: `You are Sakura, a helpful AI assistant for Japan Life Guide. Help students with Japan study information.`,
 }
 
-export default function ChatPage() {
-  const { isPro, loading: proLoading } = useProStatus()
-const [messageCount, setMessageCount] = useState(0)
 const FREE_LIMIT = 10
+
+export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [lang, setLang] = useState('en')
+  const [messageCount, setMessageCount] = useState(0)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const { isPro } = useProStatus()
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -54,25 +46,25 @@ const FREE_LIMIT = 10
     setMessages([{
       role: 'assistant',
       content: lang === 'bn'
-        ? 'Assalamu Alaikum! Ami Sakura, Japan Life Guide-er AI assistant. Japan-e porar ba kajer jonno apnake help korbo! Ki janতে chai?'
+        ? 'Assalamu Alaikum! Ami Sakura, Japan Life Guide-er AI assistant. Japan-e porar ba kajer jonno apnake help korbo! Ki jante chai?'
         : lang === 'ne'
-        ? 'Namaste! Ma Sakura hun, Japan Life Guide ko AI assistant. Japan-ma padhna wa kaam garna tapailai help garnchu! Ke jaanna chahanu huncha?'
+        ? 'Namaste! Ma Sakura hun, Japan Life Guide ko AI assistant. Japan-ma padhna wa kaam garna tapailai help garnchu!'
         : lang === 'jp'
-        ? 'Konnichiwa! Watashi wa Sakura desu, Japan Life Guide no AI assistant desu. Japan de no seikatsu wo support shimasu! Nani ga shitai desu ka?'
-        : 'Hello! I am Sakura, your AI guide for Japan Life Guide. I can help you with everything about studying and working in Japan - visas, schools, costs, culture, and more! What would you like to know?'
+        ? 'Konnichiwa! Watashi wa Sakura desu, Japan Life Guide no AI assistant desu!'
+        : 'Hello! I am Sakura, your AI guide for Japan Life Guide. I can help you with everything about studying and working in Japan!'
     }])
   }, [lang])
 
   async function sendMessage(content?: string) {
-    if (!isPro && messageCount >= FREE_LIMIT) return
-setMessageCount(prev => prev + 1)
     const messageText = content || input.trim()
     if (!messageText || loading) return
+    if (!isPro && messageCount >= FREE_LIMIT) return
 
     const userMessage: Message = { role: 'user', content: messageText }
     setMessages(prev => [...prev, userMessage])
     setInput('')
     setLoading(true)
+    setMessageCount(prev => prev + 1)
 
     try {
       const response = await fetch('/api/chat', {
@@ -84,7 +76,6 @@ setMessageCount(prev => prev + 1)
           systemPrompt: SYSTEM_PROMPTS[lang],
         }),
       })
-
       const data = await response.json()
       setMessages(prev => [...prev, { role: 'assistant', content: data.message || 'Sorry, I could not process that. Please try again.' }])
     } catch {
@@ -109,7 +100,7 @@ setMessageCount(prev => prev + 1)
             <h1 style={{color:'white',fontSize:'18px',fontWeight:'700',marginBottom:'2px'}}>Sakura AI</h1>
             <div style={{display:'flex',alignItems:'center',gap:'6px'}}>
               <div style={{width:'8px',height:'8px',borderRadius:'50%',background:'#2EC87A'}}/>
-              <span style={{color:'#2EC87A',fontSize:'11px',fontWeight:'600'}}>Online · Powered by ZH</span>
+              <span style={{color:'#2EC87A',fontSize:'11px',fontWeight:'600'}}>Online · Powered by Claude</span>
             </div>
           </div>
         </div>
@@ -124,6 +115,27 @@ setMessageCount(prev => prev + 1)
       </div>
 
       <div style={{flex:1,overflowY:'auto',padding:'20px 24px',maxWidth:'800px',width:'100%',margin:'0 auto'}}>
+        {!isPro && (
+          <div style={{background:'rgba(196,32,32,0.1)',border:'1px solid rgba(196,32,32,0.2)',borderRadius:'8px',padding:'10px 16px',marginBottom:'12px',display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:'8px'}}>
+            <span style={{color:'rgba(255,255,255,0.6)',fontSize:'12px'}}>
+              Free: {messageCount}/{FREE_LIMIT} messages used
+            </span>
+            <a href="/pricing" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'6px 12px',borderRadius:'6px',fontSize:'12px',fontWeight:'700'}}>
+              Upgrade to Pro 💎
+            </a>
+          </div>
+        )}
+
+        {!isPro && messageCount >= FREE_LIMIT && (
+          <div style={{background:'rgba(196,32,32,0.15)',border:'1px solid rgba(196,32,32,0.3)',borderRadius:'12px',padding:'20px',textAlign:'center',marginBottom:'16px'}}>
+            <p style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'8px'}}>Free limit reached!</p>
+            <p style={{color:'rgba(255,255,255,0.5)',fontSize:'13px',marginBottom:'12px'}}>Upgrade to Pro for unlimited Sakura AI chat</p>
+            <a href="/pricing" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'10px 24px',borderRadius:'8px',fontSize:'14px',fontWeight:'700'}}>
+              Upgrade to Pro — ¥980/month
+            </a>
+          </div>
+        )}
+
         {messages.length <= 1 && (
           <div style={{marginBottom:'24px'}}>
             <p style={{color:'rgba(255,255,255,0.4)',fontSize:'12px',textAlign:'center',marginBottom:'12px'}}>Suggested Questions</p>
@@ -149,31 +161,12 @@ setMessageCount(prev => prev + 1)
             </div>
           ))}
           {loading && (
-            {!isPro && (
-  <div style={{background:'rgba(196,32,32,0.1)',border:'1px solid rgba(196,32,32,0.2)',borderRadius:'8px',padding:'10px 16px',marginBottom:'12px',display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:'8px'}}>
-    <span style={{color:'rgba(255,255,255,0.6)',fontSize:'12px'}}>
-      Free: {messageCount}/{FREE_LIMIT} messages used
-    </span>
-    <a href="/pricing" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'6px 12px',borderRadius:'6px',fontSize:'12px',fontWeight:'700'}}>
-      Upgrade to Pro 💎
-    </a>
-  </div>
-)}
-{!isPro && messageCount >= FREE_LIMIT && (
-  <div style={{background:'rgba(196,32,32,0.15)',border:'1px solid rgba(196,32,32,0.3)',borderRadius:'12px',padding:'20px',textAlign:'center',marginBottom:'16px'}}>
-    <p style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'8px'}}>Free limit reached!</p>
-    <p style={{color:'rgba(255,255,255,0.5)',fontSize:'13px',marginBottom:'12px'}}>Upgrade to Pro for unlimited Sakura AI chat</p>
-    <a href="/pricing" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'10px 24px',borderRadius:'8px',fontSize:'14px',fontWeight:'700'}}>
-      Upgrade to Pro — ¥980/month
-    </a>
-  </div>
-)}
             <div style={{display:'flex',gap:'10px',alignItems:'flex-start'}}>
               <div style={{width:'32px',height:'32px',borderRadius:'50%',background:'#C42020',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'14px'}}>🌸</div>
               <div style={{background:'#1A2035',borderRadius:'4px 16px 16px 16px',padding:'12px 16px',border:'1px solid rgba(255,255,255,0.08)'}}>
                 <div style={{display:'flex',gap:'6px',alignItems:'center'}}>
                   {[0,1,2].map(i=>(
-                    <div key={i} style={{width:'8px',height:'8px',borderRadius:'50%',background:'#C42020',animation:'pulse 1.5s infinite',animationDelay:i*0.2+'s'}}/>
+                    <div key={i} style={{width:'8px',height:'8px',borderRadius:'50%',background:'#C42020'}}/>
                   ))}
                 </div>
               </div>
@@ -191,11 +184,11 @@ setMessageCount(prev => prev + 1)
             onKeyDown={e=>e.key==='Enter'&&!e.shiftKey&&sendMessage()}
             placeholder={lang==='bn'?'Apnar proshno likhun...':lang==='ne'?'Tapainko prashna lekhnus...':'Ask Sakura anything about Japan...'}
             style={{flex:1,background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'12px',padding:'12px 16px',color:'white',fontSize:'14px',outline:'none'}}
-            disabled={loading}
+            disabled={loading || (!isPro && messageCount >= FREE_LIMIT)}
           />
           <button
             onClick={()=>sendMessage()}
-            disabled={loading||!input.trim()}
+            disabled={loading||!input.trim()||(!isPro&&messageCount>=FREE_LIMIT)}
             style={{background:'#C42020',color:'white',border:'none',borderRadius:'12px',padding:'12px 20px',fontSize:'14px',fontWeight:'700',cursor:'pointer',flexShrink:0,opacity:loading||!input.trim()?0.5:1}}
           >
             Send

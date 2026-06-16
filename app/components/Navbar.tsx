@@ -17,11 +17,10 @@ export default function Navbar() {
     {href:'/pricing',label:'Pricing'},
     {href:'/profile',label:'Profile'},
     {href:'/login',label:'Login'},
-    {href:'/ranking',label:'School Ranking'},
-
   ]
 
   const moreLinks = [
+    {href:'/ranking',label:'School Ranking'},
     {href:'/visa-calculator',label:'Visa Calculator'},
     {href:'/cost-calculator',label:'Cost Calculator'},
     {href:'/compare',label:'Compare Schools'},
@@ -30,24 +29,23 @@ export default function Navbar() {
     {href:'/dashboard',label:'Dashboard'},
     {href:'/housing',label:'Housing'},
     {href:'/prefectures',label:'Prefectures'},
+    {href:'/cities',label:'City Guide'},
     {href:'/learn-japanese',label:'Learn Japanese'},
+    {href:'/jlpt-test',label:'JLPT Test'},
+    {href:'/calendar',label:'Deadline Calendar'},
+    {href:'/reviews',label:'All Reviews'},
     {href:'/news',label:'News'},
-    {href:'/faq',label:'FAQ'},
     {href:'/blog',label:'Blog'},
+    {href:'/videos',label:'Video Guides'},
+    {href:'/faq',label:'FAQ'},
     {href:'/halal',label:'Halal Guide'},
     {href:'/culture',label:'Culture Guide'},
     {href:'/emergency',label:'Emergency'},
     {href:'/currency',label:'Currency'},
     {href:'/flights',label:'Flights'},
     {href:'/insurance',label:'Insurance'},
+    {href:'/notifications',label:'Notifications'},
     {href:'/contact',label:'Contact'},
-    {href:'/notifications',label:'Notifications'},
-    {href:'/videos',label:'Video Guides'},
-    {href:'/notifications',label:'Notifications'},
-    {href:'/reviews',label:'All Reviews'},
-    {href:'/cities',label:'City Guide'},
-    {href:'/jlpt-test',label:'JLPT Test'},
-    {href:'/calendar',label:'Deadline Calendar'},
     {href:'/admin',label:'Admin'},
   ]
 
@@ -65,7 +63,7 @@ export default function Navbar() {
         <span style={{color:'white',fontSize:'16px',fontWeight:'700'}}>Japan Life Guide</span>
       </Link>
 
-      <div style={{display:'flex',gap:'10px',alignItems:'center'}} className="desktop-menu">
+      <div style={{display:'flex',gap:'10px',alignItems:'center'}}>
         {mainLinks.map(l=>(
           <Link key={l.href} href={l.href} style={{color:'rgba(255,255,255,0.7)',textDecoration:'none',fontSize:'11px',fontWeight:'500'}}>{l.label}</Link>
         ))}
@@ -93,8 +91,8 @@ export default function Navbar() {
         <Link href="/register" style={{background:'#C42020',color:'white',textDecoration:'none',fontSize:'11px',fontWeight:'700',padding:'7px 12px',borderRadius:'8px'}}>Join Free</Link>
       </div>
 
-      <button onClick={()=>setOpen(!open)} style={{display:'none',background:'none',border:'none',color:'white',fontSize:'24px',cursor:'pointer'}} className="mobile-btn">
-        {open ? 'X' : '☰'}
+      <button onClick={()=>setOpen(!open)} style={{background:'none',border:'none',color:'white',fontSize:'24px',cursor:'pointer',display:'none'}}>
+        {open ? '✕' : '☰'}
       </button>
 
       {open && (

@@ -36,7 +36,7 @@ body {
 
 /* Mobile Navigation */
 @media (max-width: 768px) {
-  .desktop-menu {
+   {
     display: none !important;
   }
   .mobile-btn {

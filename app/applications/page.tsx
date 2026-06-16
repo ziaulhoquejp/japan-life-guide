@@ -2,30 +2,10 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 
-const STATUS_COLORS: any = {
-  pending: '#F0A830',
-  applied: '#4A8EFF',
-  accepted: '#2EC87A',
-  rejected: '#C42020',
-  withdrawn: 'rgba(255,255,255,0.3)',
-}
-
-const STATUS_LABELS: any = {
-  pending: 'Pending',
-  applied: 'Applied',
-  accepted: 'Accepted',
-  rejected: 'Rejected',
-  withdrawn: 'Withdrawn',
-}
-
 export default function ApplicationsPage() {
   const [applications, setApplications] = useState<any[]>([])
-  const [schools, setSchools] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
-  const [showAdd, setShowAdd] = useState(false)
-  const [selectedSchool, setSelectedSchool] = useState('')
-  const [notes, setNotes] = useState('')
   const [filter, setFilter] = useState('all')
 
   useEffect(() => {
@@ -33,31 +13,16 @@ export default function ApplicationsPage() {
       const { data: userData } = await supabase.auth.getUser()
       if (!userData.user) { window.location.href = '/login'; return }
       setUser(userData.user)
-
-      const [appsData, schoolsData] = await Promise.all([
-        supabase.from('applications').select('*, schools(name_en, name_jp, city, icon, annual_fee_jpy)').eq('user_id', userData.user.id).order('created_at', { ascending: false }),
-        supabase.from('schools').select('id, name_en, city, icon').order('rating', { ascending: false }).limit(50),
-      ])
-      if (appsData.data) setApplications(appsData.data)
-      if (schoolsData.data) setSchools(schoolsData.data)
+      const { data } = await supabase
+        .from('applications')
+        .select('*, schools(name_en, name_jp, city, icon, annual_fee_jpy, website_url, region)')
+        .eq('user_id', userData.user.id)
+        .order('created_at', { ascending: false })
+      if (data) setApplications(data)
       setLoading(false)
     }
     getData()
   }, [])
-
-  async function addApplication() {
-    if (!selectedSchool) return
-    const { data } = await supabase.from('applications').insert({
-      user_id: user.id,
-      school_id: selectedSchool,
-      notes,
-      status: 'pending',
-    }).select('*, schools(name_en, name_jp, city, icon, annual_fee_jpy)').single()
-    if (data) setApplications(prev => [data, ...prev])
-    setShowAdd(false)
-    setSelectedSchool('')
-    setNotes('')
-  }
 
   async function updateStatus(id: string, status: string) {
     await supabase.from('applications').update({ status }).eq('id', id)
@@ -69,14 +34,17 @@ export default function ApplicationsPage() {
     setApplications(prev => prev.filter(a => a.id !== id))
   }
 
-  const filtered = filter === 'all' ? applications : applications.filter(a => a.status === filter)
-
-  const stats = {
-    total: applications.length,
-    pending: applications.filter(a=>a.status==='pending').length,
-    applied: applications.filter(a=>a.status==='applied').length,
-    accepted: applications.filter(a=>a.status==='accepted').length,
+  const statusColors: any = {
+    pending: '#F0A830',
+    applied: '#4A8EFF',
+    accepted: '#2EC87A',
+    rejected: '#C42020',
+    withdrawn: 'rgba(255,255,255,0.3)',
   }
+
+  const statusSteps = ['pending', 'applied', 'accepted']
+
+  const filtered = applications.filter(a => filter === 'all' || a.status === filter)
 
   if (loading) return <div style={{minHeight:'100vh',background:'#0D0907',display:'flex',alignItems:'center',justifyContent:'center',color:'white',fontSize:'24px'}}>Loading...</div>
 
@@ -85,104 +53,118 @@ export default function ApplicationsPage() {
       <div style={{background:'#1A2035',padding:'32px 40px',borderBottom:'3px solid #C42020',display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:'12px'}}>
         <div>
           <h1 style={{color:'white',fontSize:'28px',fontWeight:'700',marginBottom:'4px'}}>My Applications</h1>
-          <p style={{color:'rgba(255,255,255,0.4)',fontSize:'14px'}}>Track your school applications</p>
+          <p style={{color:'rgba(255,255,255,0.4)',fontSize:'14px'}}>{applications.length} total applications</p>
         </div>
-        <button onClick={()=>setShowAdd(!showAdd)} style={{background:'#C42020',color:'white',border:'none',borderRadius:'10px',padding:'12px 24px',fontSize:'14px',fontWeight:'700',cursor:'pointer'}}>
-          + Add Application
-        </button>
+        <a href="/apply" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'12px 24px',borderRadius:'10px',fontSize:'14px',fontWeight:'700'}}>
+          + New Application
+        </a>
       </div>
 
-      <div style={{maxWidth:'1000px',margin:'0 auto',padding:'32px 20px'}}>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(150px, 1fr))',gap:'12px',marginBottom:'24px'}}>
+      <div style={{maxWidth:'900px',margin:'0 auto',padding:'32px 20px'}}>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(140px,1fr))',gap:'10px',marginBottom:'24px'}}>
           {[
-            {label:'Total',value:stats.total,color:'#4A8EFF'},
-            {label:'Pending',value:stats.pending,color:'#F0A830'},
-            {label:'Applied',value:stats.applied,color:'#4A8EFF'},
-            {label:'Accepted',value:stats.accepted,color:'#2EC87A'},
+            {label:'Total',value:applications.length,color:'#4A8EFF'},
+            {label:'Pending',value:applications.filter(a=>a.status==='pending').length,color:'#F0A830'},
+            {label:'Applied',value:applications.filter(a=>a.status==='applied').length,color:'#4A8EFF'},
+            {label:'Accepted',value:applications.filter(a=>a.status==='accepted').length,color:'#2EC87A'},
+            {label:'Rejected',value:applications.filter(a=>a.status==='rejected').length,color:'#C42020'},
           ].map(stat=>(
-            <div key={stat.label} style={{background:'#1A2035',borderRadius:'10px',padding:'16px',textAlign:'center',border:'1px solid rgba(255,255,255,0.08)'}}>
-              <div style={{color:stat.color,fontSize:'28px',fontWeight:'700'}}>{stat.value}</div>
-              <div style={{color:'rgba(255,255,255,0.4)',fontSize:'12px',marginTop:'4px'}}>{stat.label}</div>
+            <div key={stat.label} style={{background:'#1A2035',borderRadius:'10px',padding:'14px',textAlign:'center',border:'1px solid rgba(255,255,255,0.08)'}}>
+              <div style={{color:stat.color,fontSize:'22px',fontWeight:'700'}}>{stat.value}</div>
+              <div style={{color:'rgba(255,255,255,0.4)',fontSize:'11px',marginTop:'4px'}}>{stat.label}</div>
             </div>
           ))}
         </div>
 
-        {showAdd && (
-          <div style={{background:'#1A2035',borderRadius:'14px',padding:'24px',marginBottom:'24px',border:'1px solid rgba(196,32,32,0.3)'}}>
-            <h2 style={{color:'white',fontSize:'18px',fontWeight:'700',marginBottom:'16px'}}>Add New Application</h2>
-            <div style={{display:'flex',flexDirection:'column',gap:'12px'}}>
-              <select value={selectedSchool} onChange={e=>setSelectedSchool(e.target.value)} style={{background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none',cursor:'pointer'}}>
-                <option value="">Select a school...</option>
-                {schools.map(s=>(
-                  <option key={s.id} value={s.id}>{s.icon} {s.name_en} - {s.city}</option>
-                ))}
-              </select>
-              <textarea value={notes} onChange={e=>setNotes(e.target.value)} placeholder="Notes (optional)..." style={{background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none',resize:'vertical',minHeight:'80px'}}/>
-              <div style={{display:'flex',gap:'10px'}}>
-                <button onClick={addApplication} disabled={!selectedSchool} style={{background:'#C42020',color:'white',border:'none',borderRadius:'8px',padding:'12px 24px',fontSize:'14px',fontWeight:'700',cursor:'pointer',flex:2}}>
-                  Add Application
-                </button>
-                <button onClick={()=>setShowAdd(false)} style={{background:'rgba(255,255,255,0.08)',color:'white',border:'none',borderRadius:'8px',padding:'12px',fontSize:'14px',cursor:'pointer',flex:1}}>
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div style={{display:'flex',gap:'8px',marginBottom:'16px',flexWrap:'wrap'}}>
-          {['all','pending','applied','accepted','rejected'].map(s=>(
-            <button key={s} onClick={()=>setFilter(s)} style={{background:filter===s?'#C42020':'#1A2035',border:'none',borderRadius:'20px',padding:'8px 16px',color:'white',fontSize:'12px',fontWeight:'600',cursor:'pointer',textTransform:'capitalize'}}>
-              {s === 'all' ? 'All' : STATUS_LABELS[s]}
+        <div style={{display:'flex',gap:'8px',marginBottom:'20px',flexWrap:'wrap'}}>
+          {['all','pending','applied','accepted','rejected','withdrawn'].map(f=>(
+            <button key={f} onClick={()=>setFilter(f)} style={{background:filter===f?'#C42020':'#1A2035',border:'none',borderRadius:'20px',padding:'8px 16px',color:'white',fontSize:'12px',fontWeight:'600',cursor:'pointer',textTransform:'capitalize'}}>
+              {f}
             </button>
           ))}
         </div>
 
         {filtered.length === 0 ? (
-          <div style={{background:'#1A2035',borderRadius:'14px',padding:'48px',textAlign:'center',border:'1px solid rgba(255,255,255,0.08)'}}>
+          <div style={{background:'#1A2035',borderRadius:'16px',padding:'48px',textAlign:'center',border:'1px solid rgba(255,255,255,0.08)'}}>
             <div style={{fontSize:'48px',marginBottom:'16px'}}>📝</div>
             <h2 style={{color:'white',fontSize:'20px',fontWeight:'700',marginBottom:'8px'}}>No applications yet!</h2>
-            <p style={{color:'rgba(255,255,255,0.4)',fontSize:'14px',marginBottom:'20px'}}>Start tracking your school applications</p>
-            <div style={{display:'flex',gap:'10px',justifyContent:'center',flexWrap:'wrap'}}>
-              <button onClick={()=>setShowAdd(true)} style={{background:'#C42020',color:'white',border:'none',borderRadius:'8px',padding:'10px 20px',fontSize:'13px',fontWeight:'700',cursor:'pointer'}}>
-                Add Application
-              </button>
-              <a href="/schools" style={{background:'rgba(255,255,255,0.08)',color:'white',textDecoration:'none',padding:'10px 20px',borderRadius:'8px',fontSize:'13px',border:'1px solid rgba(255,255,255,0.15)'}}>
-                Browse Schools
-              </a>
-            </div>
+            <p style={{color:'rgba(255,255,255,0.4)',fontSize:'14px',marginBottom:'20px'}}>Start applying to Japanese language schools!</p>
+            <a href="/schools" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'12px 24px',borderRadius:'8px',fontSize:'14px',fontWeight:'700'}}>Browse Schools</a>
           </div>
         ) : (
-          <div style={{display:'flex',flexDirection:'column',gap:'12px'}}>
+          <div style={{display:'flex',flexDirection:'column',gap:'14px'}}>
             {filtered.map(app=>(
-              <div key={app.id} style={{background:'#1A2035',borderRadius:'14px',padding:'20px',border:'1px solid rgba(255,255,255,0.08)'}}>
-                <div style={{display:'flex',gap:'14px',alignItems:'flex-start',flexWrap:'wrap'}}>
-                  <div style={{fontSize:'36px',flexShrink:0}}>{app.schools?.icon}</div>
+              <div key={app.id} style={{background:'#1A2035',borderRadius:'14px',padding:'22px',border:'1px solid rgba(255,255,255,0.08)'}}>
+                <div style={{display:'flex',gap:'16px',alignItems:'flex-start',flexWrap:'wrap'}}>
+                  <div style={{fontSize:'40px',flexShrink:0}}>{app.schools?.icon}</div>
                   <div style={{flex:1}}>
-                    <div style={{display:'flex',gap:'8px',alignItems:'center',marginBottom:'6px',flexWrap:'wrap'}}>
-                      <h2 style={{color:'white',fontSize:'15px',fontWeight:'700'}}>{app.schools?.name_en}</h2>
-                      <span style={{background:STATUS_COLORS[app.status] + '20',color:STATUS_COLORS[app.status],padding:'3px 8px',borderRadius:'20px',fontSize:'11px',fontWeight:'700'}}>{STATUS_LABELS[app.status]}</span>
+                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:'8px',marginBottom:'8px'}}>
+                      <div>
+                        <h2 style={{color:'white',fontSize:'16px',fontWeight:'700',marginBottom:'2px'}}>{app.schools?.name_en}</h2>
+                        <p style={{color:'#C42020',fontSize:'11px',marginBottom:'4px'}}>{app.schools?.name_jp}</p>
+                        <p style={{color:'rgba(255,255,255,0.4)',fontSize:'12px'}}>📍 {app.schools?.city} · {app.schools?.region}</p>
+                      </div>
+                      <span style={{background:statusColors[app.status]+'20',color:statusColors[app.status],padding:'6px 14px',borderRadius:'20px',fontSize:'12px',fontWeight:'700',textTransform:'capitalize',border:'1px solid ' + statusColors[app.status] + '40'}}>
+                        {app.status}
+                      </span>
                     </div>
-                    <p style={{color:'rgba(255,255,255,0.4)',fontSize:'12px',marginBottom:'6px'}}>📍 {app.schools?.city}</p>
-                    <p style={{color:'rgba(255,255,255,0.4)',fontSize:'12px',marginBottom:'8px'}}>Applied: {new Date(app.created_at).toLocaleDateString()}</p>
-                    {app.notes && <p style={{color:'rgba(255,255,255,0.5)',fontSize:'13px',marginBottom:'8px'}}>{app.notes}</p>}
-                    <div style={{display:'flex',gap:'6px',flexWrap:'wrap'}}>
-                      {['pending','applied','accepted','rejected','withdrawn'].map(status=>(
-                        <button key={status} onClick={()=>updateStatus(app.id, status)} style={{background:app.status===status?STATUS_COLORS[status]:'rgba(255,255,255,0.06)',color:app.status===status?'white':'rgba(255,255,255,0.4)',border:'none',borderRadius:'6px',padding:'4px 10px',fontSize:'11px',cursor:'pointer',fontWeight:'600',textTransform:'capitalize'}}>
-                          {STATUS_LABELS[status]}
-                        </button>
+
+                    <div style={{display:'flex',gap:'8px',marginBottom:'14px',flexWrap:'wrap'}}>
+                      {statusSteps.map((step,i)=>(
+                        <div key={step} style={{display:'flex',alignItems:'center',gap:'4px'}}>
+                          <div style={{width:'20px',height:'20px',borderRadius:'50%',background:statusSteps.indexOf(app.status)>=i?statusColors[step]||'#2EC87A':'rgba(255,255,255,0.1)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'10px',color:'white',fontWeight:'700'}}>
+                            {statusSteps.indexOf(app.status)>=i?'✓':i+1}
+                          </div>
+                          <span style={{color:statusSteps.indexOf(app.status)>=i?'white':'rgba(255,255,255,0.3)',fontSize:'11px',textTransform:'capitalize'}}>{step}</span>
+                          {i < statusSteps.length-1 && <div style={{width:'20px',height:'2px',background:statusSteps.indexOf(app.status)>i?'#2EC87A':'rgba(255,255,255,0.1)'}}/>}
+                        </div>
                       ))}
                     </div>
+
+                    <div style={{display:'flex',gap:'6px',flexWrap:'wrap',alignItems:'center'}}>
+                      <span style={{color:'rgba(255,255,255,0.3)',fontSize:'11px'}}>Applied: {new Date(app.created_at).toLocaleDateString()}</span>
+                      <span style={{color:'rgba(255,255,255,0.3)',fontSize:'11px'}}>·</span>
+                      <span style={{color:'#F0A830',fontSize:'11px',fontFamily:'monospace'}}>¥{app.schools?.annual_fee_jpy?.toLocaleString()}/yr</span>
+                    </div>
+
+                    {app.notes && (
+                      <p style={{color:'rgba(255,255,255,0.4)',fontSize:'12px',marginTop:'8px',fontStyle:'italic'}}>{app.notes}</p>
+                    )}
                   </div>
-                  <div style={{display:'flex',flexDirection:'column',gap:'6px',flexShrink:0}}>
-                    <a href={'/schools/' + app.school_id} style={{background:'rgba(196,32,32,0.15)',color:'#FF8070',textDecoration:'none',padding:'6px 12px',borderRadius:'6px',fontSize:'12px',fontWeight:'600',textAlign:'center'}}>View</a>
-                    <button onClick={()=>deleteApplication(app.id)} style={{background:'rgba(255,255,255,0.06)',color:'rgba(255,255,255,0.3)',border:'none',padding:'6px 12px',borderRadius:'6px',fontSize:'12px',cursor:'pointer'}}>Delete</button>
-                  </div>
+                </div>
+
+                <div style={{display:'flex',gap:'8px',marginTop:'16px',paddingTop:'16px',borderTop:'1px solid rgba(255,255,255,0.06)',flexWrap:'wrap'}}>
+                  <a href={'/schools/' + app.school_id} style={{background:'rgba(255,255,255,0.08)',color:'white',textDecoration:'none',padding:'8px 14px',borderRadius:'6px',fontSize:'12px',border:'1px solid rgba(255,255,255,0.15)'}}>
+                    View School
+                  </a>
+                  {app.schools?.website_url && (
+                    <a href={app.schools.website_url} target="_blank" rel="noopener noreferrer" style={{background:'rgba(46,200,122,0.1)',color:'#2EC87A',textDecoration:'none',padding:'8px 14px',borderRadius:'6px',fontSize:'12px',border:'1px solid rgba(46,200,122,0.2)'}}>
+                      Official Site
+                    </a>
+                  )}
+                  <select value={app.status} onChange={e=>updateStatus(app.id,e.target.value)} style={{background:'rgba(255,255,255,0.08)',color:'white',border:'1px solid rgba(255,255,255,0.15)',borderRadius:'6px',padding:'8px 12px',fontSize:'12px',cursor:'pointer',outline:'none'}}>
+                    <option value="pending">Pending</option>
+                    <option value="applied">Applied</option>
+                    <option value="accepted">Accepted</option>
+                    <option value="rejected">Rejected</option>
+                    <option value="withdrawn">Withdrawn</option>
+                  </select>
+                  <button onClick={()=>deleteApplication(app.id)} style={{background:'rgba(196,32,32,0.1)',color:'#FF8070',border:'1px solid rgba(196,32,32,0.2)',borderRadius:'6px',padding:'8px 14px',fontSize:'12px',cursor:'pointer',marginLeft:'auto'}}>
+                    Delete
+                  </button>
                 </div>
               </div>
             ))}
           </div>
         )}
+
+        <div style={{background:'#1A2035',borderRadius:'12px',padding:'20px',marginTop:'24px',textAlign:'center',border:'1px solid rgba(255,255,255,0.08)'}}>
+          <p style={{color:'rgba(255,255,255,0.5)',fontSize:'13px',marginBottom:'12px'}}>Need help with your application?</p>
+          <div style={{display:'flex',gap:'10px',justifyContent:'center',flexWrap:'wrap'}}>
+            <a href="/chat" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'10px 20px',borderRadius:'8px',fontSize:'13px',fontWeight:'700'}}>Ask Sakura AI</a>
+            <a href="/visa" style={{background:'rgba(255,255,255,0.08)',color:'white',textDecoration:'none',padding:'10px 20px',borderRadius:'8px',fontSize:'13px',border:'1px solid rgba(255,255,255,0.15)'}}>Visa Guide</a>
+          </div>
+        </div>
       </div>
     </main>
   )

@@ -47,6 +47,7 @@ export default function Navbar() {
     {href:'/notifications',label:'Notifications'},
     {href:'/contact',label:'Contact'},
     {href:'/admin',label:'Admin'},
+    {href:'/affiliate',label:'Affiliate Program'},
   ]
 
   const langs = [

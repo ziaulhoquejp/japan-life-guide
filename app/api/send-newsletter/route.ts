@@ -46,7 +46,7 @@ export async function POST(req: Request) {
     const results = await Promise.all(
       emails.map((email: string) =>
         resend.emails.send({
-          from: 'Japan Life Guide <onboarding@resend.dev>',
+          from: 'Japan Life Guide <noreply@japanlifeguide.app>',
           to: email,
           subject: subject,
           html: html,

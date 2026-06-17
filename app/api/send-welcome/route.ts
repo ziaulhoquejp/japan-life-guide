@@ -95,7 +95,7 @@ export async function POST(req: Request) {
 </html>`
 
     const { data, error } = await resend.emails.send({
-      from: 'Japan Life Guide <onboarding@resend.dev>',
+      from: 'Japan Life Guide <noreply@japanlifeguide.app>',
       to: email,
       subject: 'Welcome to Japan Life Guide! 🌸',
       html: html,

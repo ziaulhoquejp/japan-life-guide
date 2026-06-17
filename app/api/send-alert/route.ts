@@ -30,7 +30,7 @@ export async function POST(req: Request) {
     const html = '<div style="font-family:sans-serif;max-width:600px;margin:0 auto;background:#0D0907;color:white;padding:40px;border-radius:16px;"><div style="text-align:center;margin-bottom:32px;"><div style="width:60px;height:60px;border-radius:50%;background:#C42020;margin:0 auto 16px;"></div><h1 style="color:white;font-size:24px;margin:0;">' + subject + '</h1></div><p style="color:rgba(255,255,255,0.7);font-size:16px;line-height:1.7;">Hi ' + name + '!</p><p style="color:rgba(255,255,255,0.7);font-size:16px;line-height:1.7;">' + content + '</p><div style="text-align:center;margin-top:32px;"><a href="https://japanlifeguide.app/dashboard" style="background:#C42020;color:white;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;">Go to Dashboard</a></div><p style="color:rgba(255,255,255,0.3);font-size:12px;text-align:center;margin-top:32px;">Japan Life Guide - japanlifeguide.app</p></div>'
 
     const { data, error } = await resend.emails.send({
-      from: 'Japan Life Guide <onboarding@resend.dev>',
+      from: 'Japan Life Guide <noreply@japanlifeguide.app>',
       to: email,
       subject: subject,
       html: html,

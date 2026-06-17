@@ -25,3 +25,20 @@ input, textarea, select {
   background: #C42020;
   border-radius: 3px;
 }
+@media (max-width: 768px) {
+  #desktop-nav {
+    display: none !important;
+  }
+  #mobile-btn {
+    display: block !important;
+  }
+}
+
+@media (min-width: 769px) {
+  #desktop-nav {
+    display: flex !important;
+  }
+  #mobile-btn {
+    display: none !important;
+  }
+}

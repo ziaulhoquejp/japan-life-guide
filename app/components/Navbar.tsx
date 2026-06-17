@@ -1,11 +1,16 @@
 'use client'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export default function Navbar() {
   const [open, setOpen] = useState(false)
   const [lang, setLang] = useState('en')
   const [menuOpen, setMenuOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const mainLinks = [
     {href:'/schools',label:'Schools'},
@@ -45,9 +50,9 @@ export default function Navbar() {
     {href:'/flights',label:'Flights'},
     {href:'/insurance',label:'Insurance'},
     {href:'/notifications',label:'Notifications'},
+    {href:'/affiliate',label:'Affiliate Program'},
     {href:'/contact',label:'Contact'},
     {href:'/admin',label:'Admin'},
-    {href:'/affiliate',label:'Affiliate Program'},
   ]
 
   const langs = [
@@ -56,6 +61,15 @@ export default function Navbar() {
     {code:'ne',flag:'🇳🇵'},
     {code:'jp',flag:'🇯🇵'},
   ]
+
+  if (!mounted) return (
+    <nav style={{background:'#0D0907',borderBottom:'2px solid #C42020',padding:'0 20px',height:'60px',display:'flex',alignItems:'center',justifyContent:'space-between',position:'sticky',top:0,zIndex:100}}>
+      <Link href="/" style={{display:'flex',alignItems:'center',gap:'10px',textDecoration:'none'}}>
+        <div style={{width:'28px',height:'28px',borderRadius:'50%',background:'#C42020',flexShrink:0}}/>
+        <span style={{color:'white',fontSize:'16px',fontWeight:'700'}}>Japan Life Guide</span>
+      </Link>
+    </nav>
+  )
 
   return (
     <nav style={{background:'#0D0907',borderBottom:'2px solid #C42020',padding:'0 20px',height:'60px',display:'flex',alignItems:'center',justifyContent:'space-between',position:'sticky',top:0,zIndex:100}}>

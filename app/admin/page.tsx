@@ -4,7 +4,7 @@ import { supabase } from '../../lib/supabase'
 
 export default function AdminPage() {
   const [user, setUser] = useState<any>(null)
-  const [stats, setStats] = useState({schools:0,users:0,applications:0,reviews:0,feedback:0})
+  const [stats, setStats] = useState({schools:0,applications:0,reviews:0,feedback:0})
   const [loading, setLoading] = useState(true)
   const [newsletter, setNewsletter] = useState({subject:'',message:''})
   const [sending, setSending] = useState(false)
@@ -13,34 +13,32 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState('stats')
 
   const ADMIN_EMAILS = ['ziaulhoquejp@gmail.com', 'sacrifice4ever@gmail.com']
+
   useEffect(() => {
-    async function getData() {
-      const { data: userData } = await supabase.auth.getUser()
-      if (!userData.user || !ADMIN_EMAILS.includes(userData.user.email!)) {
-        window.location.href = '/'
-        return
-      }
-      setUser(userData.user)
+  async function getData() {
+    const { data: userData } = await supabase.auth.getUser()
+    if (!userData.user) { window.location.href = '/'; return }
+    if (!ADMIN_EMAILS.includes(userData.user.email!)) { window.location.href = '/'; return }
+    setUser(userData.user)
 
-      const [schoolsData, feedbackData, applicationsData, reviewsData] = await Promise.all([
-        supabase.from('schools').select('id', { count: 'exact' }),
-        supabase.from('feedback').select('*').order('created_at', { ascending: false }).limit(20),
-        supabase.from('applications').select('id', { count: 'exact' }),
-        supabase.from('reviews').select('id', { count: 'exact' }),
-      ])
+    const [schoolsData, feedbackData, applicationsData, reviewsData] = await Promise.all([
+      supabase.from('schools').select('*', { count: 'exact', head: true }),
+      supabase.from('feedback').select('*').order('created_at', { ascending: false }).limit(20),
+      supabase.from('applications').select('*', { count: 'exact', head: true }),
+      supabase.from('reviews').select('*', { count: 'exact', head: true }),
+    ])
 
-      setStats({
-        schools: schoolsData.count || 0,
-        users: 0,
-        applications: applicationsData.count || 0,
-        reviews: reviewsData.count || 0,
-        feedback: feedbackData.data?.length || 0,
-      })
-      if (feedbackData.data) setFeedback(feedbackData.data)
-      setLoading(false)
-    }
-    getData()
-  }, [])
+    setStats({
+      schools: schoolsData.count || 0,
+      applications: applicationsData.count || 0,
+      reviews: reviewsData.count || 0,
+      feedback: feedbackData.data?.length || 0,
+    })
+    if (feedbackData.data) setFeedback(feedbackData.data)
+    setLoading(false)
+  }
+  getData()
+}, [])
 
   async function sendNewsletter() {
     if (!newsletter.subject || !newsletter.message) return

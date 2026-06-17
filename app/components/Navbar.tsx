@@ -1,10 +1,27 @@
 'use client'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { supabase } from '../../lib/supabase'
 
 export default function Navbar() {
   const [open, setOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [user, setUser] = useState<any>(null)
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) setUser(data.user)
+    })
+    supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null)
+    })
+  }, [])
+
+  async function handleLogout() {
+    await supabase.auth.signOut()
+    setUser(null)
+    window.location.href = '/'
+  }
 
   const mainLinks = [
     {href:'/schools',label:'Schools'},
@@ -14,8 +31,6 @@ export default function Navbar() {
     {href:'/chat',label:'Sakura AI'},
     {href:'/community',label:'Community'},
     {href:'/pricing',label:'Pricing'},
-    {href:'/profile',label:'Profile'},
-    {href:'/login',label:'Login'},
   ]
 
   const moreLinks = [
@@ -84,7 +99,25 @@ export default function Navbar() {
               </div>
             )}
           </div>
-          <Link href="/register" style={{background:'#C42020',color:'white',textDecoration:'none',fontSize:'11px',fontWeight:'700',padding:'7px 12px',borderRadius:'8px'}}>Join Free</Link>
+          {user ? (
+            <div style={{display:'flex',gap:'6px',alignItems:'center'}}>
+              <Link href="/dashboard" style={{background:'rgba(255,255,255,0.08)',color:'white',textDecoration:'none',fontSize:'11px',padding:'7px 12px',borderRadius:'8px',border:'1px solid rgba(255,255,255,0.15)'}}>
+                👤 {user.user_metadata?.full_name?.split(' ')[0] || 'My Account'}
+              </Link>
+              <button onClick={handleLogout} style={{background:'rgba(196,32,32,0.2)',color:'#FF8070',border:'1px solid rgba(196,32,32,0.3)',borderRadius:'8px',padding:'7px 12px',fontSize:'11px',cursor:'pointer'}}>
+                Logout
+              </button>
+            </div>
+          ) : (
+            <div style={{display:'flex',gap:'6px'}}>
+              <Link href="/login" style={{background:'rgba(255,255,255,0.08)',color:'white',textDecoration:'none',fontSize:'11px',padding:'7px 12px',borderRadius:'8px',border:'1px solid rgba(255,255,255,0.15)'}}>
+                Login
+              </Link>
+              <Link href="/register" style={{background:'#C42020',color:'white',textDecoration:'none',fontSize:'11px',fontWeight:'700',padding:'7px 12px',borderRadius:'8px'}}>
+                Join Free
+              </Link>
+            </div>
+          )}
         </div>
 
         <button className="nav-mobile-btn" onClick={()=>setOpen(!open)}>
@@ -94,9 +127,25 @@ export default function Navbar() {
 
       {open && (
         <div style={{position:'fixed',top:'60px',left:0,right:0,bottom:0,background:'#0D0907',padding:'16px',display:'flex',flexDirection:'column',gap:'4px',zIndex:99,overflowY:'auto'}}>
-          <Link href="/register" onClick={()=>setOpen(false)} style={{background:'#C42020',color:'white',textDecoration:'none',fontSize:'15px',fontWeight:'700',padding:'14px',borderRadius:'8px',textAlign:'center',marginBottom:'8px'}}>
-            🌸 Join Free
-          </Link>
+          {user ? (
+            <div style={{display:'flex',gap:'8px',marginBottom:'8px'}}>
+              <Link href="/dashboard" onClick={()=>setOpen(false)} style={{background:'rgba(255,255,255,0.08)',color:'white',textDecoration:'none',fontSize:'14px',fontWeight:'700',padding:'12px',borderRadius:'8px',textAlign:'center',flex:1}}>
+                👤 My Account
+              </Link>
+              <button onClick={handleLogout} style={{background:'rgba(196,32,32,0.2)',color:'#FF8070',border:'1px solid rgba(196,32,32,0.3)',borderRadius:'8px',padding:'12px',fontSize:'14px',cursor:'pointer',flex:1}}>
+                Logout
+              </button>
+            </div>
+          ) : (
+            <div style={{display:'flex',gap:'8px',marginBottom:'8px'}}>
+              <Link href="/login" onClick={()=>setOpen(false)} style={{background:'rgba(255,255,255,0.08)',color:'white',textDecoration:'none',fontSize:'14px',fontWeight:'700',padding:'12px',borderRadius:'8px',textAlign:'center',flex:1,border:'1px solid rgba(255,255,255,0.15)'}}>
+                Login
+              </Link>
+              <Link href="/register" onClick={()=>setOpen(false)} style={{background:'#C42020',color:'white',textDecoration:'none',fontSize:'14px',fontWeight:'700',padding:'12px',borderRadius:'8px',textAlign:'center',flex:1}}>
+                🌸 Join Free
+              </Link>
+            </div>
+          )}
           {[...mainLinks,...moreLinks].map(l=>(
             <Link key={l.href} href={l.href} onClick={()=>setOpen(false)} style={{color:'white',textDecoration:'none',fontSize:'14px',padding:'12px 8px',borderBottom:'1px solid rgba(255,255,255,0.06)',display:'block'}}>
               {l.label}

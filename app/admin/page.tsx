@@ -41,14 +41,19 @@ export default function AdminPage() {
 }, [])
 
   async function sendNewsletter() {
-    if (!newsletter.subject || !newsletter.message) return
-    setSending(true)
-    try {
-      await fetch('/api/send-newsletter', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newsletter),
-      })
+  if (!newsletter.subject || !newsletter.message) return
+  setSending(true)
+  try {
+    await fetch('/api/send-newsletter', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        emails: ['ziaulhoquejp@gmail.com', 'sacrifice4ever@gmail.com'],
+        subject: newsletter.subject,
+        content: newsletter.message,
+        type: 'newsletter',
+      }),
+    })
       setSent(true)
       setNewsletter({subject:'',message:''})
       setTimeout(() => setSent(false), 3000)

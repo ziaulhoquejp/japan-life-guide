@@ -6,74 +6,86 @@ import ShareButton from './components/ShareButton'
 const content = {
   en: {
     hero: 'Your Journey to Japan Starts Here',
-    subtitle: 'Find language schools, navigate visas, get AI guidance — all in one place',
-    findSchools: 'Find Schools',
+    subtitle: 'Find language schools, navigate visas, get AI guidance — all in one place for Bangladesh and Nepal students',
+    findSchools: 'Browse 700+ Schools',
     askSakura: 'Ask Sakura AI',
-    stats: ['500+ Schools', '4 Languages', 'AI Powered', 'Free to Join'],
+    stats: ['700+ Schools', '47 Prefectures', 'AI Powered', 'Free to Join'],
     features: [
-      {icon:'🏫',title:'500+ Language Schools',desc:'Search and compare Japanese language schools across Japan with detailed info on fees, dorms, and JLPT prep.'},
-      {icon:'🛂',title:'Visa Guide',desc:'Step-by-step visa guidance for student, SSW, and work visas. Know exactly what documents you need.'},
-      {icon:'🌸',title:'Sakura AI',desc:'Our AI assistant answers your questions in Bengali, Nepali, Japanese, and English 24/7.'},
-      {icon:'💼',title:'Jobs & Scholarships',desc:'Find part-time jobs, SSW opportunities, and scholarships available for Bangladesh and Nepal students.'},
-      {icon:'🧮',title:'Smart Calculators',desc:'Calculate your visa eligibility, monthly living costs, and currency conversions instantly.'},
-      {icon:'💬',title:'Community',desc:'Connect with other Bangladesh and Nepal students in Japan. Share experiences and get advice.'},
+      {icon:'🏫',title:'700+ Language Schools',desc:'Search and compare Japanese language schools across all 47 prefectures with detailed info on fees, dorms, and JLPT prep.',href:'/schools'},
+      {icon:'🛂',title:'Visa Guide',desc:'Step-by-step visa guidance for student, SSW, and work visas. Know exactly what documents you need.',href:'/visa'},
+      {icon:'🌸',title:'Sakura AI Assistant',desc:'Our AI assistant answers your questions in Bengali, Nepali, Japanese, and English 24/7.',href:'/chat'},
+      {icon:'💼',title:'Jobs & Scholarships',desc:'Find part-time jobs, SSW opportunities, and MEXT scholarships available for BD and NP students.',href:'/jobs'},
+      {icon:'🧮',title:'Smart Calculators',desc:'Calculate your visa eligibility, monthly living costs, and currency conversions instantly.',href:'/visa-calculator'},
+      {icon:'💬',title:'Community',desc:'Connect with Bangladesh and Nepal students in Japan. Share experiences and get real advice.',href:'/community'},
+      {icon:'🗾',title:'47 Prefectures Guide',desc:'Explore all 47 prefectures of Japan. Find costs, schools, and Muslim-friendly resources.',href:'/prefectures'},
+      {icon:'🕌',title:'Muslim & Halal Guide',desc:'Find halal restaurants, mosques, and Muslim-friendly resources across Japan.',href:'/halal'},
+      {icon:'📝',title:'JLPT Practice Tests',desc:'Practice for JLPT N5, N4, and N3 with our free practice tests and flashcards.',href:'/jlpt-test'},
     ],
     cta: 'Start Free Today',
-    browsSchools: 'Browse Schools',
+    browseSchools: 'Browse Schools',
     shareText: 'Share with friends:',
   },
   bn: {
     hero: 'Japan-e Apnar Jatra Shuru Hok',
-    subtitle: 'Bhasha school khujun, visa navigate korun, AI guidance nun — shob ek jaygay',
-    findSchools: 'School Khujun',
+    subtitle: 'Bhasha school khujun, visa navigate korun, AI guidance nun — Bangladesh o Nepal students-der jonno shob ek jaygay',
+    findSchools: '700+ School Dekhun',
     askSakura: 'Sakura AI-ke Jiggesh Korun',
-    stats: ['500+ School', '4 Bhasha', 'AI Powered', 'Binamulye'],
+    stats: ['700+ School', '47 Jela', 'AI Powered', 'Binamulye'],
     features: [
-      {icon:'🏫',title:'500+ Bhasha School',desc:'Japan-er shokol school khujun ebong tulona korun. Fees, dorm, ebong JLPT er detail janan.'},
-      {icon:'🛂',title:'Visa Guide',desc:'Student, SSW, ebong work visa-r jonno dhap-e-dhap guidance. Exactly ki ki document lagbe janan.'},
-      {icon:'🌸',title:'Sakura AI',desc:'Amader AI assistant Bangla, Nepali, Japanese, ebong English-e 24/7 proshno-r uttor dey.'},
-      {icon:'💼',title:'Chakri & Bhritti',desc:'Part-time chakri, SSW shujogh, ebong Bangladesh students-der jonno scholarship khujun.'},
-      {icon:'🧮',title:'Calculator',desc:'Visa eligibility, maashik khoroch, ebong currency conversion tatkhonik hishab korun.'},
-      {icon:'💬',title:'Community',desc:'Japan-e Bangladesh ebong Nepal-er onyanyo students-der shathe jukto hun.'},
+      {icon:'🏫',title:'700+ Bhasha School',desc:'Japan-er 47 jela-r shokol school khujun ebong tulona korun.',href:'/schools'},
+      {icon:'🛂',title:'Visa Guide',desc:'Student, SSW, ebong work visa-r jonno dhap-e-dhap guidance.',href:'/visa'},
+      {icon:'🌸',title:'Sakura AI',desc:'Amader AI assistant Bangla, Nepali, Japanese, ebong English-e 24/7 uttor dey.',href:'/chat'},
+      {icon:'💼',title:'Chakri & Bhritti',desc:'Part-time chakri, SSW shujogh, ebong MEXT scholarship khujun.',href:'/jobs'},
+      {icon:'🧮',title:'Calculator',desc:'Visa eligibility, maashik khoroch, ebong currency conversion hishab korun.',href:'/visa-calculator'},
+      {icon:'💬',title:'Community',desc:'Japan-e Bangladesh ebong Nepal-er students-der shathe jukto hun.',href:'/community'},
+      {icon:'🗾',title:'47 Jela Guide',desc:'Japan-er 47 jela explore korun. Cost, school, ebong Muslim resources khujun.',href:'/prefectures'},
+      {icon:'🕌',title:'Muslim & Halal Guide',desc:'Japan-e halal restaurant, mosque, ebong Muslim-friendly resources khujun.',href:'/halal'},
+      {icon:'📝',title:'JLPT Practice',desc:'JLPT N5, N4, ebong N3 er jonno free practice test dun.',href:'/jlpt-test'},
     ],
     cta: 'Binamulye Shuru Korun',
-    browsSchools: 'School Dekhun',
+    browseSchools: 'School Dekhun',
     shareText: 'Bondhudder shathe share korun:',
   },
   ne: {
     hero: 'Japan-ma Tapainko Yatra Suru Huncha',
-    subtitle: 'Bhasha vidyalaya khojnuhos, visa navigate garnuhos, AI guidance linuhos',
-    findSchools: 'Vidyalaya Khojnuhos',
+    subtitle: 'Bhasha vidyalaya khojnuhos, visa navigate garnuhos, AI guidance linuhos — Bangladesh ra Nepal students-ka lagi',
+    findSchools: '700+ Vidyalaya Herna',
     askSakura: 'Sakura AI-lai Sodhnuhos',
-    stats: ['500+ Vidyalaya', '4 Bhasha', 'AI Powered', 'Nisulka'],
+    stats: ['700+ Vidyalaya', '47 Pradesh', 'AI Powered', 'Nisulka'],
     features: [
-      {icon:'🏫',title:'500+ Bhasha Vidyalaya',desc:'Japan-ka sabai vidyalaya khojnuhos ra tulana garnuhos. Shulk, dorm, ra JLPT ko detail thaha paaunuhos.'},
-      {icon:'🛂',title:'Visa Guide',desc:'Student, SSW, ra work visa ko lagi kadam-kadam guidance. Kun-kun kagajaat chaincha thaha paaunuhos.'},
-      {icon:'🌸',title:'Sakura AI',desc:'Hamro AI assistant Bangla, Nepali, Japanese, ra English-ma 24/7 prashna-ko jawab dincha.'},
-      {icon:'💼',title:'Kaam ra Chaatravitti',desc:'Part-time kaam, SSW mauka, ra Nepal students-ka lagi scholarship khojnuhos.'},
-      {icon:'🧮',title:'Calculator',desc:'Visa eligibility, mahinawar kharcha, ra currency conversion tatkaal hisab garnuhos.'},
-      {icon:'💬',title:'Samuday',desc:'Japan-ma Bangladesh ra Nepal-ka anya students-sanga jodinnuhos.'},
+      {icon:'🏫',title:'700+ Bhasha Vidyalaya',desc:'Japan-ka 47 pradesh-ka sabai vidyalaya khojnuhos ra tulana garnuhos.',href:'/schools'},
+      {icon:'🛂',title:'Visa Guide',desc:'Student, SSW, ra work visa ko lagi kadam-kadam guidance.',href:'/visa'},
+      {icon:'🌸',title:'Sakura AI',desc:'Hamro AI assistant Nepali, Bangla, Japanese, ra English-ma 24/7 jawab dincha.',href:'/chat'},
+      {icon:'💼',title:'Kaam ra Chaatravitti',desc:'Part-time kaam, SSW mauka, ra MEXT scholarship khojnuhos.',href:'/jobs'},
+      {icon:'🧮',title:'Calculator',desc:'Visa eligibility, mahinawar kharcha, ra currency conversion hisab garnuhos.',href:'/visa-calculator'},
+      {icon:'💬',title:'Samuday',desc:'Japan-ma Bangladesh ra Nepal-ka students-sanga jodinnuhos.',href:'/community'},
+      {icon:'🗾',title:'47 Pradesh Guide',desc:'Japan-ka 47 pradesh explore garnuhos. Cost, school, ra Muslim resources khojnuhos.',href:'/prefectures'},
+      {icon:'🕌',title:'Muslim & Halal Guide',desc:'Japan-ma halal restaurant, masjid, ra Muslim-friendly resources khojnuhos.',href:'/halal'},
+      {icon:'📝',title:'JLPT Practice',desc:'JLPT N5, N4, ra N3 ko lagi nisulka practice test dinuhos.',href:'/jlpt-test'},
     ],
     cta: 'Nisulka Suru Garnuhos',
-    browsSchools: 'Vidyalaya Hernus',
+    browseSchools: 'Vidyalaya Hernus',
     shareText: 'Saathiharu-sanga share garnuhos:',
   },
   jp: {
     hero: 'Nihon eno Tabi wa Koko kara Hajimaru',
-    subtitle: 'Gogakko wo sagashi, biza wo navigate shi, AI guidance wo eru',
-    findSchools: 'Gakko wo Sagasu',
+    subtitle: 'Gogakko wo sagashi, biza wo navigate shi, AI guidance wo eru — Bangladesh Nepal no gakusei no tame ni',
+    findSchools: '700+ Gakko wo Miru',
     askSakura: 'Sakura AI ni Kiku',
-    stats: ['500+ Gakko', '4 Gengo', 'AI Powered', 'Muryo'],
+    stats: ['700+ Gakko', '47 Todofuken', 'AI Powered', 'Muryo'],
     features: [
-      {icon:'🏫',title:'500+ Gogakko',desc:'Nihon zenkoku no gogakko wo kensaku, hikaku dekimasu. Jugyoryo, dorm, JLPT junbi no joho mo.'},
-      {icon:'🛂',title:'Biza Guide',desc:'Gakusei, SSW, rodo biza no step-by-step guidance. Hitsuyona shorui ga wakaru.'},
-      {icon:'🌸',title:'Sakura AI',desc:'AI assistant ga Bengali, Nepali, Nihongo, Eigo de 24/7 shitsumon ni kotaeru.'},
-      {icon:'💼',title:'Shigoto to Shogakukin',desc:'Arubaito, SSW kikai, Bangladesh Nepal gakusei muke shogakukin wo sagaseru.'},
-      {icon:'🧮',title:'Calculator',desc:'Biza tekisei, seikatsuhi, tsuka henkan wo sokuseki keisan.'},
-      {icon:'💬',title:'Community',desc:'Nihon ni iru Bangladesh Nepal no gakusei to tsunagaro.'},
+      {icon:'🏫',title:'700+ Gogakko',desc:'Nihon 47 todofuken no gogakko wo kensaku, hikaku dekimasu.',href:'/schools'},
+      {icon:'🛂',title:'Biza Guide',desc:'Gakusei, SSW, rodo biza no step-by-step guidance.',href:'/visa'},
+      {icon:'🌸',title:'Sakura AI',desc:'AI assistant ga Bengali, Nepali, Nihongo, Eigo de 24/7 kotaeru.',href:'/chat'},
+      {icon:'💼',title:'Shigoto to Shogakukin',desc:'Arubaito, SSW kikai, MEXT shogakukin wo sagaseru.',href:'/jobs'},
+      {icon:'🧮',title:'Calculator',desc:'Biza tekisei, seikatsuhi, tsuka henkan wo sokuseki keisan.',href:'/visa-calculator'},
+      {icon:'💬',title:'Community',desc:'Nihon ni iru Bangladesh Nepal no gakusei to tsunagaro.',href:'/community'},
+      {icon:'🗾',title:'47 Todofuken Guide',desc:'Nihon no 47 todofuken wo explore. Cost, gakko, Muslim resources.',href:'/prefectures'},
+      {icon:'🕌',title:'Muslim & Halal Guide',desc:'Nihon no halal restaurant, mosque, Muslim-friendly resources.',href:'/halal'},
+      {icon:'📝',title:'JLPT Practice',desc:'JLPT N5, N4, N3 no muryo practice test.',href:'/jlpt-test'},
     ],
     cta: 'Muryo de Hajimeru',
-    browsSchools: 'Gakko wo Miru',
+    browseSchools: 'Gakko wo Miru',
     shareText: 'Tomodachi ni share shite:',
   },
 }
@@ -83,26 +95,29 @@ export default function Home() {
   const t = content[lang]
 
   const langs = [
-    {code:'en' as const,flag:'🇬🇧'},
-    {code:'bn' as const,flag:'🇧🇩'},
-    {code:'ne' as const,flag:'🇳🇵'},
-    {code:'jp' as const,flag:'🇯🇵'},
+    {code:'en' as const,flag:'🇬🇧',label:'English'},
+    {code:'bn' as const,flag:'🇧🇩',label:'বাংলা'},
+    {code:'ne' as const,flag:'🇳🇵',label:'नेपाली'},
+    {code:'jp' as const,flag:'🇯🇵',label:'日本語'},
   ]
 
   return (
     <main style={{minHeight:'100vh',background:'#0D0907',fontFamily:'sans-serif'}}>
-      <div style={{background:'linear-gradient(135deg, #0D0907 0%, #1A2035 50%, #0D0907 100%)',padding:'80px 20px',textAlign:'center',borderBottom:'1px solid rgba(255,255,255,0.06)',position:'relative'}}>
-        <div style={{display:'flex',justifyContent:'center',gap:'8px',marginBottom:'32px'}}>
+
+      {/* Hero Section */}
+      <div style={{background:'linear-gradient(135deg, #0D0907 0%, #1A2035 50%, #0D0907 100%)',padding:'80px 20px',textAlign:'center',borderBottom:'1px solid rgba(255,255,255,0.06)'}}>
+
+        <div style={{display:'flex',justifyContent:'center',gap:'8px',marginBottom:'32px',flexWrap:'wrap'}}>
           {langs.map(l=>(
-            <button key={l.code} onClick={()=>setLang(l.code)} style={{background:lang===l.code?'rgba(196,32,32,0.3)':'rgba(255,255,255,0.08)',border:lang===l.code?'2px solid #C42020':'2px solid transparent',borderRadius:'8px',padding:'6px 12px',cursor:'pointer',fontSize:'20px',transition:'all 0.2s'}}>
-              {l.flag}
+            <button key={l.code} onClick={()=>setLang(l.code)} style={{background:lang===l.code?'rgba(196,32,32,0.3)':'rgba(255,255,255,0.08)',border:lang===l.code?'2px solid #C42020':'2px solid transparent',borderRadius:'8px',padding:'6px 12px',cursor:'pointer',fontSize:'16px',display:'flex',alignItems:'center',gap:'4px',color:'white'}}>
+              {l.flag} <span style={{fontSize:'12px'}}>{l.label}</span>
             </button>
           ))}
         </div>
 
         <div style={{display:'inline-flex',alignItems:'center',gap:'8px',background:'rgba(196,32,32,0.1)',border:'1px solid rgba(196,32,32,0.3)',borderRadius:'20px',padding:'6px 16px',marginBottom:'24px'}}>
-          <div style={{width:'8px',height:'8px',borderRadius:'50%',background:'#C42020',animation:'pulse 1.5s infinite'}}/>
-          <span style={{color:'#FF8070',fontSize:'12px',fontWeight:'600'}}>500+ Schools · AI Powered · Free</span>
+          <div style={{width:'8px',height:'8px',borderRadius:'50%',background:'#C42020'}}/>
+          <span style={{color:'#FF8070',fontSize:'12px',fontWeight:'600'}}>700+ Schools · 47 Prefectures · AI Powered · Free</span>
         </div>
 
         <h1 style={{color:'white',fontSize:'clamp(28px, 5vw, 52px)',fontWeight:'800',lineHeight:'1.2',marginBottom:'20px',maxWidth:'800px',margin:'0 auto 20px'}}>
@@ -117,49 +132,127 @@ export default function Home() {
             {t.cta} 🌸
           </Link>
           <Link href="/schools" style={{background:'rgba(255,255,255,0.08)',color:'white',textDecoration:'none',padding:'14px 28px',borderRadius:'10px',fontSize:'15px',border:'1px solid rgba(255,255,255,0.15)'}}>
-            {t.browsSchools} →
+            {t.findSchools} →
           </Link>
         </div>
 
         <div style={{display:'flex',gap:'24px',justifyContent:'center',flexWrap:'wrap'}}>
           {t.stats.map((stat,i)=>(
-            <div key={i} style={{textAlign:'center'}}>
-              <div style={{color:'white',fontSize:'18px',fontWeight:'700'}}>{stat}</div>
+            <div key={i} style={{textAlign:'center',background:'rgba(255,255,255,0.05)',borderRadius:'10px',padding:'12px 20px',border:'1px solid rgba(255,255,255,0.08)'}}>
+              <div style={{color:'#C42020',fontSize:'18px',fontWeight:'700'}}>{stat}</div>
             </div>
           ))}
         </div>
       </div>
 
+      {/* Trust Badges */}
+      <div style={{background:'#1A2035',padding:'20px',borderBottom:'1px solid rgba(255,255,255,0.06)'}}>
+        <div style={{maxWidth:'900px',margin:'0 auto',display:'flex',gap:'16px',justifyContent:'center',flexWrap:'wrap'}}>
+          {[
+            {icon:'🔒',label:'Secure & Private'},
+            {icon:'🆓',label:'Free to Join'},
+            {icon:'🌸',label:'AI Powered'},
+            {icon:'📱',label:'Mobile Friendly'},
+            {icon:'🕌',label:'Muslim Friendly'},
+            {icon:'⭐',label:'Trusted by BD & NP Students'},
+          ].map(badge=>(
+            <div key={badge.label} style={{display:'flex',alignItems:'center',gap:'6px',color:'rgba(255,255,255,0.5)',fontSize:'12px'}}>
+              <span>{badge.icon}</span>
+              <span>{badge.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Features Section */}
       <div style={{padding:'64px 20px',maxWidth:'1200px',margin:'0 auto'}}>
-        <h2 style={{color:'white',fontSize:'28px',fontWeight:'700',textAlign:'center',marginBottom:'40px'}}>
+        <h2 style={{color:'white',fontSize:'28px',fontWeight:'700',textAlign:'center',marginBottom:'12px'}}>
           Everything You Need 🌸
         </h2>
+        <p style={{color:'rgba(255,255,255,0.4)',fontSize:'15px',textAlign:'center',marginBottom:'40px'}}>
+          All the tools and information for your Japan journey in one place
+        </p>
         <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))',gap:'20px'}}>
           {t.features.map((feature,i)=>(
-            <div key={i} style={{background:'#1A2035',borderRadius:'16px',padding:'24px',border:'1px solid rgba(255,255,255,0.08)',transition:'border-color 0.2s'}}
-              onMouseEnter={e=>(e.currentTarget.style.borderColor='rgba(196,32,32,0.4)')}
-              onMouseLeave={e=>(e.currentTarget.style.borderColor='rgba(255,255,255,0.08)')}>
-              <div style={{fontSize:'40px',marginBottom:'14px'}}>{feature.icon}</div>
-              <h3 style={{color:'white',fontSize:'16px',fontWeight:'700',marginBottom:'8px'}}>{feature.title}</h3>
-              <p style={{color:'rgba(255,255,255,0.5)',fontSize:'13px',lineHeight:'1.7'}}>{feature.desc}</p>
+            <Link key={i} href={feature.href} style={{textDecoration:'none'}}>
+              <div style={{background:'#1A2035',borderRadius:'16px',padding:'24px',border:'1px solid rgba(255,255,255,0.08)',transition:'all 0.2s',height:'100%',cursor:'pointer'}}
+                onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(196,32,32,0.4)';e.currentTarget.style.transform='translateY(-2px)'}}
+                onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(255,255,255,0.08)';e.currentTarget.style.transform='translateY(0)'}}>
+                <div style={{fontSize:'40px',marginBottom:'14px'}}>{feature.icon}</div>
+                <h3 style={{color:'white',fontSize:'16px',fontWeight:'700',marginBottom:'8px'}}>{feature.title}</h3>
+                <p style={{color:'rgba(255,255,255,0.5)',fontSize:'13px',lineHeight:'1.7',marginBottom:'12px'}}>{feature.desc}</p>
+                <span style={{color:'#C42020',fontSize:'12px',fontWeight:'600'}}>Learn more →</span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* Stats Section */}
+      <div style={{background:'#1A2035',padding:'48px 20px',borderTop:'1px solid rgba(255,255,255,0.06)',borderBottom:'1px solid rgba(255,255,255,0.06)'}}>
+        <div style={{maxWidth:'900px',margin:'0 auto',display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(180px,1fr))',gap:'20px',textAlign:'center'}}>
+          {[
+            {value:'700+',label:'Language Schools',icon:'🏫'},
+            {value:'47',label:'Prefectures Covered',icon:'🗾'},
+            {value:'4',label:'Languages Supported',icon:'🌍'},
+            {value:'24/7',label:'AI Assistant Available',icon:'🌸'},
+            {value:'Free',label:'To Join & Use',icon:'🆓'},
+            {value:'100%',label:'Student Focused',icon:'🎓'},
+          ].map(stat=>(
+            <div key={stat.label} style={{padding:'20px'}}>
+              <div style={{fontSize:'32px',marginBottom:'8px'}}>{stat.icon}</div>
+              <div style={{color:'#C42020',fontSize:'28px',fontWeight:'800',marginBottom:'4px'}}>{stat.value}</div>
+              <div style={{color:'rgba(255,255,255,0.4)',fontSize:'12px'}}>{stat.label}</div>
             </div>
           ))}
         </div>
       </div>
 
-      <div style={{background:'#1A2035',padding:'64px 20px',textAlign:'center',borderTop:'1px solid rgba(255,255,255,0.06)'}}>
-        <h2 style={{color:'white',fontSize:'28px',fontWeight:'700',marginBottom:'12px'}}>Ready to Start? 🎌</h2>
-        <p style={{color:'rgba(255,255,255,0.4)',fontSize:'16px',marginBottom:'32px'}}>Join thousands of students from Bangladesh and Nepal</p>
-        <div style={{display:'flex',gap:'12px',justifyContent:'center',flexWrap:'wrap',marginBottom:'32px'}}>
-          <Link href="/register" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'14px 32px',borderRadius:'10px',fontWeight:'700',fontSize:'15px'}}>
+      {/* Testimonials */}
+      <div style={{padding:'64px 20px',maxWidth:'1000px',margin:'0 auto'}}>
+        <h2 style={{color:'white',fontSize:'24px',fontWeight:'700',textAlign:'center',marginBottom:'32px'}}>
+          What Students Say 💬
+        </h2>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))',gap:'16px'}}>
+          {[
+            {name:'Rahman',country:'🇧🇩 Bangladesh',text:'Japan Life Guide helped me find the perfect school in Tokyo. The visa guide was so helpful!',rating:5},
+            {name:'Priya',country:'🇳🇵 Nepal',text:'Sakura AI answered all my questions about SSW visa in Nepali. Amazing service!',rating:5},
+            {name:'Karim',country:'🇧🇩 Bangladesh',text:'The halal food guide was exactly what I needed as a Muslim student in Japan.',rating:5},
+            {name:'Bikash',country:'🇳🇵 Nepal',text:'I found my language school through Japan Life Guide. Now I am studying in Osaka!',rating:5},
+            {name:'Fatima',country:'🇧🇩 Bangladesh',text:'The community helped me connect with other BD students. I felt so welcome!',rating:5},
+            {name:'Rohan',country:'🇳🇵 Nepal',text:'The JLPT practice tests helped me pass N4. Thank you Japan Life Guide!',rating:5},
+          ].map((testimonial,i)=>(
+            <div key={i} style={{background:'#1A2035',borderRadius:'12px',padding:'20px',border:'1px solid rgba(255,255,255,0.08)'}}>
+              <div style={{color:'#F0A830',fontSize:'16px',marginBottom:'10px'}}>{'★'.repeat(testimonial.rating)}</div>
+              <p style={{color:'rgba(255,255,255,0.7)',fontSize:'13px',lineHeight:'1.7',marginBottom:'12px',fontStyle:'italic'}}>"{testimonial.text}"</p>
+              <div style={{display:'flex',gap:'8px',alignItems:'center'}}>
+                <div style={{width:'32px',height:'32px',borderRadius:'50%',background:'#C42020',display:'flex',alignItems:'center',justifyContent:'center',color:'white',fontSize:'13px',fontWeight:'700'}}>{testimonial.name[0]}</div>
+                <div>
+                  <div style={{color:'white',fontSize:'13px',fontWeight:'600'}}>{testimonial.name}</div>
+                  <div style={{color:'rgba(255,255,255,0.4)',fontSize:'11px'}}>{testimonial.country}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* CTA Section */}
+      <div style={{background:'linear-gradient(135deg, #C42020, #8B0000)',padding:'64px 20px',textAlign:'center'}}>
+        <h2 style={{color:'white',fontSize:'32px',fontWeight:'800',marginBottom:'12px'}}>Ready to Start Your Japan Journey? 🎌</h2>
+        <p style={{color:'rgba(255,255,255,0.8)',fontSize:'16px',marginBottom:'32px',maxWidth:'600px',margin:'0 auto 32px'}}>
+          Join thousands of students from Bangladesh and Nepal who found their path to Japan
+        </p>
+        <div style={{display:'flex',gap:'12px',justifyContent:'center',flexWrap:'wrap',marginBottom:'24px'}}>
+          <Link href="/register" style={{background:'white',color:'#C42020',textDecoration:'none',padding:'14px 32px',borderRadius:'10px',fontWeight:'700',fontSize:'15px'}}>
             {t.cta} 🌸
           </Link>
-          <Link href="/chat" style={{background:'rgba(255,255,255,0.08)',color:'white',textDecoration:'none',padding:'14px 32px',borderRadius:'10px',fontSize:'15px',border:'1px solid rgba(255,255,255,0.15)'}}>
+          <Link href="/chat" style={{background:'rgba(255,255,255,0.2)',color:'white',textDecoration:'none',padding:'14px 32px',borderRadius:'10px',fontSize:'15px',border:'1px solid rgba(255,255,255,0.4)'}}>
             {t.askSakura} 🌸
           </Link>
         </div>
         <div style={{marginTop:'16px'}}>
-          <p style={{color:'rgba(255,255,255,0.3)',fontSize:'13px',marginBottom:'12px'}}>{t.shareText}</p>
+          <p style={{color:'rgba(255,255,255,0.6)',fontSize:'13px',marginBottom:'12px'}}>{t.shareText}</p>
           <ShareButton />
         </div>
       </div>

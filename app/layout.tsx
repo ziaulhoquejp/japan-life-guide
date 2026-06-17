@@ -43,9 +43,12 @@ export const metadata: Metadata = {
     apple: '/icon-192.png',
   },
   robots: {
-    index: true,
-    follow: true,
-  },
+  index: true,
+  follow: true,
+},
+verification: {
+  google: 'E4GLBv9eCjT1bG4R4HE2i2D-YRQujjtViULbtCAMYO0',
+},
 }
 
 export default function RootLayout({

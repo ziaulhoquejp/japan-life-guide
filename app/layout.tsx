@@ -8,26 +8,39 @@ import ServiceWorker from './components/ServiceWorker'
 import Script from 'next/script'
 
 export const metadata: Metadata = {
-  title: 'Japan Life Guide — Study & Work in Japan',
-  description: 'Complete guide for Bangladesh and Nepal students going to Japan. Find language schools, visa guides, jobs, scholarships and AI assistance.',
-  keywords: 'Japan study, Japanese language school, student visa Japan, Bangladesh Japan, Nepal Japan, SSW visa, JLPT, scholarships Japan',
+  title: 'Japan Life Guide - Study & Work in Japan',
+  description: 'Find 700+ Japanese language schools, visa guides, and AI assistant for Bangladesh and Nepal students going to Japan.',
+  keywords: 'Japan study, Japanese language school, student visa Japan, SSW visa, Bangladesh Japan, Nepal Japan, JLPT, scholarships Japan',
   authors: [{ name: 'Japan Life Guide' }],
   creator: 'Japan Life Guide',
   publisher: 'Japan Life Guide',
   metadataBase: new URL('https://japanlifeguide.app'),
   openGraph: {
-    title: 'Japan Life Guide — Study & Work in Japan',
-    description: 'Complete guide for Bangladesh and Nepal students going to Japan. 200+ schools, AI chat, visa guide, jobs and scholarships.',
+    title: 'Japan Life Guide - Study & Work in Japan 🌸',
+    description: 'Find 700+ Japanese language schools, visa guides, and AI assistant in Bengali & Nepali.',
     url: 'https://japanlifeguide.app',
     siteName: 'Japan Life Guide',
+    images: [
+      {
+        url: 'https://japanlifeguide.app/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Japan Life Guide',
+      }
+    ],
     locale: 'en_US',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Japan Life Guide — Study & Work in Japan',
-    description: 'Complete guide for Bangladesh and Nepal students going to Japan.',
+    title: 'Japan Life Guide - Study & Work in Japan 🌸',
+    description: 'Find 700+ Japanese language schools, visa guides, and AI assistant in Bengali & Nepali.',
+    images: ['https://japanlifeguide.app/og-image.png'],
     creator: '@japanlifeguide',
+  },
+  icons: {
+    icon: '/icon-192.png',
+    apple: '/icon-192.png',
   },
   robots: {
     index: true,
@@ -41,7 +54,6 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   const gaId = process.env.NEXT_PUBLIC_GA_ID
-
   return (
     <html lang="en">
       <head>

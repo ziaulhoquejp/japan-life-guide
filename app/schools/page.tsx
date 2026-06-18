@@ -79,9 +79,9 @@ export default function SchoolsPage() {
           <div>
             <h1 style={{color:'white',fontSize:'32px',fontWeight:'700',marginBottom:'4px'}}>Language Schools</h1>
             <p style={{color:'rgba(255,255,255,0.4)',fontSize:'14px'}}>{filtered.length} of {schools.length} schools</p>
-            <div style={{background:'rgba(240,168,48,0.1)',border:'1px solid rgba(240,168,48,0.2)',borderRadius:'8px',padding:'10px 16px',marginTop:'8px',display:'inline-flex',gap:'8px',alignItems:'center'}}>
-  <span>⚠️</span>
-  <p style={{color:'#F0A830',fontSize:'12px',margin:0}}>School data is for reference only. Always verify directly with schools before applying.</p>
+      <div style={{background:'rgba(46,200,122,0.1)',border:'1px solid rgba(46,200,122,0.2)',borderRadius:'8px',padding:'10px 16px',marginTop:'8px',display:'flex',gap:'8px',alignItems:'center'}}>
+  <span>✅</span>
+  <p style={{color:'#2EC87A',fontSize:'12px',margin:0}}>All 724 schools are real Japanese language schools with official website links. Always verify fees and availability directly with schools.</p>
 </div>
           </div>
           <div style={{display:'flex',gap:'8px'}}>

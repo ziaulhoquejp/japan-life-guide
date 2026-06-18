@@ -79,6 +79,20 @@ export default function Page() {
           <div style={{fontSize:'72px',flexShrink:0}}>{school.icon}</div>
           <div style={{flex:1}}>
             <h1 style={{color:'white',fontSize:'28px',fontWeight:'700',marginBottom:'4px'}}>{school.name_en}</h1>
+            {!school.data_verified && (
+  <div style={{background:'rgba(240,168,48,0.1)',border:'1px solid rgba(240,168,48,0.3)',borderRadius:'8px',padding:'10px 14px',marginBottom:'10px',display:'flex',gap:'8px',alignItems:'flex-start'}}>
+    <span style={{fontSize:'16px',flexShrink:0}}>⚠️</span>
+    <p style={{color:'#F0A830',fontSize:'12px',margin:0,lineHeight:'1.6'}}>
+      School information shown is for reference only and may not be accurate. Please verify fees, courses, and availability directly with the school before applying. Japan Life Guide is working to verify all school data.
+    </p>
+  </div>
+)}
+{school.data_verified && (
+  <div style={{background:'rgba(46,200,122,0.1)',border:'1px solid rgba(46,200,122,0.3)',borderRadius:'8px',padding:'8px 14px',marginBottom:'10px',display:'flex',gap:'8px',alignItems:'center'}}>
+    <span style={{fontSize:'14px'}}>✅</span>
+    <p style={{color:'#2EC87A',fontSize:'12px',margin:0,fontWeight:'600'}}>Verified school data</p>
+  </div>
+)}
             <p style={{color:'#C42020',fontSize:'14px',marginBottom:'8px',letterSpacing:'1px'}}>{school.name_jp}</p>
             <div style={{display:'flex',gap:'12px',flexWrap:'wrap',marginBottom:'12px'}}>
               <span style={{color:'rgba(255,255,255,0.5)',fontSize:'13px'}}>📍 {school.city}</span>

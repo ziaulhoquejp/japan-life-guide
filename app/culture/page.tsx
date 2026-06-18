@@ -3,213 +3,241 @@ import { useState } from 'react'
 
 const CULTURE_TOPICS = [
   {
-    id:1,
-    icon:'🙇',
-    title:'Bowing (Ojigi)',
-    category:'Etiquette',
-    importance:'Essential',
-    desc:'Bowing is the Japanese way of greeting, thanking, and apologizing. The deeper the bow, the more respect you show.',
+    id:1, icon:'🙇', title:'Bowing (お辞儀)', category:'Etiquette',
+    color:'#C42020',
+    desc:'Bowing is the most important greeting in Japan. The deeper the bow, the more respect you show.',
+    details:[
+      {situation:'Casual greeting',bow:'15 degrees',note:'Quick nod to friends and classmates'},
+      {situation:'Meeting someone new',bow:'30 degrees',note:'Standard business and formal greeting'},
+      {situation:'Thanking someone',bow:'30-45 degrees',note:'Show genuine gratitude'},
+      {situation:'Apologizing',bow:'45-90 degrees',note:'Deep bow shows sincere apology'},
+    ],
     tips:[
-      '15 degree bow - casual greeting',
-      '30 degree bow - showing respect to teacher or boss',
-      '45 degree bow - deep apology or gratitude',
-      'Never bow while shaking hands - do one or the other',
-      'In school, bow to your teacher when entering class',
-    ]
+      'Don\'t bow while walking - stop first',
+      'Maintain eye contact briefly then look down',
+      'Never bow with hands in pockets',
+      'Return bows when someone bows to you',
+      'Foreigners are not expected to bow perfectly - any attempt is appreciated',
+    ],
   },
   {
-    id:2,
-    icon:'🚇',
-    title:'Train Etiquette',
-    category:'Transport',
-    importance:'Essential',
-    desc:'Japanese trains have strict unwritten rules that everyone follows. As a foreigner, following these rules will earn respect.',
+    id:2, icon:'👟', title:'Removing Shoes', category:'Home & School',
+    color:'#4A8EFF',
+    desc:'Always remove shoes when entering homes, many traditional restaurants, some schools, and places with a raised floor.',
+    details:[
+      {situation:'Entering a home',bow:'Always',note:'Change to slippers if provided'},
+      {situation:'Traditional restaurants',bow:'Often',note:'Look for raised floor area (tatami)'},
+      {situation:'Some schools',bow:'Sometimes',note:'Check for shoe lockers at entrance'},
+      {situation:'Temples and shrines',bow:'Sometimes',note:'Signs will indicate'},
+    ],
     tips:[
-      'No phone calls on the train - text only',
-      'Keep your voice low',
-      'Give up your seat for elderly, pregnant, or disabled people',
-      'Stand on the left side of escalators (Tokyo) or right side (Osaka)',
-      'Form a neat queue at the platform line markings',
-    ]
+      'The entrance area (玄関 genkan) is where you remove shoes',
+      'Point your shoes towards the door when you remove them',
+      'Wear clean socks without holes!',
+      'Slippers are not worn on tatami mats',
+      'Separate toilet slippers are provided in many homes',
+    ],
   },
   {
-    id:3,
-    icon:'🍱',
-    title:'Eating Etiquette',
-    category:'Food',
-    importance:'Important',
-    desc:'Food is very important in Japanese culture. Following eating etiquette shows respect for the food and the people you are with.',
+    id:3, icon:'🚂', title:'Train Etiquette', category:'Transport',
+    color:'#2EC87A',
+    desc:'Japanese trains have very specific rules of etiquette that everyone follows.',
+    details:[
+      {situation:'Phone calls',bow:'Never',note:'Phone calls are prohibited on trains'},
+      {situation:'Eating',bow:'Generally no',note:'Acceptable on long-distance trains only'},
+      {situation:'Priority seats',bow:'Always give up',note:'For elderly, pregnant, disabled'},
+      {situation:'Noise level',bow:'Keep quiet',note:'Speak softly if necessary'},
+    ],
     tips:[
-      'Say "Itadakimasu" before eating and "Gochisousama" after',
-      'Do not stick chopsticks upright in rice - this is for funerals',
-      'Do not pass food chopstick to chopstick - also a funeral custom',
+      'Set phone to silent mode (manner mode)',
+      'Do not eat on local trains',
+      'Stand in line and wait for passengers to exit before boarding',
+      'Backpacks should be held in front or stored overhead',
+      'Avoid talking on phone - text instead',
+      'Do not apply makeup on the train',
+    ],
+  },
+  {
+    id:4, icon:'🗑️', title:'Garbage Sorting', category:'Daily Life',
+    color:'#F0A830',
+    desc:'Japan has very strict garbage sorting rules. Breaking them can cause problems with neighbors.',
+    details:[
+      {situation:'Burnable (燃えるごみ)',bow:'Food waste, paper, clothes',note:'Usually collected 2x per week'},
+      {situation:'Non-burnable (燃えないごみ)',bow:'Metal, glass, ceramics',note:'Usually 1x per month'},
+      {situation:'Recyclable (資源ごみ)',bow:'Plastic bottles, cans, cardboard',note:'Separate by type'},
+      {situation:'Large items (粗大ごみ)',bow:'Furniture, appliances',note:'Special collection - call city hall'},
+    ],
+    tips:[
+      'Each city has different rules - check with your city hall',
+      'Only put garbage out on the correct day',
+      'Use designated garbage bags (指定ごみ袋)',
+      'Wash plastic bottles and remove caps before recycling',
+      'Cigarettes go in non-burnable garbage',
+      'Ask your school or landlord to explain local rules',
+    ],
+  },
+  {
+    id:5, icon:'🍽️', title:'Dining Etiquette', category:'Food',
+    color:'#A855F7',
+    desc:'Japanese dining has many customs that show respect for the food and other diners.',
+    details:[
+      {situation:'Before eating',bow:'Say "Itadakimasu"',note:'Shows gratitude for the food'},
+      {situation:'After eating',bow:'Say "Gochisousama"',note:'Thanks the person who prepared food'},
+      {situation:'Chopsticks',bow:'Never stick in rice',note:'Reminds Japanese of funeral rites'},
+      {situation:'Passing food',bow:'Use serving chopsticks',note:'Do not pass food chopstick to chopstick'},
+    ],
+    tips:[
       'Slurping noodles is acceptable and shows you enjoy the food',
-      'Finish everything on your plate - wasting food is disrespectful',
-    ]
+      'It is polite to try everything on your plate',
+      'Do not waste food - take only what you can eat',
+      'Tipping is NOT done in Japan - it can be offensive',
+      'Split bills (割り勘 warikan) is common among friends',
+      'Pour drinks for others before pouring for yourself',
+    ],
   },
   {
-    id:4,
-    icon:'👟',
-    title:'Removing Shoes',
-    category:'Home Life',
-    importance:'Essential',
-    desc:'Always remove your shoes when entering a Japanese home, many traditional restaurants, and some schools.',
+    id:6, icon:'🏢', title:'Workplace Culture', category:'Work',
+    color:'#FF8070',
+    desc:'Japanese workplace culture has unique customs important for part-time and full-time workers.',
+    details:[
+      {situation:'Arriving',bow:'Be early - 5 min before',note:'Being on time means arriving early'},
+      {situation:'Greetings',bow:'Say "Ohayou gozaimasu"',note:'Morning greeting to all colleagues'},
+      {situation:'Leaving',bow:'Say "Otsukaresama"',note:'Said when leaving or finishing work'},
+      {situation:'Uniform',bow:'Wear correctly',note:'Follow uniform rules strictly'},
+    ],
     tips:[
-      'Look for the entrance area (genkan) - this is where you remove shoes',
-      'Point shoes toward the door when you remove them',
-      'Wear clean socks without holes - people will see them!',
-      'Slippers are usually provided for inside the house',
-      'Never wear slippers in tatami rooms',
-    ]
+      'Punctuality is extremely important - never be late',
+      'Say "Sumimasen" (excuse me) to get attention politely',
+      'Accept instructions with "Hai, wakarimashita" (Yes, I understand)',
+      'Do not leave before your manager without permission',
+      'Clean your workspace before leaving',
+      'Report problems to supervisor immediately',
+    ],
   },
   {
-    id:5,
-    icon:'💴',
-    title:'Money & Payments',
-    category:'Daily Life',
-    importance:'Important',
-    desc:'Japan is still largely a cash society, though digital payments are growing. Understanding payment customs is important.',
+    id:7, icon:'💰', title:'Money & Payment', category:'Daily Life',
+    color:'#2EC87A',
+    desc:'Japan is still largely a cash society, though digital payments are increasing.',
+    details:[
+      {situation:'Cash',bow:'Still widely used',note:'Always carry some cash'},
+      {situation:'IC Cards',bow:'Suica, Pasmo',note:'For trains, convenience stores'},
+      {situation:'PayPay',bow:'Popular app',note:'QR code payment widely accepted'},
+      {situation:'Credit cards',bow:'Visa/Mastercard',note:'Major stores accept cards'},
+    ],
     tips:[
-      'Always carry cash - many small shops do not accept cards',
-      'Use both hands to give or receive money and cards',
-      'Money is placed in a tray at shops - do not hand it directly',
-      'Tipping is NOT customary in Japan - it can be seen as rude',
-      'IC cards (Suica, Pasmo) are used for trains and convenience stores',
-    ]
+      'Always carry cash - many small restaurants are cash only',
+      'Get a Suica or Pasmo IC card for trains and convenience stores',
+      'Download PayPay app for QR code payments',
+      'Receive and give money/cards with two hands',
+      'Do not tip - it is not customary in Japan',
+      'Price on label includes tax (消費税)',
+    ],
   },
   {
-    id:6,
-    icon:'🏥',
-    title:'Healthcare System',
-    category:'Health',
-    importance:'Essential',
-    desc:'Japan has an excellent healthcare system. As a foreign resident, you must enroll in National Health Insurance.',
+    id:8, icon:'🗣️', title:'Language Tips', category:'Language',
+    color:'#4A8EFF',
+    desc:'Some basic Japanese phrases and communication tips that will help in daily life.',
+    details:[
+      {situation:'Excuse me',bow:'Sumimasen (すみません)',note:'Most useful phrase in Japan'},
+      {situation:'Thank you',bow:'Arigatou gozaimasu',note:'Formal - use with staff/teachers'},
+      {situation:'Sorry',bow:'Moushiwake gozaimasen',note:'Very formal apology'},
+      {situation:'I don\'t understand',bow:'Wakarimasen',note:'Polite way to say you don\'t understand'},
+    ],
     tips:[
-      'Enroll in National Health Insurance (Kokumin Kenkou Hoken) at city hall',
-      'Insurance covers 70% of medical costs',
-      'Premium is about 2,000-5,000 Yen per month for students',
-      'Always carry your insurance card (Hoken-shou)',
-      'For emergencies, call 119 for ambulance',
-    ]
-  },
-  {
-    id:7,
-    icon:'🗑️',
-    title:'Garbage Sorting',
-    category:'Daily Life',
-    importance:'Essential',
-    desc:'Japan has very strict garbage sorting rules. Putting garbage in the wrong bin can cause problems with neighbors.',
-    tips:[
-      'Garbage is sorted into: burnable, non-burnable, plastic, glass, cans, cardboard',
-      'Each neighborhood has specific garbage collection days',
-      'Garbage must be put out on the correct day only',
-      'Wash containers before putting in recycling',
-      'Your school or ward office will give you a garbage sorting guide',
-    ]
-  },
-  {
-    id:8,
-    icon:'😷',
-    title:'Wearing Masks',
-    category:'Health',
-    importance:'Important',
-    desc:'Wearing masks is common in Japan, especially when sick or during cold and flu season.',
-    tips:[
-      'Wear a mask if you have a cold or cough - it is polite to others',
-      'Masks are sold cheaply at convenience stores and pharmacies',
-      'Many Japanese wear masks even when healthy during flu season',
-      'Remove mask when eating in restaurants',
-    ]
-  },
-  {
-    id:9,
-    icon:'📱',
-    title:'Technology & Apps',
-    category:'Daily Life',
-    importance:'Important',
-    desc:'Japan has a unique tech culture. These apps and services will make your life much easier.',
-    tips:[
-      'LINE - Most popular messaging app in Japan (not WhatsApp)',
-      'Google Maps - Best for navigation and train routes',
-      'Navitime or Yahoo Transit - For train schedules',
-      'PayPay or Suica - For cashless payments',
-      'Mercari - For buying/selling secondhand items',
-    ]
-  },
-  {
-    id:10,
-    icon:'🌸',
-    title:'Seasons & Festivals',
-    category:'Culture',
-    importance:'Enjoyable',
-    desc:'Japan has beautiful seasonal events and festivals. Participating will help you connect with Japanese culture.',
-    tips:[
-      'Hanami (Cherry Blossom viewing) in March-April - join your school event',
-      'Obon festival in August - visit your school area matsuri',
-      'Koyo (Autumn leaves) in October-November - visit parks',
-      'New Year (Oshogatsu) in January - visit a shrine for Hatsumode',
-      'Many festivals are free and open to everyone',
-    ]
+      'Japanese people appreciate any attempt to speak Japanese',
+      'Use Google Translate camera mode for signs and menus',
+      'Most young Japanese can read English even if they can\'t speak it',
+      'Speak slowly and clearly if using English',
+      'Avoid sarcasm - it is often misunderstood',
+      'Practice at convenience stores - staff are patient',
+    ],
   },
 ]
 
 export default function CulturePage() {
-  const [selected, setSelected] = useState<any>(null)
+  const [selected, setSelected] = useState<any>(CULTURE_TOPICS[0])
   const [category, setCategory] = useState('All')
 
-  const categories = ['All', 'Etiquette', 'Transport', 'Food', 'Home Life', 'Daily Life', 'Health', 'Culture']
-  const filtered = category === 'All' ? CULTURE_TOPICS : CULTURE_TOPICS.filter(t => t.category === category)
+  const categories = ['All', 'Etiquette', 'Home & School', 'Transport', 'Daily Life', 'Food', 'Work', 'Language']
 
-  const importanceColor: any = {
-    'Essential': '#C42020',
-    'Important': '#F0A830',
-    'Enjoyable': '#2EC87A',
-  }
+  const filtered = CULTURE_TOPICS.filter(t => category === 'All' || t.category === category)
 
   return (
     <main style={{minHeight:'100vh',background:'#0D0907',fontFamily:'sans-serif'}}>
       <div style={{background:'#1A2035',padding:'40px',borderBottom:'3px solid #C42020',textAlign:'center'}}>
         <h1 style={{color:'white',fontSize:'32px',fontWeight:'700',marginBottom:'8px'}}>Japanese Culture Guide</h1>
-        <p style={{color:'rgba(255,255,255,0.4)',fontSize:'16px'}}>Essential customs and etiquette for living in Japan</p>
+        <p style={{color:'rgba(255,255,255,0.4)',fontSize:'16px',marginBottom:'16px'}}>Essential cultural tips for Bangladesh and Nepal students in Japan</p>
+        <div style={{background:'rgba(196,32,32,0.1)',border:'1px solid rgba(196,32,32,0.3)',borderRadius:'8px',padding:'10px 20px',display:'inline-block'}}>
+          <p style={{color:'#FF8070',fontSize:'13px'}}>💡 Understanding Japanese culture helps you make friends and avoid misunderstandings!</p>
+        </div>
       </div>
 
-      <div style={{maxWidth:'1000px',margin:'0 auto',padding:'32px 20px'}}>
-        <div style={{display:'flex',gap:'8px',flexWrap:'wrap',marginBottom:'24px'}}>
-          {categories.map(c=>(
-            <button key={c} onClick={()=>setCategory(c)} style={{background:category===c?'#C42020':'#1A2035',border:'none',borderRadius:'20px',padding:'8px 16px',color:'white',fontSize:'12px',fontWeight:'600',cursor:'pointer'}}>
-              {c}
+      <div style={{maxWidth:'1100px',margin:'0 auto',padding:'32px 20px'}}>
+        <div style={{display:'flex',gap:'8px',marginBottom:'24px',flexWrap:'wrap'}}>
+          {categories.map(cat=>(
+            <button key={cat} onClick={()=>setCategory(cat)} style={{background:category===cat?'#C42020':'#1A2035',border:'none',borderRadius:'20px',padding:'8px 16px',color:'white',fontSize:'12px',fontWeight:'600',cursor:'pointer'}}>
+              {cat}
             </button>
           ))}
         </div>
 
-        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))',gap:'14px'}}>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(240px,1fr))',gap:'12px',marginBottom:'24px'}}>
           {filtered.map(topic=>(
-            <div key={topic.id} onClick={()=>setSelected(selected?.id===topic.id?null:topic)} style={{background:selected?.id===topic.id?'rgba(196,32,32,0.1)':'#1A2035',border:'2px solid ' + (selected?.id===topic.id?'#C42020':'rgba(255,255,255,0.08)'),borderRadius:'14px',padding:'20px',cursor:'pointer',transition:'all 0.2s'}}>
-              <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:'10px'}}>
-                <div style={{fontSize:'36px'}}>{topic.icon}</div>
-                <span style={{background:importanceColor[topic.importance] + '20',color:importanceColor[topic.importance],padding:'3px 8px',borderRadius:'4px',fontSize:'10px',fontWeight:'700'}}>{topic.importance}</span>
-              </div>
-              <h2 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'4px'}}>{topic.title}</h2>
-              <p style={{color:'rgba(255,255,255,0.4)',fontSize:'11px',marginBottom:'8px'}}>{topic.category}</p>
-              <p style={{color:'rgba(255,255,255,0.5)',fontSize:'12px',lineHeight:'1.6'}}>{topic.desc}</p>
-
-              {selected?.id===topic.id && (
-                <div style={{marginTop:'14px',borderTop:'1px solid rgba(255,255,255,0.08)',paddingTop:'14px'}}>
-                  <p style={{color:'rgba(255,255,255,0.4)',fontSize:'11px',fontWeight:'700',marginBottom:'8px',letterSpacing:'1px'}}>TIPS</p>
-                  {topic.tips.map((tip,i)=>(
-                    <div key={i} style={{display:'flex',gap:'8px',alignItems:'flex-start',marginBottom:'6px',color:'rgba(255,255,255,0.6)',fontSize:'12px',lineHeight:'1.5'}}>
-                      <span style={{color:'#C42020',flexShrink:0}}>→</span>{tip}
-                    </div>
-                  ))}
+            <div key={topic.id} onClick={()=>setSelected(topic)} style={{background:selected.id===topic.id?'rgba(196,32,32,0.15)':'#1A2035',border:'2px solid ' + (selected.id===topic.id?'#C42020':'rgba(255,255,255,0.08)'),borderRadius:'12px',padding:'16px',cursor:'pointer',transition:'all 0.2s'}}>
+              <div style={{display:'flex',gap:'10px',alignItems:'center',marginBottom:'8px'}}>
+                <span style={{fontSize:'28px'}}>{topic.icon}</span>
+                <div>
+                  <h3 style={{color:'white',fontSize:'13px',fontWeight:'700'}}>{topic.title}</h3>
+                  <span style={{background:topic.color+'20',color:topic.color,padding:'1px 6px',borderRadius:'4px',fontSize:'10px'}}>{topic.category}</span>
                 </div>
-              )}
+              </div>
+              <p style={{color:'rgba(255,255,255,0.5)',fontSize:'12px',lineHeight:'1.5'}}>{topic.desc.slice(0,80)}...</p>
             </div>
           ))}
         </div>
 
+        {selected && (
+          <div style={{background:'#1A2035',borderRadius:'16px',padding:'28px',border:'2px solid ' + selected.color + '40'}}>
+            <div style={{display:'flex',gap:'16px',alignItems:'flex-start',marginBottom:'20px',flexWrap:'wrap'}}>
+              <span style={{fontSize:'48px'}}>{selected.icon}</span>
+              <div style={{flex:1}}>
+                <h2 style={{color:'white',fontSize:'22px',fontWeight:'700',marginBottom:'4px'}}>{selected.title}</h2>
+                <span style={{background:selected.color+'20',color:selected.color,padding:'3px 10px',borderRadius:'20px',fontSize:'12px',fontWeight:'600'}}>{selected.category}</span>
+                <p style={{color:'rgba(255,255,255,0.6)',fontSize:'14px',lineHeight:'1.7',marginTop:'8px'}}>{selected.desc}</p>
+              </div>
+            </div>
+
+            <div style={{marginBottom:'20px'}}>
+              <h3 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'12px'}}>📋 Situation Guide</h3>
+              <div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
+                {selected.details.map((detail:any,i:number)=>(
+                  <div key={i} style={{background:'#0D0907',borderRadius:'8px',padding:'12px',display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'8px',alignItems:'center'}}>
+                    <span style={{color:'rgba(255,255,255,0.7)',fontSize:'12px'}}>{detail.situation}</span>
+                    <span style={{color:selected.color,fontSize:'12px',fontWeight:'600'}}>{detail.bow}</span>
+                    <span style={{color:'rgba(255,255,255,0.4)',fontSize:'11px'}}>{detail.note}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div style={{background:'rgba(255,255,255,0.04)',borderRadius:'10px',padding:'16px',border:'1px solid rgba(255,255,255,0.08)'}}>
+              <h3 style={{color:'#F0A830',fontSize:'13px',fontWeight:'700',marginBottom:'10px'}}>💡 Important Tips</h3>
+              {selected.tips.map((tip:string,i:number)=>(
+                <div key={i} style={{display:'flex',gap:'8px',marginBottom:'8px'}}>
+                  <span style={{color:selected.color,flexShrink:0}}>→</span>
+                  <span style={{color:'rgba(255,255,255,0.6)',fontSize:'13px',lineHeight:'1.6'}}>{tip}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div style={{background:'#1A2035',borderRadius:'12px',padding:'20px',marginTop:'24px',textAlign:'center',border:'1px solid rgba(255,255,255,0.08)'}}>
           <p style={{color:'rgba(255,255,255,0.5)',fontSize:'13px',marginBottom:'12px'}}>Have questions about Japanese culture?</p>
-          <a href="/chat" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'10px 20px',borderRadius:'8px',fontSize:'13px',fontWeight:'700'}}>Ask Sakura AI</a>
+          <div style={{display:'flex',gap:'10px',justifyContent:'center',flexWrap:'wrap'}}>
+            <a href="/chat" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'10px 20px',borderRadius:'8px',fontSize:'13px',fontWeight:'700'}}>Ask Sakura AI</a>
+            <a href="/community" style={{background:'rgba(255,255,255,0.08)',color:'white',textDecoration:'none',padding:'10px 20px',borderRadius:'8px',fontSize:'13px',border:'1px solid rgba(255,255,255,0.15)'}}>Ask Community</a>
+          </div>
         </div>
       </div>
     </main>

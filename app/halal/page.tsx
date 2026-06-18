@@ -1,112 +1,241 @@
 'use client'
 import { useState } from 'react'
 
-const HALAL_RESTAURANTS = [
-  {city:'Tokyo',places:[
-    {name:'Naritaya Halal Ramen',area:'Asakusa',type:'Ramen',rating:4.8},
-    {name:'Halal Wagyu Tokyo',area:'Shibuya',type:'Wagyu Beef',rating:4.9},
-    {name:'Tokyo Halal Restaurant',area:'Shinjuku',type:'Various',rating:4.6},
-    {name:'Ayam-Ya Halal',area:'Akihabara',type:'Japanese',rating:4.5},
-    {name:'Shawarma King Tokyo',area:'Ueno',type:'Middle Eastern',rating:4.4},
-  ]},
-  {city:'Osaka',places:[
-    {name:'Osaka Halal Kitchen',area:'Namba',type:'Japanese',rating:4.7},
-    {name:'Muslim-Friendly Kushikatsu',area:'Dotonbori',type:'Kushikatsu',rating:4.6},
-    {name:'Halal Takoyaki',area:'Shinsaibashi',type:'Takoyaki',rating:4.5},
-    {name:'Al-Salam Restaurant',area:'Tennoji',type:'Middle Eastern',rating:4.4},
-  ]},
-  {city:'Kyoto',places:[
-    {name:'Kyoto Halal Food',area:'Gion',type:'Japanese',rating:4.6},
-    {name:'Muslim-Friendly Kaiseki',area:'Higashiyama',type:'Kaiseki',rating:4.8},
-    {name:'Halal Ramen Kyoto',area:'Kawaramachi',type:'Ramen',rating:4.5},
-  ]},
-  {city:'Sapporo',places:[
-    {name:'Sapporo Halal Ramen',area:'Susukino',type:'Ramen',rating:4.5},
-    {name:'Hokkaido Halal Kitchen',area:'Odori',type:'Various',rating:4.4},
-  ]},
-  {city:'Fukuoka',places:[
-    {name:'Hakata Halal Ramen',area:'Hakata',type:'Ramen',rating:4.7},
-    {name:'Fukuoka Muslim Kitchen',area:'Tenjin',type:'Various',rating:4.5},
-  ]},
+const CITIES_HALAL = [
+  {
+    city:'Tokyo', icon:'🗼',
+    restaurants:[
+      {name:'Halal Ramen Naritake',area:'Akihabara',type:'Ramen',price:'¥800-1,200',note:'Famous halal ramen'},
+      {name:'Masjid Camii Restaurant',area:'Yoyogi',type:'Turkish/Middle Eastern',price:'¥1,000-2,000',note:'Near Tokyo Camii mosque'},
+      {name:'Halal Food Ueno',area:'Ueno',type:'Various',price:'¥600-1,500',note:'Many halal options in Ueno area'},
+      {name:'Gyumon Halal',area:'Shinjuku',type:'Japanese BBQ',price:'¥2,000-4,000',note:'Halal Japanese BBQ'},
+      {name:'Muslim-friendly Sushi',area:'Various',type:'Sushi',price:'¥1,500-3,000',note:'Increasing halal sushi options'},
+    ],
+    mosques:[
+      {name:'Tokyo Camii & Turkish Culture Center',area:'Yoyogi-Uehara',times:'Open daily, Friday prayer 12:30pm',note:'Largest mosque in Japan'},
+      {name:'Masjid Otsuka',area:'Otsuka',times:'Open daily, Friday prayer 12:30pm',note:'Near Otsuka Station'},
+      {name:'Islamic Cultural Center Tokyo',area:'Setagaya',times:'Open daily',note:'Large community mosque'},
+    ],
+  },
+  {
+    city:'Osaka', icon:'🏯',
+    restaurants:[
+      {name:'Halal Gyoza',area:'Namba',type:'Gyoza',price:'¥600-1,000',note:'Famous halal gyoza shop'},
+      {name:'Muslim-friendly Takoyaki',area:'Dotonbori',type:'Street food',price:'¥500-800',note:'Check for halal certification'},
+      {name:'Arab Street Osaka',area:'Nipponbashi',type:'Middle Eastern',price:'¥800-1,500',note:'Several halal restaurants'},
+      {name:'Halal Ramen Osaka',area:'Shinsaibashi',type:'Ramen',price:'¥900-1,300',note:'Growing halal ramen scene'},
+    ],
+    mosques:[
+      {name:'Masjid Osaka Ibaraki',area:'Ibaraki (near Osaka)',times:'Open daily, Friday prayer 12:30pm',note:'Largest mosque in Kansai'},
+      {name:'Islamic Center of Osaka',area:'Namba',times:'Open daily',note:'Central Osaka location'},
+    ],
+  },
+  {
+    city:'Nagoya', icon:'🗻',
+    restaurants:[
+      {name:'Halal Kitchen Nagoya',area:'Sakae',type:'Various',price:'¥800-1,500',note:'Popular halal restaurant'},
+      {name:'Muslim Restaurant Nagoya',area:'Nagoya Station',type:'Malaysian/Indonesian',price:'¥700-1,300',note:'Near main station'},
+    ],
+    mosques:[
+      {name:'Nagoya Mosque',area:'Central Nagoya',times:'Open daily, Friday prayer 12:30pm',note:'Main mosque in Nagoya'},
+    ],
+  },
+  {
+    city:'Sapporo', icon:'🏔️',
+    restaurants:[
+      {name:'Halal Ramen Sapporo',area:'Susukino',type:'Ramen',price:'¥900-1,400',note:'Halal miso ramen'},
+      {name:'Muslim-friendly Genghis Khan',area:'Central',type:'BBQ',price:'¥1,500-2,500',note:'Lamb BBQ - often halal'},
+    ],
+    mosques:[
+      {name:'Sapporo Islamic Center',area:'Central Sapporo',times:'Friday prayer 12:30pm',note:'Contact ahead for visiting'},
+    ],
+  },
+  {
+    city:'Fukuoka', icon:'🍜',
+    restaurants:[
+      {name:'Hakata Halal Ramen',area:'Hakata',type:'Ramen',price:'¥800-1,200',note:'Famous halal tonkotsu ramen'},
+      {name:'Muslim Restaurant Fukuoka',area:'Tenjin',type:'Various',price:'¥700-1,400',note:'Growing halal scene'},
+    ],
+    mosques:[
+      {name:'Fukuoka Masjid',area:'Central Fukuoka',times:'Friday prayer 12:30pm',note:'Main mosque in Kyushu'},
+    ],
+  },
+  {
+    city:'Kyoto', icon:'⛩️',
+    restaurants:[
+      {name:'Halal Ramen Kyoto',area:'Kyoto Station',type:'Ramen',price:'¥900-1,300',note:'Near main station'},
+      {name:'Muslim-friendly Kaiseki',area:'Gion',type:'Traditional Japanese',price:'¥3,000-8,000',note:'Book in advance, inform halal'},
+    ],
+    mosques:[
+      {name:'Kyoto Masjid',area:'Near Kyoto University',times:'Friday prayer 12:30pm',note:'University area mosque'},
+    ],
+  },
 ]
 
-const MOSQUES = [
-  {name:'Tokyo Camii',city:'Tokyo',area:'Yoyogi',capacity:'1000+',time:'5 prayers daily',note:'Largest mosque in Japan'},
-  {name:'Otsuka Mosque',city:'Tokyo',area:'Otsuka',capacity:'300',time:'5 prayers daily',note:'Near JR Otsuka station'},
-  {name:'Osaka Ibaraki Mosque',city:'Osaka',area:'Ibaraki',capacity:'500',time:'5 prayers daily',note:'Main mosque in Kansai'},
-  {name:'Kobe Muslim Mosque',city:'Kobe',area:'Kita-ku',capacity:'400',time:'5 prayers daily',note:'Oldest mosque in Japan (1935)'},
-  {name:'Nagoya Mosque',city:'Nagoya',area:'Naka-ku',capacity:'300',time:'5 prayers daily',note:'Central Nagoya location'},
-  {name:'Fukuoka Masjid',city:'Fukuoka',area:'Hakata',capacity:'200',time:'5 prayers daily',note:'Serves Kyushu region'},
-  {name:'Sapporo Islamic Center',city:'Sapporo',area:'Chuo',capacity:'150',time:'5 prayers daily',note:'Hokkaido main mosque'},
-  {name:'Sendai Mosque',city:'Sendai',area:'Aoba',capacity:'100',time:'5 prayers daily',note:'Tohoku region mosque'},
+const HALAL_TIPS = [
+  {
+    icon:'🔍',
+    title:'Finding Halal Food',
+    tips:[
+      'Use HalalNavi app - specifically for halal food in Japan',
+      'Search Google Maps for "halal" + city name',
+      'Look for Muslim-owned restaurants in international districts',
+      'Indian and Bangladeshi restaurants are often halal',
+      'Ask your language school for recommendations',
+      'Join Japan Life Guide community for student recommendations',
+    ]
+  },
+  {
+  icon:'🛒',
+  title:'Halal Grocery Shopping',
+  tips:[
+    'SHIZUOKA MART (静岡マート) - Top recommended! Indonesian, Bangladeshi, Pakistani, Nepali, Thai, Filipino groceries. Online orders available at www.shizuokamart.com',
+    'Don Don Don Ki (ドン・キホーテ) has halal section in major stores',
+      'Yamaya and international supermarkets carry halal products',
+      'Tokyu Department Store food halls have halal options',
+      'Muslim-owned grocery stores in major cities',
+      'Online: Amazon Japan, Rakuten for halal products',
+      'Niku (meat) labeled "ハラール" is halal certified',
+    ]
+  },
+  {
+    icon:'🏪',
+    title:'Convenience Store Tips',
+    tips:[
+      'Many onigiri (rice balls) with tuna or vegetable are okay',
+      'Avoid pork-containing products: 豚肉 (butaniku) means pork',
+      'Vegetarian options are generally safe',
+      'Some stores have halal labels - look for ハラール',
+      'Egg and dairy products are generally acceptable',
+      'Avoid mirin (みりん) - it contains alcohol',
+    ]
+  },
+  {
+    icon:'🍣',
+    title:'Eating at Regular Restaurants',
+    tips:[
+      'Sushi with fish/seafood is generally okay if not cooked in wine',
+      'Tell staff you cannot eat pork: "Buta wa tabemasen"',
+      'Tell staff no alcohol: "Osake wa dame desu"',
+      'Tempura and sashimi are often okay',
+      'Vegetarian ramen options available at many shops',
+      'Download Google Translate for menu translation',
+    ]
+  },
+  {
+    icon:'🕌',
+    title:'Prayer in Japan',
+    tips:[
+      'Download Muslim Pro app for prayer times and qibla direction',
+      'Many airports and shopping malls have prayer rooms',
+      'Department stores increasingly have Muslim prayer rooms',
+      'Mosques welcome visitors - dress modestly',
+      'Friday prayers are important - inform school in advance',
+      'Carry a small prayer mat when traveling',
+    ]
+  },
+  {
+    icon:'🌙',
+    title:'Ramadan in Japan',
+    tips:[
+      'Inform your school about Ramadan schedule',
+      'Suhoor (pre-dawn meal) timing varies by season',
+      'Some mosques provide iftar (breaking fast) meals',
+      'Halal delivery services available in major cities',
+      'Japanese colleagues are generally understanding',
+      'Plan exam schedule around Ramadan if possible',
+    ]
+  },
 ]
 
-const PRAYER_TIMES = [
-  {name:'Fajr',jp:'ファジュル',time:'~4:30 AM',icon:'🌙'},
-  {name:'Dhuhr',jp:'ドゥフル',time:'~12:00 PM',icon:'☀️'},
-  {name:'Asr',jp:'アスル',time:'~3:30 PM',icon:'🌤️'},
-  {name:'Maghrib',jp:'マグリブ',time:'~6:30 PM',icon:'🌅'},
-  {name:'Isha',jp:'イシャー',time:'~8:00 PM',icon:'🌙'},
-]
-
-const TIPS = [
-  {icon:'🥩',title:'Finding Halal Meat',desc:'Look for halal butchers in areas with Muslim communities. Tokyo has many in Ueno and Shinjuku areas. Online delivery also available.'},
-  {icon:'🏪',title:'Convenience Store Tips',desc:'7-Eleven, Lawson and FamilyMart have some halal-friendly options. Look for items without pork or alcohol. Onigiri with tuna or plum are usually safe.'},
-  {icon:'🍜',title:'Ramen Tips',desc:'Most ramen contains pork broth. Look for chicken or seafood ramen. Some restaurants offer halal ramen - always ask "Halal desu ka?"'},
-  {icon:'📱',title:'Useful Apps',desc:'Muslim Pro app shows prayer times anywhere in Japan. HalalNavi and Halal Gourmet Japan apps help find halal restaurants.'},
-  {icon:'🛒',title:'Halal Supermarkets',desc:'Several halal supermarkets in Tokyo (Shin-Okubo area), Osaka, and Nagoya. Import halal meat from Southeast Asia.'},
-  {icon:'🗣️',title:'Useful Japanese Phrases',desc:'"Halal desu ka?" (Is this halal?), "Buta niku nashi" (No pork), "Arukoru nashi" (No alcohol)'},
+const USEFUL_APPS = [
+  {name:'HalalNavi',desc:'Find halal restaurants and certified stores in Japan',icon:'🍽'},
+  {name:'Muslim Pro',desc:'Prayer times, qibla direction, Quran, halal restaurants worldwide',icon:'🕌'},
+  {name:'Zabihah',desc:'Halal restaurant finder worldwide including Japan',icon:'🔍'},
+  {name:'Google Maps',desc:'Search "halal restaurant" near your location',icon:'🗺'},
 ]
 
 export default function HalalPage() {
-  const [tab, setTab] = useState('restaurants')
-  const [selectedCity, setSelectedCity] = useState('Tokyo')
+  const [selectedCity, setSelectedCity] = useState(CITIES_HALAL[0])
+  const [activeTab, setActiveTab] = useState('cities')
 
   return (
     <main style={{minHeight:'100vh',background:'#0D0907',fontFamily:'sans-serif'}}>
-      <div style={{background:'#1A2035',padding:'40px',borderBottom:'3px solid #C42020',textAlign:'center'}}>
+      <div style={{background:'linear-gradient(135deg,#1A2035,#0D1520)',padding:'40px',borderBottom:'3px solid #C42020',textAlign:'center'}}>
         <div style={{fontSize:'48px',marginBottom:'12px'}}>🕌</div>
-        <h1 style={{color:'white',fontSize:'32px',fontWeight:'700',marginBottom:'8px'}}>Muslim Guide to Japan</h1>
-        <p style={{color:'rgba(255,255,255,0.4)',fontSize:'16px'}}>Halal food, mosques, and prayer times across Japan</p>
+        <h1 style={{color:'white',fontSize:'32px',fontWeight:'700',marginBottom:'8px'}}>Muslim & Halal Guide Japan</h1>
+        <p style={{color:'rgba(255,255,255,0.4)',fontSize:'16px'}}>Complete guide for Muslim students from Bangladesh and Nepal in Japan</p>
       </div>
 
-      <div style={{maxWidth:'1000px',margin:'0 auto',padding:'32px 20px'}}>
+      <div style={{maxWidth:'1100px',margin:'0 auto',padding:'32px 20px'}}>
         <div style={{display:'flex',gap:'8px',marginBottom:'24px',flexWrap:'wrap'}}>
-          {[
-            {key:'restaurants',label:'Halal Restaurants'},
-            {key:'mosques',label:'Mosques'},
-            {key:'prayer',label:'Prayer Times'},
-            {key:'tips',label:'Muslim Tips'},
-          ].map(t=>(
-            <button key={t.key} onClick={()=>setTab(t.key)} style={{background:tab===t.key?'#C42020':'#1A2035',border:'none',borderRadius:'20px',padding:'10px 20px',color:'white',fontSize:'13px',fontWeight:'600',cursor:'pointer'}}>
-              {t.label}
+          {['cities','tips','apps'].map(tab=>(
+            <button key={tab} onClick={()=>setActiveTab(tab)} style={{background:activeTab===tab?'#C42020':'#1A2035',border:'none',borderRadius:'20px',padding:'8px 18px',color:'white',fontSize:'12px',fontWeight:'600',cursor:'pointer',textTransform:'capitalize'}}>
+              {tab === 'cities' ? '🗺 Halal by City' : tab === 'tips' ? '💡 Halal Tips' : '📱 Useful Apps'}
             </button>
           ))}
         </div>
 
-        {tab === 'restaurants' && (
+        {activeTab === 'cities' && (
           <div>
             <div style={{display:'flex',gap:'8px',marginBottom:'20px',flexWrap:'wrap'}}>
-              {HALAL_RESTAURANTS.map(c=>(
-                <button key={c.city} onClick={()=>setSelectedCity(c.city)} style={{background:selectedCity===c.city?'rgba(196,32,32,0.2)':'#0D0907',border:'1px solid ' + (selectedCity===c.city?'#C42020':'rgba(255,255,255,0.2)'),borderRadius:'8px',padding:'8px 16px',color:'white',fontSize:'13px',cursor:'pointer'}}>
-                  {c.city}
+              {CITIES_HALAL.map(c=>(
+                <button key={c.city} onClick={()=>setSelectedCity(c)} style={{background:selectedCity.city===c.city?'#C42020':'#1A2035',border:'none',borderRadius:'20px',padding:'8px 16px',color:'white',fontSize:'12px',fontWeight:'600',cursor:'pointer',display:'flex',alignItems:'center',gap:'6px'}}>
+                  {c.icon} {c.city}
                 </button>
               ))}
             </div>
-            {HALAL_RESTAURANTS.filter(c=>c.city===selectedCity).map(city=>(
-              <div key={city.city} style={{display:'flex',flexDirection:'column',gap:'10px'}}>
-                {city.places.map((place,i)=>(
-                  <div key={i} style={{background:'#1A2035',borderRadius:'12px',padding:'18px',border:'1px solid rgba(255,255,255,0.08)',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                    <div>
-                      <h3 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'4px'}}>{place.name}</h3>
-                      <p style={{color:'rgba(255,255,255,0.4)',fontSize:'12px',marginBottom:'4px'}}>📍 {place.area} · {place.type}</p>
-                      <div style={{display:'flex',gap:'6px',alignItems:'center'}}>
-                        <span style={{background:'rgba(46,200,122,0.15)',color:'#2EC87A',padding:'2px 8px',borderRadius:'4px',fontSize:'11px',fontWeight:'700'}}>HALAL</span>
-                      </div>
+
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'16px'}}>
+              <div style={{background:'#1A2035',borderRadius:'12px',padding:'22px',border:'1px solid rgba(255,255,255,0.08)'}}>
+                <h2 style={{color:'white',fontSize:'16px',fontWeight:'700',marginBottom:'16px'}}>🍽 Halal Restaurants in {selectedCity.city}</h2>
+                {selectedCity.restaurants.map((r,i)=>(
+                  <div key={i} style={{background:'#0D0907',borderRadius:'8px',padding:'12px',marginBottom:'8px'}}>
+                    <h3 style={{color:'white',fontSize:'13px',fontWeight:'700',marginBottom:'4px'}}>{r.name}</h3>
+                    <div style={{display:'flex',gap:'6px',flexWrap:'wrap',marginBottom:'4px'}}>
+                      <span style={{background:'rgba(196,32,32,0.1)',color:'#FF8070',padding:'1px 6px',borderRadius:'4px',fontSize:'10px'}}>{r.type}</span>
+                      <span style={{color:'rgba(255,255,255,0.4)',fontSize:'11px'}}>📍 {r.area}</span>
+                      <span style={{color:'#F0A830',fontSize:'11px'}}>{r.price}</span>
                     </div>
-                    <div style={{textAlign:'right'}}>
-                      <div style={{color:'#F0A830',fontSize:'16px',fontWeight:'700'}}>{place.rating} ★</div>
+                    <p style={{color:'rgba(255,255,255,0.4)',fontSize:'11px'}}>{r.note}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{background:'#1A2035',borderRadius:'12px',padding:'22px',border:'1px solid rgba(255,255,255,0.08)'}}>
+                <h2 style={{color:'white',fontSize:'16px',fontWeight:'700',marginBottom:'16px'}}>🕌 Mosques in {selectedCity.city}</h2>
+                {selectedCity.mosques.map((m,i)=>(
+                  <div key={i} style={{background:'#0D0907',borderRadius:'8px',padding:'12px',marginBottom:'8px'}}>
+                    <h3 style={{color:'white',fontSize:'13px',fontWeight:'700',marginBottom:'4px'}}>{m.name}</h3>
+                    <p style={{color:'rgba(255,255,255,0.4)',fontSize:'11px',marginBottom:'2px'}}>📍 {m.area}</p>
+                    <p style={{color:'#2EC87A',fontSize:'11px',marginBottom:'2px'}}>⏰ {m.times}</p>
+                    <p style={{color:'rgba(255,255,255,0.3)',fontSize:'11px'}}>{m.note}</p>
+                  </div>
+                ))}
+
+                <div style={{background:'rgba(255,255,255,0.04)',borderRadius:'8px',padding:'12px',marginTop:'12px'}}>
+                  <p style={{color:'#F0A830',fontSize:'11px',fontWeight:'700',marginBottom:'6px'}}>💡 Mosque Etiquette</p>
+                  {['Remove shoes before entering','Dress modestly','Be quiet and respectful','Women should cover hair','Men and women have separate areas'].map((tip,i)=>(
+                    <div key={i} style={{display:'flex',gap:'6px',marginBottom:'4px'}}>
+                      <span style={{color:'#2EC87A',fontSize:'10px'}}>✓</span>
+                      <span style={{color:'rgba(255,255,255,0.5)',fontSize:'11px'}}>{tip}</span>
                     </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'tips' && (
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))',gap:'16px'}}>
+            {HALAL_TIPS.map((section,i)=>(
+              <div key={i} style={{background:'#1A2035',borderRadius:'12px',padding:'22px',border:'1px solid rgba(255,255,255,0.08)'}}>
+                <h2 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'14px'}}>{section.icon} {section.title}</h2>
+                {section.tips.map((tip,j)=>(
+                  <div key={j} style={{display:'flex',gap:'8px',marginBottom:'8px'}}>
+                    <span style={{color:'#C42020',flexShrink:0,fontSize:'12px'}}>→</span>
+                    <span style={{color:'rgba(255,255,255,0.6)',fontSize:'12px',lineHeight:'1.6'}}>{tip}</span>
                   </div>
                 ))}
               </div>
@@ -114,69 +243,50 @@ export default function HalalPage() {
           </div>
         )}
 
-        {tab === 'mosques' && (
-          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))',gap:'14px'}}>
-            {MOSQUES.map((mosque,i)=>(
-              <div key={i} style={{background:'#1A2035',borderRadius:'12px',padding:'20px',border:'1px solid rgba(255,255,255,0.08)'}}>
-                <div style={{fontSize:'32px',marginBottom:'10px'}}>🕌</div>
-                <h3 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'4px'}}>{mosque.name}</h3>
-                <p style={{color:'rgba(255,255,255,0.4)',fontSize:'12px',marginBottom:'4px'}}>📍 {mosque.area}, {mosque.city}</p>
-                <p style={{color:'rgba(255,255,255,0.4)',fontSize:'12px',marginBottom:'4px'}}>👥 Capacity: {mosque.capacity}</p>
-                <p style={{color:'rgba(255,255,255,0.4)',fontSize:'12px',marginBottom:'8px'}}>🕐 {mosque.time}</p>
-                <span style={{background:'rgba(196,32,32,0.15)',color:'#FF8070',padding:'3px 8px',borderRadius:'4px',fontSize:'11px'}}>{mosque.note}</span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {tab === 'prayer' && (
-          <div>
-            <div style={{background:'#1A2035',borderRadius:'12px',padding:'24px',marginBottom:'20px',border:'1px solid rgba(255,255,255,0.08)'}}>
-              <h2 style={{color:'white',fontSize:'18px',fontWeight:'700',marginBottom:'4px'}}>Prayer Times in Japan</h2>
-              <p style={{color:'rgba(255,255,255,0.4)',fontSize:'13px',marginBottom:'20px'}}>Times vary by season and location. Use Muslim Pro app for exact times.</p>
-              <div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
-                {PRAYER_TIMES.map(prayer=>(
-                  <div key={prayer.name} style={{background:'#0D0907',borderRadius:'10px',padding:'16px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                    <div style={{display:'flex',gap:'12px',alignItems:'center'}}>
-                      <span style={{fontSize:'24px'}}>{prayer.icon}</span>
-                      <div>
-                        <div style={{color:'white',fontSize:'15px',fontWeight:'700'}}>{prayer.name}</div>
-                        <div style={{color:'rgba(255,255,255,0.4)',fontSize:'12px'}}>{prayer.jp}</div>
-                      </div>
-                    </div>
-                    <div style={{color:'#F0A830',fontSize:'15px',fontWeight:'700'}}>{prayer.time}</div>
-                  </div>
-                ))}
-              </div>
+        {activeTab === 'apps' && (
+          <div style={{display:'flex',flexDirection:'column',gap:'14px'}}>
+            <h2 style={{color:'white',fontSize:'20px',fontWeight:'700',marginBottom:'8px'}}>📱 Useful Apps for Muslim Students in Japan</h2>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(250px,1fr))',gap:'12px',marginBottom:'20px'}}>
+              {USEFUL_APPS.map((app,i)=>(
+                <div key={i} style={{background:'#1A2035',borderRadius:'12px',padding:'18px',border:'1px solid rgba(255,255,255,0.08)'}}>
+                  <div style={{fontSize:'32px',marginBottom:'10px'}}>{app.icon}</div>
+                  <h3 style={{color:'white',fontSize:'14px',fontWeight:'700',marginBottom:'6px'}}>{app.name}</h3>
+                  <p style={{color:'rgba(255,255,255,0.5)',fontSize:'12px',lineHeight:'1.6'}}>{app.desc}</p>
+                </div>
+              ))}
             </div>
-            <div style={{background:'rgba(196,32,32,0.1)',border:'1px solid rgba(196,32,32,0.3)',borderRadius:'12px',padding:'20px'}}>
-              <h3 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'8px'}}>Important Notes</h3>
-              <ul style={{listStyle:'none',padding:0,display:'flex',flexDirection:'column',gap:'6px'}}>
-                {['Prayer times change daily - use Muslim Pro app for exact times','Many language schools allow prayer breaks - inform your teacher','Some workplaces have prayer rooms - ask HR','Jumu\'ah (Friday prayer) at 12:30 PM - many mosques accommodate students'].map((note,i)=>(
-                  <li key={i} style={{color:'rgba(255,255,255,0.6)',fontSize:'13px',display:'flex',gap:'8px'}}>
-                    <span style={{color:'#C42020',flexShrink:0}}>→</span>{note}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        )}
 
-        {tab === 'tips' && (
-          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))',gap:'14px'}}>
-            {TIPS.map(tip=>(
-              <div key={tip.title} style={{background:'#1A2035',borderRadius:'12px',padding:'20px',border:'1px solid rgba(255,255,255,0.08)'}}>
-                <div style={{fontSize:'28px',marginBottom:'10px'}}>{tip.icon}</div>
-                <h3 style={{color:'white',fontSize:'14px',fontWeight:'700',marginBottom:'8px'}}>{tip.title}</h3>
-                <p style={{color:'rgba(255,255,255,0.5)',fontSize:'13px',lineHeight:'1.6'}}>{tip.desc}</p>
-              </div>
-            ))}
+            <div style={{background:'#1A2035',borderRadius:'12px',padding:'22px',border:'1px solid rgba(255,255,255,0.08)'}}>
+              <h3 style={{color:'white',fontSize:'16px',fontWeight:'700',marginBottom:'14px'}}>🌙 Islamic Calendar & Important Dates in Japan</h3>
+              {[
+                {event:'Friday Prayer (Jumu\'ah)',desc:'Most important weekly prayer. Inform school in advance. Usually 12:30pm.'},
+                {event:'Ramadan',desc:'Inform school about fasting. Exam schedules may be adjusted. Community iftars at mosques.'},
+                {event:'Eid al-Fitr',desc:'Major holiday. Most mosques hold Eid prayer. Check local mosque for schedule.'},
+                {event:'Eid al-Adha',desc:'Some mosques arrange Qurbani (sacrifice). Check local Muslim community.'},
+              ].map((item,i)=>(
+                <div key={i} style={{padding:'12px 0',borderBottom:'1px solid rgba(255,255,255,0.06)'}}>
+                  <h4 style={{color:'white',fontSize:'13px',fontWeight:'700',marginBottom:'4px'}}>{item.event}</h4>
+                  <p style={{color:'rgba(255,255,255,0.5)',fontSize:'12px',lineHeight:'1.6'}}>{item.desc}</p>
+                </div>
+              ))}
+            </div>
+
+            <div style={{background:'rgba(196,32,32,0.1)',borderRadius:'12px',padding:'20px',border:'1px solid rgba(196,32,32,0.2)'}}>
+              <h3 style={{color:'#FF8070',fontSize:'14px',fontWeight:'700',marginBottom:'10px'}}>🤝 Muslim Community in Japan</h3>
+              <p style={{color:'rgba(255,255,255,0.6)',fontSize:'13px',lineHeight:'1.7',marginBottom:'12px'}}>
+                Japan has a growing Muslim community of over 200,000 people. Most major cities have mosques, halal restaurants, and Muslim community groups. Bangladesh and Nepal communities are particularly active in Tokyo, Osaka, and Nagoya.
+              </p>
+              <a href="/community" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'10px 20px',borderRadius:'8px',fontSize:'13px',fontWeight:'700',display:'inline-block'}}>Join Our Community</a>
+            </div>
           </div>
         )}
 
         <div style={{background:'#1A2035',borderRadius:'12px',padding:'20px',marginTop:'24px',textAlign:'center',border:'1px solid rgba(255,255,255,0.08)'}}>
-          <p style={{color:'rgba(255,255,255,0.5)',fontSize:'13px',marginBottom:'12px'}}>Need more info about Muslim life in Japan?</p>
-          <a href="/chat" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'10px 20px',borderRadius:'8px',fontSize:'13px',fontWeight:'700'}}>Ask Sakura AI</a>
+          <p style={{color:'rgba(255,255,255,0.5)',fontSize:'13px',marginBottom:'12px'}}>Need more help finding halal food or mosques?</p>
+          <div style={{display:'flex',gap:'10px',justifyContent:'center',flexWrap:'wrap'}}>
+            <a href="/chat" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'10px 20px',borderRadius:'8px',fontSize:'13px',fontWeight:'700'}}>Ask Sakura AI</a>
+            <a href="/community" style={{background:'rgba(255,255,255,0.08)',color:'white',textDecoration:'none',padding:'10px 20px',borderRadius:'8px',fontSize:'13px',border:'1px solid rgba(255,255,255,0.15)'}}>Ask Community</a>
+          </div>
         </div>
       </div>
     </main>

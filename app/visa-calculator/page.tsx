@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export default function VisaCalculatorPage() {
   const [step, setStep] = useState(1)
@@ -8,6 +8,38 @@ export default function VisaCalculatorPage() {
 
   function answer(key: string, value: any) {
     setAnswers((prev: any) => ({...prev, [key]: value}))
+  }
+
+  useEffect(() => {
+    if (step === 3 && answers.purpose === 'visit' && !result) {
+      calculateVisit()
+    }
+  }, [step, answers.purpose])
+
+  function calculateVisit() {
+    setResult({
+      visa: 'Tourist/Short-term Visa',
+      jp: '短期滞在ビザ',
+      eligible: true,
+      color: '#F0A830',
+      icon: '✈️',
+      message: 'You can apply for a Tourist Visa to visit Japan!',
+      nextSteps: [
+        'Prepare documents: passport, bank statement, return ticket',
+        'Apply at Japanese Embassy in your country',
+        'Wait 1-2 weeks for processing',
+        'Visit Japan and explore schools!',
+      ],
+      requirements: [
+        'Valid passport',
+        'Bank statement',
+        'Return flight ticket',
+        'Hotel booking',
+        'Proof of employment or enrollment at home',
+      ],
+      processingTime: '1-2 weeks',
+      workRights: 'No work allowed on tourist visa',
+    })
   }
 
   function calculate() {
@@ -162,33 +194,6 @@ export default function VisaCalculatorPage() {
       }
       return
     }
-
-    // Tourist/Visit
-    if (a.purpose === 'visit') {
-      setResult({
-        visa: 'Tourist/Short-term Visa',
-        jp: '短期滞在ビザ',
-        eligible: true,
-        color: '#F0A830',
-        icon: '✈️',
-        message: 'You can apply for a Tourist Visa to visit Japan!',
-        nextSteps: [
-          'Prepare documents: passport, bank statement, return ticket',
-          'Apply at Japanese Embassy in your country',
-          'Wait 1-2 weeks for processing',
-          'Visit Japan and explore schools!',
-        ],
-        requirements: [
-          'Valid passport',
-          'Bank statement',
-          'Return flight ticket',
-          'Hotel booking',
-          'Proof of employment or enrollment at home',
-        ],
-        processingTime: '1-2 weeks',
-        workRights: 'No work allowed on tourist visa',
-      })
-    }
   }
 
   const totalSteps = answers.purpose === 'study' ? 4 :
@@ -206,7 +211,6 @@ export default function VisaCalculatorPage() {
         {!result ? (
           <div style={{background:'#1A2035',borderRadius:'16px',padding:'32px',border:'1px solid rgba(255,255,255,0.08)'}}>
 
-            {/* Progress */}
             <div style={{display:'flex',gap:'8px',marginBottom:'28px',alignItems:'center'}}>
               {Array.from({length: answers.purpose ? totalSteps : 1}).map((_,i)=>(
                 <div key={i} style={{display:'flex',alignItems:'center',gap:'8px',flex:1}}>
@@ -220,7 +224,6 @@ export default function VisaCalculatorPage() {
               ))}
             </div>
 
-            {/* Step 1: Purpose */}
             {step === 1 && (
               <div>
                 <h2 style={{color:'white',fontSize:'20px',fontWeight:'700',marginBottom:'8px'}}>What is your main purpose in Japan?</h2>
@@ -247,7 +250,6 @@ export default function VisaCalculatorPage() {
               </div>
             )}
 
-            {/* Step 2: Passport */}
             {step === 2 && (
               <div>
                 <h2 style={{color:'white',fontSize:'20px',fontWeight:'700',marginBottom:'8px'}}>Do you have a valid passport?</h2>
@@ -273,7 +275,6 @@ export default function VisaCalculatorPage() {
               </div>
             )}
 
-            {/* Step 3: Purpose specific questions */}
             {step === 3 && answers.purpose === 'study' && (
               <div>
                 <h2 style={{color:'white',fontSize:'20px',fontWeight:'700',marginBottom:'8px'}}>Have you been accepted by a Japanese language school?</h2>
@@ -351,12 +352,12 @@ export default function VisaCalculatorPage() {
             )}
 
             {step === 3 && answers.purpose === 'visit' && (
-              <div>
-                {calculate()}
+              <div style={{textAlign:'center',padding:'40px'}}>
+                <div style={{fontSize:'40px',marginBottom:'12px'}}>🌸</div>
+                <p style={{color:'rgba(255,255,255,0.5)',fontSize:'14px'}}>Calculating your visa eligibility...</p>
               </div>
             )}
 
-            {/* Step 4 */}
             {step === 4 && answers.purpose === 'study' && (
               <div>
                 <h2 style={{color:'white',fontSize:'20px',fontWeight:'700',marginBottom:'8px'}}>How much money is in your bank account?</h2>

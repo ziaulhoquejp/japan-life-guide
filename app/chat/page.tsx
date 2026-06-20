@@ -100,7 +100,7 @@ export default function ChatPage() {
             <h1 style={{color:'white',fontSize:'18px',fontWeight:'700',marginBottom:'2px'}}>Sakura AI</h1>
             <div style={{display:'flex',alignItems:'center',gap:'6px'}}>
               <div style={{width:'8px',height:'8px',borderRadius:'50%',background:'#2EC87A'}}/>
-              <span style={{color:'#2EC87A',fontSize:'11px',fontWeight:'600'}}>Online · Powered by Claude</span>
+              <span style={{color:'#2EC87A',fontSize:'11px',fontWeight:'600'}}>Online · Powered by Japan Life Guide AI</span>
             </div>
           </div>
         </div>
@@ -195,7 +195,7 @@ export default function ChatPage() {
           </button>
         </div>
         <p style={{color:'rgba(255,255,255,0.2)',fontSize:'11px',textAlign:'center',marginTop:'8px'}}>
-          Sakura AI is powered by Anthropic Claude · Not a substitute for official advice
+          Sakura AI is powered by Japan Life Guide AI · Not a substitute for official advice
         </p>
       </div>
     </main>

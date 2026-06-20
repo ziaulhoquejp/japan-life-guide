@@ -2,110 +2,132 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 
+const CATEGORIES = [
+  {key:'rating', label:'Top Rated', icon:'⭐', desc:'Highest rated by students', color:'#F0A830'},
+  {key:'affordable', label:'Most Affordable', icon:'💰', desc:'Best value for money', color:'#2EC87A'},
+  {key:'dorm', label:'Best Dormitories', icon:'🏠', desc:'Schools with dormitory housing', color:'#4A8EFF'},
+  {key:'scholarship', label:'Scholarship Available', icon:'🎓', desc:'Schools offering scholarships', color:'#A855F7'},
+  {key:'jlpt', label:'Best JLPT Prep', icon:'📝', desc:'Strong JLPT preparation programs', color:'#FF8070'},
+  {key:'verified', label:'Verified Schools', icon:'✅', desc:'Schools with verified data', color:'#2EC87A'},
+  {key:'tokyo', label:'Top in Tokyo', icon:'🗼', desc:'Best schools in Tokyo', color:'#C42020'},
+]
+
 export default function RankingPage() {
   const [schools, setSchools] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [category, setCategory] = useState('overall')
+  const [activeCategory, setActiveCategory] = useState('rating')
 
   useEffect(() => {
-    supabase.from('schools').select('*').order('rating', { ascending: false }).limit(50).then(({ data }) => {
+    async function load() {
+      const { data } = await supabase.from('schools').select('*')
       if (data) setSchools(data)
       setLoading(false)
-    })
+    }
+    load()
   }, [])
 
-  const categories = [
-    {key:'overall',label:'Overall Best',icon:'🏆'},
-    {key:'tokyo',label:'Best in Tokyo',icon:'🗼'},
-    {key:'osaka',label:'Best in Osaka',icon:'🏯'},
-    {key:'budget',label:'Best Budget',icon:'💰'},
-    {key:'dorm',label:'Best with Dorm',icon:'🛏'},
-    {key:'jlpt',label:'Best JLPT Prep',icon:'📝'},
-    {key:'scholarship',label:'Best Scholarships',icon:'🎓'},
-  ]
+  function getRankedSchools() {
+    let filtered = [...schools]
 
-  function getRanked() {
-    let result = [...schools]
-    switch(category) {
-      case 'tokyo': result = result.filter(s=>s.city.includes('Tokyo')); break
-      case 'osaka': result = result.filter(s=>s.city.includes('Osaka')); break
-      case 'budget': result = result.sort((a,b)=>a.annual_fee_jpy-b.annual_fee_jpy); break
-      case 'dorm': result = result.filter(s=>s.has_dorm); break
-      case 'jlpt': result = result.filter(s=>s.jlpt_prep); break
-      case 'scholarship': result = result.filter(s=>s.scholarship); break
-      default: result = result.sort((a,b)=>b.rating-a.rating)
+    switch(activeCategory) {
+      case 'rating':
+        return filtered.sort((a,b) => (b.rating||0) - (a.rating||0)).slice(0,10)
+      case 'affordable':
+        return filtered.filter(s => s.annual_fee_jpy).sort((a,b) => a.annual_fee_jpy - b.annual_fee_jpy).slice(0,10)
+      case 'dorm':
+        return filtered.filter(s => s.has_dorm).sort((a,b) => (b.rating||0) - (a.rating||0)).slice(0,10)
+      case 'scholarship':
+        return filtered.filter(s => s.scholarship).sort((a,b) => (b.rating||0) - (a.rating||0)).slice(0,10)
+      case 'jlpt':
+        return filtered.filter(s => s.jlpt_prep).sort((a,b) => (b.rating||0) - (a.rating||0)).slice(0,10)
+      case 'verified':
+        return filtered.filter(s => s.data_verified).sort((a,b) => (b.rating||0) - (a.rating||0)).slice(0,10)
+      case 'tokyo':
+        return filtered.filter(s => s.city === 'Tokyo').sort((a,b) => (b.rating||0) - (a.rating||0)).slice(0,10)
+      default:
+        return filtered.slice(0,10)
     }
-    return result.slice(0,20)
   }
 
-  const ranked = getRanked()
+  const ranked = getRankedSchools()
+  const category = CATEGORIES.find(c => c.key === activeCategory)
 
-  const medalColors = ['#FFD700','#C0C0C0','#CD7F32']
-  const medals = ['🥇','🥈','🥉']
+  function getMedal(index: number) {
+    if (index === 0) return '🥇'
+    if (index === 1) return '🥈'
+    if (index === 2) return '🥉'
+    return null
+  }
 
-  if (loading) return <div style={{minHeight:'100vh',background:'#0D0907',display:'flex',alignItems:'center',justifyContent:'center',color:'white',fontSize:'24px'}}>Loading...</div>
+  if (loading) return <div style={{minHeight:'100vh',background:'#0D0907',display:'flex',alignItems:'center',justifyContent:'center',color:'white'}}>Loading...</div>
 
   return (
     <main style={{minHeight:'100vh',background:'#0D0907',fontFamily:'sans-serif'}}>
-      <div style={{background:'linear-gradient(135deg,#1A2035,#0D0907)',padding:'40px',borderBottom:'3px solid #C42020',textAlign:'center'}}>
-        <div style={{fontSize:'48px',marginBottom:'12px'}}>🏆</div>
-        <h1 style={{color:'white',fontSize:'36px',fontWeight:'700',marginBottom:'8px'}}>School Rankings</h1>
-        <p style={{color:'rgba(255,255,255,0.4)',fontSize:'16px'}}>Top Japanese language schools ranked by our community</p>
+      <div style={{background:'#1A2035',padding:'40px',borderBottom:'3px solid #C42020',textAlign:'center'}}>
+        <h1 style={{color:'white',fontSize:'32px',fontWeight:'700',marginBottom:'8px'}}>School Rankings</h1>
+        <p style={{color:'rgba(255,255,255,0.4)',fontSize:'16px'}}>Top Japanese language schools by category</p>
       </div>
 
       <div style={{maxWidth:'900px',margin:'0 auto',padding:'32px 20px'}}>
-        <div style={{display:'flex',gap:'8px',flexWrap:'wrap',marginBottom:'28px',justifyContent:'center'}}>
-          {categories.map(cat=>(
-            <button key={cat.key} onClick={()=>setCategory(cat.key)} style={{background:category===cat.key?'#C42020':'#1A2035',border:'none',borderRadius:'20px',padding:'8px 16px',color:'white',fontSize:'12px',fontWeight:'600',cursor:'pointer',display:'flex',alignItems:'center',gap:'6px'}}>
-              <span>{cat.icon}</span>
-              <span>{cat.label}</span>
+
+        {/* Category Selector */}
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(150px,1fr))',gap:'10px',marginBottom:'28px'}}>
+          {CATEGORIES.map(cat => (
+            <button key={cat.key} onClick={()=>setActiveCategory(cat.key)} style={{background: activeCategory===cat.key ? cat.color+'20' : '#1A2035',border: '2px solid ' + (activeCategory===cat.key ? cat.color : 'rgba(255,255,255,0.08)'),borderRadius:'12px',padding:'14px',cursor:'pointer',textAlign:'center'}}>
+              <div style={{fontSize:'24px',marginBottom:'6px'}}>{cat.icon}</div>
+              <div style={{color: activeCategory===cat.key ? cat.color : 'white',fontSize:'12px',fontWeight:'700'}}>{cat.label}</div>
             </button>
           ))}
         </div>
 
-        <div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
-          {ranked.map((school,i)=>(
-            <a key={school.id} href={'/schools/' + school.id} style={{textDecoration:'none'}}>
-              <div style={{background:i<3?'linear-gradient(135deg,#1A2035,#1A2535)':'#1A2035',borderRadius:'14px',padding:'18px',border:'1px solid ' + (i===0?'rgba(255,215,0,0.3)':i===1?'rgba(192,192,192,0.3)':i===2?'rgba(205,127,50,0.3)':'rgba(255,255,255,0.08)'),display:'flex',gap:'16px',alignItems:'center',cursor:'pointer',transition:'all 0.2s'}}
-                onMouseEnter={e=>(e.currentTarget.style.borderColor='rgba(196,32,32,0.4)')}
-                onMouseLeave={e=>(e.currentTarget.style.borderColor=i===0?'rgba(255,215,0,0.3)':i===1?'rgba(192,192,192,0.3)':i===2?'rgba(205,127,50,0.3)':'rgba(255,255,255,0.08)')}>
-                <div style={{width:'48px',height:'48px',borderRadius:'50%',background:i<3?medalColors[i]+'20':'rgba(255,255,255,0.08)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:i<3?'24px':'18px',fontWeight:'700',color:i<3?medalColors[i]:'rgba(255,255,255,0.4)',flexShrink:0,border:'2px solid ' + (i<3?medalColors[i]:'rgba(255,255,255,0.1)')}}>
-                  {i<3?medals[i]:'#' + (i+1)}
-                </div>
-                <div style={{fontSize:'36px',flexShrink:0}}>{school.icon}</div>
-                <div style={{flex:1}}>
-                  <div style={{display:'flex',gap:'8px',alignItems:'center',marginBottom:'4px',flexWrap:'wrap'}}>
-                    <h2 style={{color:'white',fontSize:'15px',fontWeight:'700'}}>{school.name_en}</h2>
-                    {i<3 && <span style={{background:medalColors[i]+'20',color:medalColors[i],padding:'2px 8px',borderRadius:'20px',fontSize:'10px',fontWeight:'700'}}>TOP {i+1}</span>}
-                  </div>
-                  <p style={{color:'rgba(255,255,255,0.4)',fontSize:'12px',marginBottom:'6px'}}>📍 {school.city} · {school.region}</p>
-                  <div style={{display:'flex',gap:'6px',flexWrap:'wrap'}}>
-                    {school.has_dorm&&<span style={{background:'rgba(46,200,122,0.1)',color:'#2EC87A',padding:'2px 7px',borderRadius:'4px',fontSize:'10px'}}>🛏 Dorm</span>}
-                    {school.jlpt_prep&&<span style={{background:'rgba(74,142,255,0.1)',color:'#4A8EFF',padding:'2px 7px',borderRadius:'4px',fontSize:'10px'}}>📝 JLPT</span>}
-                    {school.scholarship&&<span style={{background:'rgba(240,168,48,0.1)',color:'#F0A830',padding:'2px 7px',borderRadius:'4px',fontSize:'10px'}}>🎓 Scholar</span>}
-                  </div>
-                </div>
-                <div style={{textAlign:'right',flexShrink:0}}>
-                  <div style={{color:'#F0A830',fontSize:'20px',fontWeight:'700',marginBottom:'4px'}}>⭐ {school.rating}</div>
-                  <div style={{color:'rgba(255,255,255,0.4)',fontSize:'12px',fontFamily:'monospace'}}>¥{school.annual_fee_jpy.toLocaleString()}</div>
-                </div>
-              </div>
-            </a>
-          ))}
-        </div>
+        {category && (
+          <div style={{display:'flex',gap:'10px',alignItems:'center',marginBottom:'20px'}}>
+            <span style={{fontSize:'28px'}}>{category.icon}</span>
+            <div>
+              <h2 style={{color:'white',fontSize:'18px',fontWeight:'700'}}>{category.label}</h2>
+              <p style={{color:'rgba(255,255,255,0.4)',fontSize:'13px'}}>{category.desc}</p>
+            </div>
+          </div>
+        )}
 
-        {ranked.length === 0 && (
-          <div style={{textAlign:'center',padding:'48px'}}>
-            <p style={{color:'rgba(255,255,255,0.4)',fontSize:'16px'}}>No schools found in this category</p>
+        {/* Rankings List */}
+        {ranked.length === 0 ? (
+          <div style={{textAlign:'center',padding:'48px',background:'#1A2035',borderRadius:'12px',border:'1px solid rgba(255,255,255,0.08)'}}>
+            <p style={{color:'rgba(255,255,255,0.4)',fontSize:'14px'}}>No schools found in this category yet</p>
+          </div>
+        ) : (
+          <div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
+            {ranked.map((school, i) => {
+              const medal = getMedal(i)
+              return (
+                <a key={school.id} href={'/schools/' + school.id} style={{background: i<3 ? '#1A2035' : '#1A2035',borderRadius:'12px',padding:'16px',display:'flex',gap:'16px',alignItems:'center',textDecoration:'none',border: '1px solid ' + (i<3 ? (category?.color+'40') : 'rgba(255,255,255,0.08)')}}
+                  onMouseEnter={e=>(e.currentTarget.style.borderColor=category?.color+'80' || 'rgba(196,32,32,0.4)')}
+                  onMouseLeave={e=>(e.currentTarget.style.borderColor= i<3 ? (category?.color+'40') : 'rgba(255,255,255,0.08)')}>
+                  <div style={{width:'36px',textAlign:'center',flexShrink:0}}>
+                    {medal ? <span style={{fontSize:'28px'}}>{medal}</span> : <span style={{color:'rgba(255,255,255,0.3)',fontSize:'18px',fontWeight:'700'}}>{i+1}</span>}
+                  </div>
+                  <span style={{fontSize:'32px',flexShrink:0}}>{school.icon || '🏫'}</span>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{color:'white',fontSize:'14px',fontWeight:'700',marginBottom:'2px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{school.name_en}</div>
+                    <div style={{color:'rgba(255,255,255,0.4)',fontSize:'12px'}}>{school.city}</div>
+                  </div>
+                  <div style={{textAlign:'right',flexShrink:0}}>
+                    {activeCategory === 'affordable' ? (
+                      <div style={{color:'#2EC87A',fontSize:'14px',fontWeight:'700'}}>¥{school.annual_fee_jpy?.toLocaleString()}</div>
+                    ) : (
+                      <div style={{color:'#F0A830',fontSize:'14px',fontWeight:'700'}}>⭐ {school.rating}</div>
+                    )}
+                    {school.data_verified && <div style={{color:'#2EC87A',fontSize:'10px'}}>✓ Verified</div>}
+                  </div>
+                </a>
+              )
+            })}
           </div>
         )}
 
         <div style={{background:'#1A2035',borderRadius:'12px',padding:'20px',marginTop:'24px',textAlign:'center',border:'1px solid rgba(255,255,255,0.08)'}}>
-          <p style={{color:'rgba(255,255,255,0.5)',fontSize:'13px',marginBottom:'12px'}}>Want personalized school recommendations?</p>
-          <div style={{display:'flex',gap:'10px',justifyContent:'center',flexWrap:'wrap'}}>
-            <a href="/chat" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'10px 20px',borderRadius:'8px',fontSize:'13px',fontWeight:'700'}}>Ask Sakura AI</a>
-            <a href="/compare" style={{background:'rgba(255,255,255,0.08)',color:'white',textDecoration:'none',padding:'10px 20px',borderRadius:'8px',fontSize:'13px',border:'1px solid rgba(255,255,255,0.15)'}}>Compare Schools</a>
-          </div>
+          <p style={{color:'rgba(255,255,255,0.5)',fontSize:'13px',marginBottom:'12px'}}>Want to see all 724 schools?</p>
+          <a href="/schools" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'10px 20px',borderRadius:'8px',fontSize:'13px',fontWeight:'700'}}>Browse All Schools</a>
         </div>
       </div>
     </main>

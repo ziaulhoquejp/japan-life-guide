@@ -1,309 +1,270 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useEffect, useState, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
 
-export default function ApplyPage() {
-  const [step, setStep] = useState(1)
+function ApplyForm() {
+  const searchParams = useSearchParams()
+  const schoolIdParam = searchParams.get('school')
+
   const [user, setUser] = useState<any>(null)
+  const [isPro, setIsPro] = useState(false)
   const [schools, setSchools] = useState<any[]>([])
+  const [applicationCount, setApplicationCount] = useState(0)
+  const [step, setStep] = useState(1)
+  const [submitted, setSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [loading, setLoading] = useState(true)
+
   const [form, setForm] = useState({
-    fullName: '',
+    school_id: schoolIdParam || '',
+    full_name: '',
     email: '',
     phone: '',
-    country: 'Bangladesh',
-    dateOfBirth: '',
-    passportNumber: '',
-    japaneseLevel: 'None',
-    jlptLevel: 'None',
-    education: 'High School',
-    budget: '500000',
-    preferredCity: 'Tokyo',
-    preferredSchool: '',
-    startDate: 'April 2026',
-    hasDorm: false,
-    needScholarship: false,
-    hasPassport: false,
-    hasBankStatement: false,
-    message: '',
+    country: '',
+    date_of_birth: '',
+    current_education: '',
+    japanese_level: 'none',
+    intended_start: '',
+    motivation: '',
+    funding_source: '',
   })
-  const [submitted, setSubmitted] = useState(false)
-  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    async function getData() {
-      const params = new URLSearchParams(window.location.search)
-const schoolId = params.get('school')
-if (schoolId) setForm(prev=>({...prev, preferredSchool: schoolId}))
-
+    async function load() {
       const { data: userData } = await supabase.auth.getUser()
-      if (userData.user) {
-        setUser(userData.user)
-        setForm(prev => ({
-          ...prev,
-          fullName: userData.user.user_metadata?.full_name || '',
-          email: userData.user.email || '',
-        }))
+      if (!userData.user) {
+        window.location.href = '/login'
+        return
       }
-      const { data: schoolsData } = await supabase.from('schools').select('id, name_en, city, icon, annual_fee_jpy').order('rating', { ascending: false }).limit(100)
-      if (schoolsData) setSchools(schoolsData)
+      setUser(userData.user)
+      setForm(prev => ({
+        ...prev,
+        full_name: userData.user.user_metadata?.full_name || '',
+        email: userData.user.email || '',
+        country: userData.user.user_metadata?.country || '',
+      }))
+
+      const [profileData, schoolsData, appsData] = await Promise.all([
+        supabase.from('profiles').select('plan').eq('id', userData.user.id).single(),
+        supabase.from('schools').select('id, name_en, city, icon, annual_fee_jpy').order('name_en'),
+        supabase.from('applications').select('id', { count: 'exact' }).eq('user_id', userData.user.id),
+      ])
+
+      if (profileData.data) setIsPro(profileData.data.plan === 'pro' || profileData.data.plan === 'lifetime')
+      if (schoolsData.data) setSchools(schoolsData.data)
+      setApplicationCount(appsData.data?.length || 0)
+      setLoading(false)
     }
-    getData()
+    load()
   }, [])
 
-  function update(key: string, value: any) {
-    setForm(prev => ({...prev, [key]: value}))
+  function update(field: string, value: string) {
+    setForm(prev => ({...prev, [field]: value}))
   }
 
   async function handleSubmit() {
-    setLoading(true)
-    await supabase.from('feedback').insert({
-      message: JSON.stringify({...form, userId: user?.id, submittedAt: new Date().toISOString()}),
-      type: 'application',
-      user_id: user?.id || null,
+    setSubmitting(true)
+    await supabase.from('applications').insert({
+      user_id: user.id,
+      school_id: form.school_id,
+      status: 'pending',
+      full_name: form.full_name,
+      email: form.email,
+      phone: form.phone,
+      country: form.country,
+      notes: JSON.stringify({
+        date_of_birth: form.date_of_birth,
+        current_education: form.current_education,
+        japanese_level: form.japanese_level,
+        intended_start: form.intended_start,
+        motivation: form.motivation,
+        funding_source: form.funding_source,
+      }),
     })
-    if (form.preferredSchool && user) {
-      await supabase.from('applications').insert({
-        user_id: user.id,
-        school_id: form.preferredSchool,
-        status: 'pending',
-        notes: form.message,
-      })
-    }
+    setSubmitting(false)
     setSubmitted(true)
-    setLoading(false)
   }
 
-  if (submitted) return (
-    <main style={{minHeight:'100vh',background:'#0D0907',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'sans-serif',padding:'20px'}}>
-      <div style={{textAlign:'center',maxWidth:'500px'}}>
-        <div style={{fontSize:'80px',marginBottom:'20px'}}>🎌</div>
-        <h1 style={{color:'white',fontSize:'32px',fontWeight:'700',marginBottom:'12px'}}>Application Submitted!</h1>
-        <p style={{color:'rgba(255,255,255,0.5)',fontSize:'16px',marginBottom:'8px'}}>Thank you for your application!</p>
-        <p style={{color:'rgba(255,255,255,0.4)',fontSize:'14px',marginBottom:'32px'}}>We will review your application and match you with the best schools within 24-48 hours. Check your email for updates.</p>
-        <div style={{background:'#1A2035',borderRadius:'12px',padding:'20px',marginBottom:'24px',border:'1px solid rgba(255,255,255,0.08)'}}>
-          <h3 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'12px'}}>Next Steps</h3>
-          {[
-            {step:'1',label:'We review your application',time:'Within 24 hours'},
-            {step:'2',label:'School matching recommendations',time:'Within 48 hours'},
-            {step:'3',label:'School application submission',time:'Week 1-2'},
-            {step:'4',label:'COE application by school',time:'4-8 weeks'},
-          ].map(item=>(
-            <div key={item.step} style={{display:'flex',gap:'12px',alignItems:'center',padding:'8px 0',borderBottom:'1px solid rgba(255,255,255,0.06)'}}>
-              <div style={{width:'24px',height:'24px',borderRadius:'50%',background:'#C42020',display:'flex',alignItems:'center',justifyContent:'center',color:'white',fontSize:'11px',fontWeight:'700',flexShrink:0}}>{item.step}</div>
-              <div style={{flex:1}}>
-                <div style={{color:'white',fontSize:'13px'}}>{item.label}</div>
-                <div style={{color:'rgba(255,255,255,0.3)',fontSize:'11px'}}>{item.time}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-        <div style={{display:'flex',gap:'10px',justifyContent:'center',flexWrap:'wrap'}}>
-          <a href="/applications" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'12px 24px',borderRadius:'8px',fontWeight:'700',fontSize:'14px'}}>Track Application</a>
-          <a href="/chat" style={{background:'rgba(255,255,255,0.08)',color:'white',textDecoration:'none',padding:'12px 24px',borderRadius:'8px',fontSize:'14px',border:'1px solid rgba(255,255,255,0.15)'}}>Ask Sakura AI</a>
-        </div>
-      </div>
-    </main>
-  )
+  const limitReached = !isPro && applicationCount >= 1
 
-  const totalSteps = 4
+  if (loading) return <div style={{minHeight:'100vh',background:'#0D0907',display:'flex',alignItems:'center',justifyContent:'center',color:'white'}}>Loading...</div>
+
+  if (limitReached) {
+    return (
+      <main style={{minHeight:'100vh',background:'#0D0907',fontFamily:'sans-serif',display:'flex',alignItems:'center',justifyContent:'center',padding:'20px'}}>
+        <div style={{background:'#1A2035',borderRadius:'16px',padding:'40px',maxWidth:'440px',textAlign:'center',border:'1px solid rgba(196,32,32,0.3)'}}>
+          <div style={{fontSize:'48px',marginBottom:'16px'}}>🔒</div>
+          <h2 style={{color:'white',fontSize:'20px',fontWeight:'700',marginBottom:'12px'}}>Application Limit Reached</h2>
+          <p style={{color:'rgba(255,255,255,0.5)',fontSize:'14px',marginBottom:'24px',lineHeight:'1.6'}}>
+            Free members can submit 1 application. Upgrade to Pro for unlimited school applications.
+          </p>
+          <a href="/pricing" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'12px 28px',borderRadius:'8px',fontSize:'14px',fontWeight:'700',display:'inline-block'}}>
+            Upgrade to Pro 💎
+          </a>
+        </div>
+      </main>
+    )
+  }
+
+  if (submitted) {
+    return (
+      <main style={{minHeight:'100vh',background:'#0D0907',fontFamily:'sans-serif',display:'flex',alignItems:'center',justifyContent:'center',padding:'20px'}}>
+        <div style={{background:'#1A2035',borderRadius:'16px',padding:'40px',maxWidth:'440px',textAlign:'center',border:'1px solid rgba(46,200,122,0.3)'}}>
+          <div style={{fontSize:'56px',marginBottom:'16px'}}>🌸</div>
+          <h2 style={{color:'#2EC87A',fontSize:'22px',fontWeight:'700',marginBottom:'12px'}}>Application Submitted!</h2>
+          <p style={{color:'rgba(255,255,255,0.5)',fontSize:'14px',marginBottom:'24px',lineHeight:'1.6'}}>
+            Your application has been received. You can track its status on your Applications page.
+          </p>
+          <div style={{display:'flex',gap:'10px',justifyContent:'center',flexWrap:'wrap'}}>
+            <a href="/applications" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'12px 24px',borderRadius:'8px',fontSize:'14px',fontWeight:'700'}}>View Applications</a>
+            <a href="/schools" style={{background:'rgba(255,255,255,0.08)',color:'white',textDecoration:'none',padding:'12px 24px',borderRadius:'8px',fontSize:'14px',border:'1px solid rgba(255,255,255,0.15)'}}>Browse More Schools</a>
+          </div>
+        </div>
+      </main>
+    )
+  }
+
+  const selectedSchool = schools.find(s => s.id === form.school_id)
 
   return (
     <main style={{minHeight:'100vh',background:'#0D0907',fontFamily:'sans-serif'}}>
       <div style={{background:'#1A2035',padding:'40px',borderBottom:'3px solid #C42020',textAlign:'center'}}>
-        <h1 style={{color:'white',fontSize:'32px',fontWeight:'700',marginBottom:'8px'}}>Apply to Japan Schools</h1>
-        <p style={{color:'rgba(255,255,255,0.4)',fontSize:'16px',marginBottom:'20px'}}>Complete your application in 4 easy steps</p>
-        <div style={{display:'flex',justifyContent:'center',gap:'8px',alignItems:'center'}}>
-          {Array.from({length:totalSteps}).map((_,i)=>(
-            <div key={i} style={{display:'flex',alignItems:'center',gap:'8px'}}>
-              <div style={{width:'32px',height:'32px',borderRadius:'50%',background:step>i+1?'#2EC87A':step===i+1?'#C42020':'rgba(255,255,255,0.1)',display:'flex',alignItems:'center',justifyContent:'center',color:'white',fontSize:'13px',fontWeight:'700'}}>
-                {step>i+1?'✓':i+1}
-              </div>
-              {i < totalSteps-1 && <div style={{width:'32px',height:'2px',background:step>i+1?'#2EC87A':'rgba(255,255,255,0.1)'}}/>}
-            </div>
-          ))}
-        </div>
-        <div style={{display:'flex',justifyContent:'center',gap:'32px',marginTop:'8px'}}>
-          {['Personal Info','Education','Preferences','Documents'].map((label,i)=>(
-            <span key={i} style={{color:step===i+1?'white':'rgba(255,255,255,0.3)',fontSize:'11px',fontWeight:step===i+1?'700':'400'}}>{label}</span>
-          ))}
-        </div>
+        <h1 style={{color:'white',fontSize:'32px',fontWeight:'700',marginBottom:'8px'}}>Apply to School</h1>
+        <p style={{color:'rgba(255,255,255,0.4)',fontSize:'16px'}}>Submit your application in just a few steps</p>
       </div>
 
-      <div style={{maxWidth:'600px',margin:'0 auto',padding:'40px 20px'}}>
+      <div style={{maxWidth:'700px',margin:'0 auto',padding:'32px 20px'}}>
+
+        {/* Progress */}
+        <div style={{display:'flex',gap:'8px',marginBottom:'28px'}}>
+          {[1,2,3,4].map(s => (
+            <div key={s} style={{flex:1,height:'4px',borderRadius:'2px',background: s <= step ? '#C42020' : 'rgba(255,255,255,0.1)'}}/>
+          ))}
+        </div>
+
         <div style={{background:'#1A2035',borderRadius:'16px',padding:'32px',border:'1px solid rgba(255,255,255,0.08)'}}>
 
+          {/* Step 1: School Selection */}
           {step === 1 && (
-            <div style={{display:'flex',flexDirection:'column',gap:'16px'}}>
-              <h2 style={{color:'white',fontSize:'20px',fontWeight:'700',marginBottom:'4px'}}>Personal Information</h2>
-              <div>
-                <label style={{color:'rgba(255,255,255,0.6)',fontSize:'12px',display:'block',marginBottom:'6px'}}>Full Name</label>
-                <input value={form.fullName} onChange={e=>update('fullName',e.target.value)} placeholder="Your full name" style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none'}}/>
-              </div>
-              <div>
-                <label style={{color:'rgba(255,255,255,0.6)',fontSize:'12px',display:'block',marginBottom:'6px'}}>Email Address</label>
-                <input type="email" value={form.email} onChange={e=>update('email',e.target.value)} placeholder="your@email.com" style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none'}}/>
-              </div>
-              <div>
-                <label style={{color:'rgba(255,255,255,0.6)',fontSize:'12px',display:'block',marginBottom:'6px'}}>Phone Number</label>
-                <input value={form.phone} onChange={e=>update('phone',e.target.value)} placeholder="+880 1XXX XXXXXX" style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none'}}/>
-              </div>
-              <div>
-                <label style={{color:'rgba(255,255,255,0.6)',fontSize:'12px',display:'block',marginBottom:'6px'}}>Date of Birth</label>
-                <input type="date" value={form.dateOfBirth} onChange={e=>update('dateOfBirth',e.target.value)} style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none'}}/>
-              </div>
-              <div>
-                <label style={{color:'rgba(255,255,255,0.6)',fontSize:'12px',display:'block',marginBottom:'8px'}}>Your Country</label>
-                <div style={{display:'flex',gap:'8px'}}>
-                  {[{code:'Bangladesh',flag:'🇧🇩'},{code:'Nepal',flag:'🇳🇵'},{code:'Other',flag:'🌍'}].map(c=>(
-                    <button key={c.code} onClick={()=>update('country',c.code)} style={{flex:1,background:form.country===c.code?'rgba(196,32,32,0.2)':'#0D0907',border:'1px solid ' + (form.country===c.code?'#C42020':'rgba(255,255,255,0.2)'),borderRadius:'8px',padding:'10px',color:'white',fontSize:'12px',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:'4px'}}>
-                      <span style={{fontSize:'20px'}}>{c.flag}</span>
-                      <span>{c.code}</span>
-                    </button>
-                  ))}
+            <div>
+              <h2 style={{color:'white',fontSize:'18px',fontWeight:'700',marginBottom:'16px'}}>1. Choose a School</h2>
+              <select value={form.school_id} onChange={e=>update('school_id', e.target.value)} style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none',marginBottom:'16px'}}>
+                <option value="">Select a school...</option>
+                {schools.map(s => (
+                  <option key={s.id} value={s.id}>{s.name_en} - {s.city}</option>
+                ))}
+              </select>
+              {selectedSchool && (
+                <div style={{background:'#0D0907',borderRadius:'10px',padding:'16px',display:'flex',gap:'12px',alignItems:'center',marginBottom:'16px'}}>
+                  <span style={{fontSize:'32px'}}>{selectedSchool.icon || '🏫'}</span>
+                  <div>
+                    <div style={{color:'white',fontSize:'14px',fontWeight:'700'}}>{selectedSchool.name_en}</div>
+                    <div style={{color:'rgba(255,255,255,0.4)',fontSize:'12px'}}>{selectedSchool.city} · ¥{selectedSchool.annual_fee_jpy?.toLocaleString()}/year</div>
+                  </div>
                 </div>
-              </div>
-              <button onClick={()=>setStep(2)} disabled={!form.fullName||!form.email} style={{background:'#C42020',color:'white',border:'none',borderRadius:'8px',padding:'14px',fontSize:'15px',fontWeight:'700',cursor:'pointer',marginTop:'8px'}}>
-                Next Step →
+              )}
+              <button onClick={()=>setStep(2)} disabled={!form.school_id} style={{background: form.school_id ? '#C42020' : 'rgba(255,255,255,0.1)',color:'white',border:'none',borderRadius:'8px',padding:'14px',fontSize:'14px',fontWeight:'700',cursor: form.school_id ? 'pointer' : 'not-allowed',width:'100%'}}>
+                Continue →
               </button>
             </div>
           )}
 
+          {/* Step 2: Personal Info */}
           {step === 2 && (
-            <div style={{display:'flex',flexDirection:'column',gap:'16px'}}>
-              <h2 style={{color:'white',fontSize:'20px',fontWeight:'700',marginBottom:'4px'}}>Education & Japanese Level</h2>
-              <div>
-                <label style={{color:'rgba(255,255,255,0.6)',fontSize:'12px',display:'block',marginBottom:'8px'}}>Highest Education Level</label>
-                <div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
-                  {['High School','Diploma','Bachelor Degree','Master Degree','PhD'].map(edu=>(
-                    <button key={edu} onClick={()=>update('education',edu)} style={{background:form.education===edu?'rgba(196,32,32,0.2)':'#0D0907',border:'1px solid ' + (form.education===edu?'#C42020':'rgba(255,255,255,0.2)'),borderRadius:'8px',padding:'10px 14px',color:'white',fontSize:'13px',cursor:'pointer',textAlign:'left'}}>
-                      {edu}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <label style={{color:'rgba(255,255,255,0.6)',fontSize:'12px',display:'block',marginBottom:'8px'}}>Japanese Level</label>
-                <select value={form.japaneseLevel} onChange={e=>update('japaneseLevel',e.target.value)} style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none',cursor:'pointer'}}>
-                  <option value="None">No Japanese</option>
-                  <option value="Beginner">Beginner (Hiragana/Katakana)</option>
-                  <option value="N5">N5 - Basic</option>
-                  <option value="N4">N4 - Elementary</option>
-                  <option value="N3">N3 - Intermediate</option>
-                  <option value="N2">N2 - Upper Intermediate</option>
-                  <option value="N1">N1 - Advanced</option>
+            <div>
+              <h2 style={{color:'white',fontSize:'18px',fontWeight:'700',marginBottom:'16px'}}>2. Personal Information</h2>
+              <div style={{display:'flex',flexDirection:'column',gap:'12px',marginBottom:'16px'}}>
+                <input value={form.full_name} onChange={e=>update('full_name', e.target.value)} placeholder="Full Name" style={{background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none'}}/>
+                <input value={form.email} onChange={e=>update('email', e.target.value)} placeholder="Email" type="email" style={{background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none'}}/>
+                <input value={form.phone} onChange={e=>update('phone', e.target.value)} placeholder="Phone Number" style={{background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none'}}/>
+                <select value={form.country} onChange={e=>update('country', e.target.value)} style={{background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none'}}>
+                  <option value="">Select Country...</option>
+                  <option value="Bangladesh">Bangladesh</option>
+                  <option value="Nepal">Nepal</option>
+                  <option value="Other">Other</option>
                 </select>
-              </div>
-              <div>
-                <label style={{color:'rgba(255,255,255,0.6)',fontSize:'12px',display:'block',marginBottom:'8px'}}>JLPT Certificate (if any)</label>
-                <select value={form.jlptLevel} onChange={e=>update('jlptLevel',e.target.value)} style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none',cursor:'pointer'}}>
-                  <option value="None">No JLPT Certificate</option>
-                  <option value="N5">JLPT N5</option>
-                  <option value="N4">JLPT N4</option>
-                  <option value="N3">JLPT N3</option>
-                  <option value="N2">JLPT N2</option>
-                  <option value="N1">JLPT N1</option>
-                </select>
+                <input value={form.date_of_birth} onChange={e=>update('date_of_birth', e.target.value)} type="date" style={{background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none'}}/>
               </div>
               <div style={{display:'flex',gap:'10px'}}>
-                <button onClick={()=>setStep(1)} style={{background:'rgba(255,255,255,0.08)',color:'white',border:'none',borderRadius:'8px',padding:'14px',fontSize:'15px',cursor:'pointer',flex:1}}>Back</button>
-                <button onClick={()=>setStep(3)} style={{background:'#C42020',color:'white',border:'none',borderRadius:'8px',padding:'14px',fontSize:'15px',fontWeight:'700',cursor:'pointer',flex:2}}>Next Step →</button>
+                <button onClick={()=>setStep(1)} style={{background:'rgba(255,255,255,0.08)',color:'white',border:'1px solid rgba(255,255,255,0.15)',borderRadius:'8px',padding:'14px',fontSize:'14px',cursor:'pointer',flex:1}}>← Back</button>
+                <button onClick={()=>setStep(3)} disabled={!form.full_name||!form.email} style={{background: form.full_name&&form.email ? '#C42020' : 'rgba(255,255,255,0.1)',color:'white',border:'none',borderRadius:'8px',padding:'14px',fontSize:'14px',fontWeight:'700',cursor: form.full_name&&form.email ? 'pointer' : 'not-allowed',flex:2}}>
+                  Continue →
+                </button>
               </div>
             </div>
           )}
 
+          {/* Step 3: Academic Info */}
           {step === 3 && (
-            <div style={{display:'flex',flexDirection:'column',gap:'16px'}}>
-              <h2 style={{color:'white',fontSize:'20px',fontWeight:'700',marginBottom:'4px'}}>School Preferences</h2>
-              <div>
-                <label style={{color:'rgba(255,255,255,0.6)',fontSize:'12px',display:'block',marginBottom:'8px'}}>Preferred School (optional)</label>
-                <select value={form.preferredSchool} onChange={e=>update('preferredSchool',e.target.value)} style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none',cursor:'pointer'}}>
-                  <option value="">No preference - help me choose!</option>
-                  {schools.map(s=>(
-                    <option key={s.id} value={s.id}>{s.icon} {s.name_en} - {s.city}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label style={{color:'rgba(255,255,255,0.6)',fontSize:'12px',display:'block',marginBottom:'8px'}}>Preferred City</label>
-                <select value={form.preferredCity} onChange={e=>update('preferredCity',e.target.value)} style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none',cursor:'pointer'}}>
-                  {['Tokyo','Osaka','Kyoto','Sapporo','Fukuoka','Nagoya','Any City'].map(c=><option key={c} value={c}>{c}</option>)}
-                </select>
-              </div>
-              <div>
-                <label style={{color:'rgba(255,255,255,0.6)',fontSize:'12px',display:'block',marginBottom:'8px'}}>Annual Budget</label>
-                <select value={form.budget} onChange={e=>update('budget',e.target.value)} style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none',cursor:'pointer'}}>
-                  <option value="400000">Under ¥400,000</option>
-                  <option value="500000">Under ¥500,000</option>
-                  <option value="600000">Under ¥600,000</option>
-                  <option value="700000">Under ¥700,000</option>
-                  <option value="any">Any Budget</option>
-                </select>
-              </div>
-              <div>
-                <label style={{color:'rgba(255,255,255,0.6)',fontSize:'12px',display:'block',marginBottom:'8px'}}>Preferred Start Date</label>
-                <select value={form.startDate} onChange={e=>update('startDate',e.target.value)} style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none',cursor:'pointer'}}>
-                  {['October 2025','January 2026','April 2026','July 2026','October 2026'].map(d=><option key={d} value={d}>{d}</option>)}
-                </select>
+            <div>
+              <h2 style={{color:'white',fontSize:'18px',fontWeight:'700',marginBottom:'16px'}}>3. Academic Background</h2>
+              <div style={{display:'flex',flexDirection:'column',gap:'12px',marginBottom:'16px'}}>
+                <div>
+                  <label style={{color:'rgba(255,255,255,0.5)',fontSize:'12px',display:'block',marginBottom:'6px'}}>Current Education Level</label>
+                  <select value={form.current_education} onChange={e=>update('current_education', e.target.value)} style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none'}}>
+                    <option value="">Select...</option>
+                    <option value="HSC/A-Level">HSC / A-Level (High School)</option>
+                    <option value="Bachelor">Bachelor's Degree</option>
+                    <option value="Master">Master's Degree</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{color:'rgba(255,255,255,0.5)',fontSize:'12px',display:'block',marginBottom:'6px'}}>Japanese Language Level</label>
+                  <select value={form.japanese_level} onChange={e=>update('japanese_level', e.target.value)} style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none'}}>
+                    <option value="none">Complete Beginner</option>
+                    <option value="n5">JLPT N5</option>
+                    <option value="n4">JLPT N4</option>
+                    <option value="n3">JLPT N3</option>
+                    <option value="n2">JLPT N2 or higher</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{color:'rgba(255,255,255,0.5)',fontSize:'12px',display:'block',marginBottom:'6px'}}>Intended Start Date</label>
+                  <select value={form.intended_start} onChange={e=>update('intended_start', e.target.value)} style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none'}}>
+                    <option value="">Select...</option>
+                    <option value="January">January Intake</option>
+                    <option value="April">April Intake</option>
+                    <option value="July">July Intake</option>
+                    <option value="October">October Intake</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{color:'rgba(255,255,255,0.5)',fontSize:'12px',display:'block',marginBottom:'6px'}}>How will you fund your studies?</label>
+                  <select value={form.funding_source} onChange={e=>update('funding_source', e.target.value)} style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none'}}>
+                    <option value="">Select...</option>
+                    <option value="self">Self-funded / Family support</option>
+                    <option value="loan">Education Loan</option>
+                    <option value="scholarship">Scholarship</option>
+                    <option value="mixed">Mixed funding</option>
+                  </select>
+                </div>
               </div>
               <div style={{display:'flex',gap:'10px'}}>
-                <button onClick={()=>update('hasDorm',!form.hasDorm)} style={{background:form.hasDorm?'rgba(196,32,32,0.2)':'#0D0907',border:'1px solid ' + (form.hasDorm?'#C42020':'rgba(255,255,255,0.2)'),borderRadius:'8px',padding:'12px',color:form.hasDorm?'#FF8070':'rgba(255,255,255,0.6)',fontSize:'13px',cursor:'pointer',flex:1,fontWeight:'600'}}>
-                  🛏 Need Dormitory
+                <button onClick={()=>setStep(2)} style={{background:'rgba(255,255,255,0.08)',color:'white',border:'1px solid rgba(255,255,255,0.15)',borderRadius:'8px',padding:'14px',fontSize:'14px',cursor:'pointer',flex:1}}>← Back</button>
+                <button onClick={()=>setStep(4)} disabled={!form.current_education} style={{background: form.current_education ? '#C42020' : 'rgba(255,255,255,0.1)',color:'white',border:'none',borderRadius:'8px',padding:'14px',fontSize:'14px',fontWeight:'700',cursor: form.current_education ? 'pointer' : 'not-allowed',flex:2}}>
+                  Continue →
                 </button>
-                <button onClick={()=>update('needScholarship',!form.needScholarship)} style={{background:form.needScholarship?'rgba(196,32,32,0.2)':'#0D0907',border:'1px solid ' + (form.needScholarship?'#C42020':'rgba(255,255,255,0.2)'),borderRadius:'8px',padding:'12px',color:form.needScholarship?'#FF8070':'rgba(255,255,255,0.6)',fontSize:'13px',cursor:'pointer',flex:1,fontWeight:'600'}}>
-                  🎓 Need Scholarship
-                </button>
-              </div>
-              <div style={{display:'flex',gap:'10px'}}>
-                <button onClick={()=>setStep(2)} style={{background:'rgba(255,255,255,0.08)',color:'white',border:'none',borderRadius:'8px',padding:'14px',fontSize:'15px',cursor:'pointer',flex:1}}>Back</button>
-                <button onClick={()=>setStep(4)} style={{background:'#C42020',color:'white',border:'none',borderRadius:'8px',padding:'14px',fontSize:'15px',fontWeight:'700',cursor:'pointer',flex:2}}>Next Step →</button>
               </div>
             </div>
           )}
 
+          {/* Step 4: Motivation */}
           {step === 4 && (
-            <div style={{display:'flex',flexDirection:'column',gap:'16px'}}>
-              <h2 style={{color:'white',fontSize:'20px',fontWeight:'700',marginBottom:'4px'}}>Documents & Final Details</h2>
-              <div style={{background:'#0D0907',borderRadius:'10px',padding:'16px'}}>
-                <p style={{color:'rgba(255,255,255,0.5)',fontSize:'12px',marginBottom:'12px'}}>Please confirm which documents you currently have:</p>
-                <div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
-                  {[
-                    {key:'hasPassport',label:'Valid Passport (1+ year validity)'},
-                    {key:'hasBankStatement',label:'Bank Statement (2,000,000+ Yen equivalent)'},
-                  ].map(doc=>(
-                    <button key={doc.key} onClick={()=>update(doc.key,!form[doc.key as keyof typeof form])} style={{background:(form[doc.key as keyof typeof form] as boolean)?'rgba(46,200,122,0.1)':'#1A2035',border:'1px solid ' + ((form[doc.key as keyof typeof form] as boolean)?'rgba(46,200,122,0.3)':'rgba(255,255,255,0.1)'),borderRadius:'8px',padding:'12px',color:'white',fontSize:'13px',cursor:'pointer',display:'flex',gap:'10px',alignItems:'center',textAlign:'left'}}>
-                      <span style={{fontSize:'18px'}}>{(form[doc.key as keyof typeof form] as boolean)?'✅':'⬜'}</span>
-                      {doc.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <label style={{color:'rgba(255,255,255,0.6)',fontSize:'12px',display:'block',marginBottom:'6px'}}>Additional Message (optional)</label>
-                <textarea value={form.message} onChange={e=>update('message',e.target.value)} placeholder="Any special requirements or questions?" style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none',resize:'vertical',minHeight:'80px'}}/>
-              </div>
+            <div>
+              <h2 style={{color:'white',fontSize:'18px',fontWeight:'700',marginBottom:'16px'}}>4. Your Motivation</h2>
+              <p style={{color:'rgba(255,255,255,0.4)',fontSize:'13px',marginBottom:'12px'}}>Tell the school why you want to study in Japan (recommended, not required)</p>
+              <textarea value={form.motivation} onChange={e=>update('motivation', e.target.value)} placeholder="Why do you want to study Japanese? What are your goals in Japan?" style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none',resize:'vertical',minHeight:'120px',marginBottom:'16px'}}/>
 
-              <div style={{background:'#0D0907',borderRadius:'10px',padding:'16px'}}>
-                <h3 style={{color:'white',fontSize:'14px',fontWeight:'700',marginBottom:'12px'}}>Application Summary</h3>
-                {[
-                  {label:'Name',value:form.fullName},
-                  {label:'Country',value:form.country},
-                  {label:'Education',value:form.education},
-                  {label:'Japanese Level',value:form.japaneseLevel},
-                  {label:'Preferred City',value:form.preferredCity},
-                  {label:'Budget',value:'¥' + parseInt(form.budget||'0').toLocaleString()},
-                  {label:'Start Date',value:form.startDate},
-                ].map(item=>(
-                  <div key={item.label} style={{display:'flex',justifyContent:'space-between',padding:'6px 0',borderBottom:'1px solid rgba(255,255,255,0.06)',fontSize:'13px'}}>
-                    <span style={{color:'rgba(255,255,255,0.4)'}}>{item.label}</span>
-                    <span style={{color:'white',fontWeight:'600'}}>{item.value}</span>
-                  </div>
-                ))}
+              <div style={{background:'rgba(240,168,48,0.1)',border:'1px solid rgba(240,168,48,0.2)',borderRadius:'8px',padding:'12px',marginBottom:'16px'}}>
+                <p style={{color:'#F0A830',fontSize:'12px',lineHeight:'1.6'}}>⚠️ This application will be sent through Japan Life Guide. The school will contact you directly to continue the process and request official documents.</p>
               </div>
 
               <div style={{display:'flex',gap:'10px'}}>
-                <button onClick={()=>setStep(3)} style={{background:'rgba(255,255,255,0.08)',color:'white',border:'none',borderRadius:'8px',padding:'14px',fontSize:'15px',cursor:'pointer',flex:1}}>Back</button>
-                <button onClick={handleSubmit} disabled={loading} style={{background:'#C42020',color:'white',border:'none',borderRadius:'8px',padding:'14px',fontSize:'15px',fontWeight:'700',cursor:'pointer',flex:2}}>
-                  {loading ? 'Submitting...' : 'Submit Application 🌸'}
+                <button onClick={()=>setStep(3)} style={{background:'rgba(255,255,255,0.08)',color:'white',border:'1px solid rgba(255,255,255,0.15)',borderRadius:'8px',padding:'14px',fontSize:'14px',cursor:'pointer',flex:1}}>← Back</button>
+                <button onClick={handleSubmit} disabled={submitting} style={{background:'#C42020',color:'white',border:'none',borderRadius:'8px',padding:'14px',fontSize:'14px',fontWeight:'700',cursor:'pointer',flex:2}}>
+                  {submitting ? 'Submitting...' : 'Submit Application 🌸'}
                 </button>
               </div>
             </div>
@@ -311,5 +272,13 @@ if (schoolId) setForm(prev=>({...prev, preferredSchool: schoolId}))
         </div>
       </div>
     </main>
+  )
+}
+
+export default function ApplyPage() {
+  return (
+    <Suspense fallback={<div style={{minHeight:'100vh',background:'#0D0907',display:'flex',alignItems:'center',justifyContent:'center',color:'white'}}>Loading...</div>}>
+      <ApplyForm />
+    </Suspense>
   )
 }

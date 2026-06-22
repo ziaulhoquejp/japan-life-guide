@@ -232,6 +232,20 @@ export default function ProfilePage() {
           </div>
         )}
       </div>
+      {/* Delete Account */}
+<div style={{background:'rgba(196,32,32,0.1)',borderRadius:'12px',padding:'20px',marginTop:'24px',border:'1px solid rgba(196,32,32,0.2)'}}>
+  <h3 style={{color:'#FF8070',fontSize:'15px',fontWeight:'700',marginBottom:'8px'}}>⚠️ Danger Zone</h3>
+  <p style={{color:'rgba(255,255,255,0.5)',fontSize:'13px',marginBottom:'14px'}}>Permanently delete your account and all associated data. This action cannot be undone.</p>
+  <button onClick={async()=>{
+    if(confirm('Are you sure you want to delete your account? This cannot be undone.')){
+      await supabase.from('profiles').delete().eq('id',user?.id)
+      await supabase.auth.signOut()
+      window.location.href='/'
+    }
+  }} style={{background:'rgba(196,32,32,0.2)',color:'#FF8070',border:'1px solid rgba(196,32,32,0.3)',borderRadius:'8px',padding:'10px 20px',fontSize:'13px',fontWeight:'700',cursor:'pointer'}}>
+    Delete My Account
+  </button>
+</div>
     </main>
   )
 }

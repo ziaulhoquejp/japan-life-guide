@@ -2,178 +2,260 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 
+const ADMIN_EMAILS = ['ziaulhoquejp@gmail.com', 'sacrifice4ever@gmail.com']
+
 export default function AdminPage() {
   const [user, setUser] = useState<any>(null)
-  const [stats, setStats] = useState({schools:0,applications:0,reviews:0,feedback:0})
+  const [stats, setStats] = useState<any>({})
+  const [users, setUsers] = useState<any[]>([])
+  const [feedback, setFeedback] = useState<any[]>([])
+  const [applications, setApplications] = useState<any[]>([])
+  const [activeTab, setActiveTab] = useState('overview')
   const [loading, setLoading] = useState(true)
   const [newsletter, setNewsletter] = useState({subject:'',message:''})
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
-  const [feedback, setFeedback] = useState<any[]>([])
-  const [activeTab, setActiveTab] = useState('stats')
-
-  const ADMIN_EMAILS = ['ziaulhoquejp@gmail.com', 'sacrifice4ever@gmail.com']
 
   useEffect(() => {
-  async function getData() {
-    const { data: userData } = await supabase.auth.getUser()
-    if (!userData.user) { window.location.href = '/'; return }
-    if (!ADMIN_EMAILS.includes(userData.user.email!)) { window.location.href = '/'; return }
-    setUser(userData.user)
+    async function load() {
+      const { data: userData } = await supabase.auth.getUser()
+      if (!userData.user || !ADMIN_EMAILS.includes(userData.user.email || '')) {
+        window.location.href = '/'
+        return
+      }
+      setUser(userData.user)
 
-    const [schoolsData, feedbackData, applicationsData, reviewsData] = await Promise.all([
-      supabase.from('schools').select('*', { count: 'exact', head: true }),
-      supabase.from('feedback').select('*').order('created_at', { ascending: false }).limit(20),
-      supabase.from('applications').select('*', { count: 'exact', head: true }),
-      supabase.from('reviews').select('*', { count: 'exact', head: true }),
-    ])
+      const [profilesData, feedbackData, appsData, schoolsData] = await Promise.all([
+        supabase.from('profiles').select('*').order('created_at', { ascending: false }),
+        supabase.from('feedback').select('*').order('created_at', { ascending: false }),
+        supabase.from('applications').select('*, schools(name_en), profiles(id)').order('created_at', { ascending: false }),
+        supabase.from('schools').select('id', { count: 'exact', head: true }),
+      ])
 
-    setStats({
-      schools: schoolsData.count || 0,
-      applications: applicationsData.count || 0,
-      reviews: reviewsData.count || 0,
-      feedback: feedbackData.data?.length || 0,
-    })
-    if (feedbackData.data) setFeedback(feedbackData.data)
-    setLoading(false)
-  }
-  getData()
-}, [])
+      const profiles = profilesData.data || []
+      setUsers(profiles)
+      setFeedback(feedbackData.data || [])
+      setApplications(appsData.data || [])
+
+      setStats({
+        totalUsers: profiles.length,
+        proUsers: profiles.filter(p => p.plan === 'pro' || p.plan === 'lifetime').length,
+        totalSchools: schoolsData.count || 0,
+        totalApplications: appsData.data?.length || 0,
+        totalFeedback: feedbackData.data?.length || 0,
+        newUsersToday: profiles.filter(p => new Date(p.created_at).toDateString() === new Date().toDateString()).length,
+      })
+      setLoading(false)
+    }
+    load()
+  }, [])
 
   async function sendNewsletter() {
-  if (!newsletter.subject || !newsletter.message) return
-  setSending(true)
-  try {
-    await fetch('/api/send-newsletter', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        emails: ['ziaulhoquejp@gmail.com', 'sacrifice4ever@gmail.com'],
-        subject: newsletter.subject,
-        content: newsletter.message,
-        type: 'newsletter',
-      }),
-    })
+    if (!newsletter.subject || !newsletter.message) return
+    setSending(true)
+    try {
+      await fetch('/api/send-newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          subject: newsletter.subject,
+          message: newsletter.message,
+          emails: users.map(u => u.email).filter(Boolean),
+        }),
+      })
       setSent(true)
       setNewsletter({subject:'',message:''})
-      setTimeout(() => setSent(false), 3000)
-    } catch {}
+    } catch (error) {
+      console.error('Newsletter error:', error)
+    }
     setSending(false)
   }
 
-  if (loading) return <div style={{minHeight:'100vh',background:'#0D0907',display:'flex',alignItems:'center',justifyContent:'center',color:'white'}}>Loading...</div>
+  async function updateApplicationStatus(id: string, status: string) {
+    await supabase.from('applications').update({ status }).eq('id', id)
+    setApplications(prev => prev.map(a => a.id === id ? {...a, status} : a))
+  }
+
+  if (loading) return <div style={{minHeight:'100vh',background:'#0D0907',display:'flex',alignItems:'center',justifyContent:'center',color:'white'}}>Loading Admin...</div>
+
+  const statusColors: any = {
+    pending: '#F0A830',
+    applied: '#4A8EFF',
+    accepted: '#2EC87A',
+    rejected: '#C42020',
+    withdrawn: 'rgba(255,255,255,0.3)',
+  }
 
   return (
     <main style={{minHeight:'100vh',background:'#0D0907',fontFamily:'sans-serif'}}>
-      <div style={{background:'#1A2035',padding:'32px 40px',borderBottom:'3px solid #C42020',display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:'12px'}}>
-        <div>
-          <h1 style={{color:'white',fontSize:'28px',fontWeight:'700',marginBottom:'4px'}}>Admin Dashboard</h1>
-          <p style={{color:'rgba(255,255,255,0.4)',fontSize:'14px'}}>{user?.email}</p>
+      <div style={{background:'linear-gradient(135deg,#1A2035,#0D1520)',padding:'32px 20px',borderBottom:'3px solid #C42020'}}>
+        <div style={{maxWidth:'1200px',margin:'0 auto',display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:'12px'}}>
+          <div>
+            <h1 style={{color:'white',fontSize:'28px',fontWeight:'700',marginBottom:'4px'}}>🛠 Admin Dashboard</h1>
+            <p style={{color:'rgba(255,255,255,0.4)',fontSize:'14px'}}>Welcome back, {user?.email}</p>
+          </div>
+          <a href="/" style={{background:'rgba(255,255,255,0.08)',color:'white',textDecoration:'none',padding:'8px 16px',borderRadius:'8px',fontSize:'13px',border:'1px solid rgba(255,255,255,0.15)'}}>← Back to Site</a>
         </div>
-        <a href="/" style={{background:'rgba(255,255,255,0.08)',color:'white',textDecoration:'none',padding:'10px 20px',borderRadius:'8px',fontSize:'13px'}}>← Back to Site</a>
       </div>
 
-      <div style={{maxWidth:'1000px',margin:'0 auto',padding:'32px 20px'}}>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(150px,1fr))',gap:'12px',marginBottom:'28px'}}>
+      <div style={{maxWidth:'1200px',margin:'0 auto',padding:'32px 20px'}}>
+
+        {/* Stats */}
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(160px,1fr))',gap:'12px',marginBottom:'24px'}}>
           {[
-            {label:'Schools',value:stats.schools,icon:'🏫',color:'#4A8EFF'},
-            {label:'Applications',value:stats.applications,icon:'📝',color:'#2EC87A'},
-            {label:'Reviews',value:stats.reviews,icon:'⭐',color:'#F0A830'},
-            {label:'Feedback',value:stats.feedback,icon:'💬',color:'#A855F7'},
-          ].map(stat=>(
-            <div key={stat.label} style={{background:'#1A2035',borderRadius:'12px',padding:'18px',textAlign:'center',border:'1px solid rgba(255,255,255,0.08)'}}>
-              <div style={{fontSize:'28px',marginBottom:'8px'}}>{stat.icon}</div>
-              <div style={{color:stat.color,fontSize:'26px',fontWeight:'700'}}>{stat.value}</div>
-              <div style={{color:'rgba(255,255,255,0.4)',fontSize:'12px',marginTop:'4px'}}>{stat.label}</div>
+            {label:'Total Users',value:stats.totalUsers,color:'#4A8EFF',icon:'👤'},
+            {label:'Pro Members',value:stats.proUsers,color:'#F0A830',icon:'💎'},
+            {label:'New Today',value:stats.newUsersToday,color:'#2EC87A',icon:'🆕'},
+            {label:'Total Schools',value:stats.totalSchools,color:'#C42020',icon:'🏫'},
+            {label:'Applications',value:stats.totalApplications,color:'#A855F7',icon:'📝'},
+            {label:'Feedback',value:stats.totalFeedback,color:'#FF8070',icon:'💬'},
+          ].map(stat => (
+            <div key={stat.label} style={{background:'#1A2035',borderRadius:'12px',padding:'16px',border:'1px solid rgba(255,255,255,0.08)',textAlign:'center'}}>
+              <div style={{fontSize:'24px',marginBottom:'6px'}}>{stat.icon}</div>
+              <div style={{color:stat.color,fontSize:'24px',fontWeight:'800',marginBottom:'2px'}}>{stat.value}</div>
+              <div style={{color:'rgba(255,255,255,0.4)',fontSize:'11px'}}>{stat.label}</div>
             </div>
           ))}
         </div>
 
+        {/* Tabs */}
         <div style={{display:'flex',gap:'8px',marginBottom:'20px',flexWrap:'wrap'}}>
-          {['stats','newsletter','feedback'].map(tab=>(
+          {['overview','users','applications','feedback','newsletter'].map(tab => (
             <button key={tab} onClick={()=>setActiveTab(tab)} style={{background:activeTab===tab?'#C42020':'#1A2035',border:'none',borderRadius:'20px',padding:'8px 18px',color:'white',fontSize:'12px',fontWeight:'600',cursor:'pointer',textTransform:'capitalize'}}>
-              {tab}
+              {tab === 'overview' ? '📊 Overview' :
+               tab === 'users' ? `👤 Users (${stats.totalUsers})` :
+               tab === 'applications' ? `📝 Applications (${stats.totalApplications})` :
+               tab === 'feedback' ? `💬 Feedback (${stats.totalFeedback})` :
+               '📧 Newsletter'}
             </button>
           ))}
         </div>
 
-        {activeTab === 'stats' && (
-          <div style={{display:'flex',flexDirection:'column',gap:'16px'}}>
-            <div style={{background:'#1A2035',borderRadius:'12px',padding:'24px',border:'1px solid rgba(255,255,255,0.08)'}}>
-              <h2 style={{color:'white',fontSize:'18px',fontWeight:'700',marginBottom:'16px'}}>Quick Actions</h2>
-              <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(180px,1fr))',gap:'10px'}}>
-                {[
-                  {href:'/schools',label:'View Schools',icon:'🏫'},
-                  {href:'/applications',label:'Applications',icon:'📝'},
-                  {href:'/reviews',label:'Reviews',icon:'⭐'},
-                  {href:'/community',label:'Community',icon:'💬'},
-                  {href:'/ranking',label:'Rankings',icon:'🏆'},
-                  {href:'/pricing',label:'Pricing',icon:'💎'},
-                ].map(action=>(
-                  <a key={action.href} href={action.href} style={{background:'#0D0907',color:'white',textDecoration:'none',padding:'14px',borderRadius:'8px',textAlign:'center',display:'block',border:'1px solid rgba(255,255,255,0.06)'}}>
-                    <div style={{fontSize:'24px',marginBottom:'6px'}}>{action.icon}</div>
-                    <div style={{fontSize:'12px',color:'rgba(255,255,255,0.6)'}}>{action.label}</div>
-                  </a>
-                ))}
-              </div>
-            </div>
-
-            <div style={{background:'#1A2035',borderRadius:'12px',padding:'24px',border:'1px solid rgba(255,255,255,0.08)'}}>
-              <h2 style={{color:'white',fontSize:'18px',fontWeight:'700',marginBottom:'16px'}}>Site Status</h2>
-              <div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
-                {[
-                  {label:'Supabase Database',status:'Connected',color:'#2EC87A'},
-                  {label:'Stripe Payments',status:'Active',color:'#2EC87A'},
-                  {label:'Sakura AI (Claude)',status:'Active',color:'#2EC87A'},
-                  {label:'Resend Email',status:'Active',color:'#2EC87A'},
-                  {label:'Vercel Deployment',status:'Ready',color:'#2EC87A'},
-                  {label:'PWA',status:'Enabled',color:'#2EC87A'},
-                ].map(item=>(
-                  <div key={item.label} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'10px',background:'#0D0907',borderRadius:'8px'}}>
-                    <span style={{color:'rgba(255,255,255,0.7)',fontSize:'13px'}}>{item.label}</span>
-                    <span style={{background:item.color+'20',color:item.color,padding:'3px 10px',borderRadius:'20px',fontSize:'11px',fontWeight:'700'}}>{item.status}</span>
+        {/* Overview */}
+        {activeTab === 'overview' && (
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'16px'}}>
+            <div style={{background:'#1A2035',borderRadius:'12px',padding:'20px',border:'1px solid rgba(255,255,255,0.08)'}}>
+              <h3 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'14px'}}>📊 User Plan Distribution</h3>
+              {[
+                {plan:'Free',count:stats.totalUsers-stats.proUsers,color:'#4A8EFF'},
+                {plan:'Pro',count:stats.proUsers,color:'#F0A830'},
+              ].map(item => (
+                <div key={item.plan} style={{marginBottom:'12px'}}>
+                  <div style={{display:'flex',justifyContent:'space-between',marginBottom:'4px'}}>
+                    <span style={{color:'rgba(255,255,255,0.6)',fontSize:'13px'}}>{item.plan}</span>
+                    <span style={{color:item.color,fontSize:'13px',fontWeight:'700'}}>{item.count}</span>
                   </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'newsletter' && (
-          <div style={{background:'#1A2035',borderRadius:'12px',padding:'24px',border:'1px solid rgba(255,255,255,0.08)'}}>
-            <h2 style={{color:'white',fontSize:'18px',fontWeight:'700',marginBottom:'16px'}}>Send Newsletter</h2>
-            <div style={{display:'flex',flexDirection:'column',gap:'14px'}}>
-              <div>
-                <label style={{color:'rgba(255,255,255,0.6)',fontSize:'12px',display:'block',marginBottom:'6px'}}>Subject</label>
-                <input value={newsletter.subject} onChange={e=>setNewsletter(prev=>({...prev,subject:e.target.value}))} placeholder="Newsletter subject..." style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none'}}/>
-              </div>
-              <div>
-                <label style={{color:'rgba(255,255,255,0.6)',fontSize:'12px',display:'block',marginBottom:'6px'}}>Message</label>
-                <textarea value={newsletter.message} onChange={e=>setNewsletter(prev=>({...prev,message:e.target.value}))} placeholder="Newsletter message..." style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none',resize:'vertical',minHeight:'200px'}}/>
-              </div>
-              <button onClick={sendNewsletter} disabled={sending||!newsletter.subject||!newsletter.message} style={{background:sent?'#2EC87A':'#C42020',color:'white',border:'none',borderRadius:'8px',padding:'14px',fontSize:'15px',fontWeight:'700',cursor:'pointer'}}>
-                {sent ? '✓ Sent!' : sending ? 'Sending...' : 'Send Newsletter 📧'}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'feedback' && (
-          <div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
-            <h2 style={{color:'white',fontSize:'18px',fontWeight:'700',marginBottom:'8px'}}>User Feedback ({feedback.length})</h2>
-            {feedback.length === 0 ? (
-              <div style={{background:'#1A2035',borderRadius:'12px',padding:'32px',textAlign:'center',border:'1px solid rgba(255,255,255,0.08)'}}>
-                <p style={{color:'rgba(255,255,255,0.4)',fontSize:'14px'}}>No feedback yet!</p>
-              </div>
-            ) : feedback.map(item=>(
-              <div key={item.id} style={{background:'#1A2035',borderRadius:'10px',padding:'16px',border:'1px solid rgba(255,255,255,0.08)'}}>
-                <div style={{display:'flex',justifyContent:'space-between',marginBottom:'8px',flexWrap:'wrap',gap:'8px'}}>
-                  <span style={{background:'rgba(196,32,32,0.2)',color:'#FF8070',padding:'2px 8px',borderRadius:'4px',fontSize:'11px',fontWeight:'700'}}>{item.type || 'feedback'}</span>
-                  <span style={{color:'rgba(255,255,255,0.3)',fontSize:'12px'}}>{new Date(item.created_at).toLocaleDateString()}</span>
+                  <div style={{height:'6px',background:'rgba(255,255,255,0.08)',borderRadius:'3px',overflow:'hidden'}}>
+                    <div style={{width: stats.totalUsers > 0 ? (item.count/stats.totalUsers*100)+'%' : '0%',height:'100%',background:item.color,borderRadius:'3px'}}/>
+                  </div>
                 </div>
-                <p style={{color:'rgba(255,255,255,0.7)',fontSize:'13px',lineHeight:'1.6'}}>{item.message}</p>
+              ))}
+            </div>
+
+            <div style={{background:'#1A2035',borderRadius:'12px',padding:'20px',border:'1px solid rgba(255,255,255,0.08)'}}>
+              <h3 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'14px'}}>📝 Recent Applications</h3>
+              {applications.slice(0,5).map(app => (
+                <div key={app.id} style={{display:'flex',justifyContent:'space-between',padding:'6px 0',borderBottom:'1px solid rgba(255,255,255,0.04)'}}>
+                  <span style={{color:'rgba(255,255,255,0.6)',fontSize:'12px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',flex:1}}>{app.schools?.name_en || 'Unknown School'}</span>
+                  <span style={{background:statusColors[app.status]+'20',color:statusColors[app.status],padding:'2px 8px',borderRadius:'20px',fontSize:'10px',fontWeight:'700',marginLeft:'8px',flexShrink:0,textTransform:'capitalize'}}>{app.status}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Users */}
+        {activeTab === 'users' && (
+          <div style={{background:'#1A2035',borderRadius:'12px',padding:'20px',border:'1px solid rgba(255,255,255,0.08)'}}>
+            <h3 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'14px'}}>👤 All Users</h3>
+            <div style={{overflowX:'auto'}}>
+              <table style={{width:'100%',borderCollapse:'collapse'}}>
+                <thead>
+                  <tr>
+                    {['Email','Country','Plan','Joined'].map(h => (
+                      <th key={h} style={{color:'rgba(255,255,255,0.4)',fontSize:'11px',textAlign:'left',padding:'8px',borderBottom:'1px solid rgba(255,255,255,0.08)'}}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.slice(0,20).map(user => (
+                    <tr key={user.id}>
+                      <td style={{color:'white',fontSize:'12px',padding:'10px 8px',borderBottom:'1px solid rgba(255,255,255,0.04)'}}>{user.email || 'N/A'}</td>
+                      <td style={{color:'rgba(255,255,255,0.5)',fontSize:'12px',padding:'10px 8px',borderBottom:'1px solid rgba(255,255,255,0.04)'}}>{user.country || 'N/A'}</td>
+                      <td style={{padding:'10px 8px',borderBottom:'1px solid rgba(255,255,255,0.04)'}}>
+                        <span style={{background: user.plan==='pro'||user.plan==='lifetime' ? 'rgba(240,168,48,0.2)' : 'rgba(255,255,255,0.06)',color: user.plan==='pro'||user.plan==='lifetime' ? '#F0A830' : 'rgba(255,255,255,0.4)',padding:'2px 8px',borderRadius:'20px',fontSize:'10px',fontWeight:'700',textTransform:'capitalize'}}>
+                          {user.plan || 'free'}
+                        </span>
+                      </td>
+                      <td style={{color:'rgba(255,255,255,0.4)',fontSize:'11px',padding:'10px 8px',borderBottom:'1px solid rgba(255,255,255,0.04)'}}>{new Date(user.created_at).toLocaleDateString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Applications */}
+        {activeTab === 'applications' && (
+          <div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
+            {applications.length === 0 ? (
+              <div style={{textAlign:'center',padding:'48px',background:'#1A2035',borderRadius:'12px'}}>
+                <p style={{color:'rgba(255,255,255,0.4)'}}>No applications yet</p>
+              </div>
+            ) : applications.map(app => (
+              <div key={app.id} style={{background:'#1A2035',borderRadius:'12px',padding:'16px',display:'flex',gap:'14px',alignItems:'center',flexWrap:'wrap',border:'1px solid rgba(255,255,255,0.08)'}}>
+                <div style={{flex:1}}>
+                  <div style={{color:'white',fontSize:'13px',fontWeight:'600',marginBottom:'2px'}}>{app.schools?.name_en || 'Unknown School'}</div>
+                  <div style={{color:'rgba(255,255,255,0.4)',fontSize:'11px'}}>{app.full_name} · {app.email} · {new Date(app.created_at).toLocaleDateString()}</div>
+                </div>
+                <select value={app.status} onChange={e=>updateApplicationStatus(app.id, e.target.value)} style={{background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'6px 12px',color:'white',fontSize:'12px',cursor:'pointer',outline:'none'}}>
+                  {['pending','applied','accepted','rejected','withdrawn'].map(s => (
+                    <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+                  ))}
+                </select>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Feedback */}
+        {activeTab === 'feedback' && (
+          <div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
+            {feedback.length === 0 ? (
+              <div style={{textAlign:'center',padding:'48px',background:'#1A2035',borderRadius:'12px'}}>
+                <p style={{color:'rgba(255,255,255,0.4)'}}>No feedback yet</p>
+              </div>
+            ) : feedback.map(item => (
+              <div key={item.id} style={{background:'#1A2035',borderRadius:'12px',padding:'16px',border:'1px solid rgba(255,255,255,0.08)'}}>
+                <div style={{display:'flex',justifyContent:'space-between',marginBottom:'8px',flexWrap:'wrap',gap:'8px'}}>
+                  <span style={{background:'rgba(196,32,32,0.15)',color:'#FF8070',padding:'2px 8px',borderRadius:'20px',fontSize:'10px',fontWeight:'700'}}>{item.type || 'feedback'}</span>
+                  <span style={{color:'rgba(255,255,255,0.3)',fontSize:'11px'}}>{new Date(item.created_at).toLocaleDateString()}</span>
+                </div>
+                <p style={{color:'rgba(255,255,255,0.6)',fontSize:'13px',lineHeight:'1.6',whiteSpace:'pre-wrap'}}>{item.message}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Newsletter */}
+        {activeTab === 'newsletter' && (
+          <div style={{background:'#1A2035',borderRadius:'12px',padding:'24px',border:'1px solid rgba(255,255,255,0.08)'}}>
+            <h3 style={{color:'white',fontSize:'16px',fontWeight:'700',marginBottom:'16px'}}>📧 Send Newsletter</h3>
+            <p style={{color:'rgba(255,255,255,0.4)',fontSize:'13px',marginBottom:'16px'}}>Send to {users.length} registered users</p>
+            {sent ? (
+              <div style={{background:'rgba(46,200,122,0.1)',borderRadius:'10px',padding:'20px',textAlign:'center',border:'1px solid rgba(46,200,122,0.3)'}}>
+                <p style={{color:'#2EC87A',fontWeight:'700',fontSize:'15px'}}>✅ Newsletter sent successfully!</p>
+              </div>
+            ) : (
+              <div style={{display:'flex',flexDirection:'column',gap:'12px'}}>
+                <input value={newsletter.subject} onChange={e=>setNewsletter(prev=>({...prev,subject:e.target.value}))} placeholder="Email subject..." style={{background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none'}}/>
+                <textarea value={newsletter.message} onChange={e=>setNewsletter(prev=>({...prev,message:e.target.value}))} placeholder="Newsletter message..." style={{background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none',resize:'vertical',minHeight:'150px'}}/>
+                <button onClick={sendNewsletter} disabled={sending||!newsletter.subject||!newsletter.message} style={{background: newsletter.subject&&newsletter.message ? '#C42020' : 'rgba(255,255,255,0.1)',color:'white',border:'none',borderRadius:'8px',padding:'14px',fontSize:'14px',fontWeight:'700',cursor: newsletter.subject&&newsletter.message ? 'pointer' : 'not-allowed'}}>
+                  {sending ? 'Sending...' : `Send to ${users.length} Users`}
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

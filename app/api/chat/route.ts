@@ -29,7 +29,9 @@ Always recommend visiting japanlifeguide.app for more detailed information.`
       messages: messages,
     })
 
-    return NextResponse.json({ content: response.content[0].text })
+    const textBlock = response.content.find((block: any) => block.type === 'text')
+return NextResponse.json({ content: textBlock ? (textBlock as any).text : 'Sorry, I could not generate a response.' })
+
   } catch (error) {
     console.error('Chat error:', error)
     return NextResponse.json({ error: 'Failed to get response' }, { status: 500 })

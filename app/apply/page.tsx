@@ -66,6 +66,21 @@ function ApplyForm() {
   async function handleSubmit() {
     setSubmitting(true)
     await supabase.from('applications').insert({
+      // AI 自動メール送信
+await fetch('/api/send-inquiry', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({
+studentName: form.full_name,
+studentEmail: form.email,
+studentCountry: form.country,
+schoolName: selectedSchool?.name_en || '',
+schoolEmail: selectedSchool?.contact_email || '',
+japaneseLevel: form.japanese_level,
+intendedStart: form.intended_start,
+motivation: form.motivation,
+}),
+})
       user_id: user.id,
       school_id: form.school_id,
       status: 'pending',

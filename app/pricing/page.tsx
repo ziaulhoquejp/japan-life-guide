@@ -186,7 +186,11 @@ export default function PricingPage() {
               </div>
 
               {plan.priceId ? (
-                <button onClick={()=>handleCheckout(plan.priceId!)} disabled={loading} style={{background: plan.popular ? '#C42020' : plan.color + '20',color: plan.popular ? 'white' : plan.color,border: plan.popular ? 'none' : '1px solid ' + plan.color,borderRadius:'10px',padding:'12px',fontSize:'13px',fontWeight:'700',cursor:'pointer',width:'100%'}}>
+                <button onClick={()=>{
+console.log('priceId:', plan.priceId)
+handleCheckout(plan.priceId!)
+}}
+ disabled={loading} style={{background: plan.popular ? '#C42020' : plan.color + '20',color: plan.popular ? 'white' : plan.color,border: plan.popular ? 'none' : '1px solid ' + plan.color,borderRadius:'10px',padding:'12px',fontSize:'13px',fontWeight:'700',cursor:'pointer',width:'100%'}}>
                   {loading ? 'Loading...' : plan.cta}
                 </button>
               ) : (

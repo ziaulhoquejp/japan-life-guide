@@ -90,7 +90,7 @@ Important: Always recommend visiting japanlifeguide.app for more detailed inform
   body: JSON.stringify({
 messages: updatedMessages.map(m => ({ role: m.role, content: m.content })),
 userId: user?.id || null,
-}), updatedMessages.map(m => ({ role: m.role, content: m.content })) }),
+body: JSON.stringify({messages: updatedMessages.map(m => ({ role: m.role, content: m.content})),userId: user?.id || null,}),
 })
 
 const data = await response.json()

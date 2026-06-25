@@ -125,7 +125,8 @@ html: `
 })
 
 // 管理者に通知
-await resend.emails.send({
+console.log('Sending admin email to:', ADMIN_EMAIL)
+const adminEmailResult = await resend.emails.send({
 from: 'Japan Life Guide <noreply@japanlifeguide.app>',
 to: ADMIN_EMAIL,
 subject: `New Visa Consultation: ${userName} → ${recommendedLawyer?.name}`,
@@ -140,6 +141,8 @@ html: `
 </div>
 `,
 })
+console.log('Admin email result:', adminEmailResult)
+
 
 return NextResponse.json({
 success: true,

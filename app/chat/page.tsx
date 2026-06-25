@@ -55,10 +55,42 @@ export default function ChatPage() {
   const FREE_LIMIT = 10
 
   async function sendMessage(text?: string) {
-    const messageText = text || input.trim()
-    if (!messageText) return
-    if (!isPro && messageCount >= FREE_LIMIT) return
+const messageText = text || input.trim()
+if (!messageText) return
+if (!isPro && messageCount >= FREE_LIMIT) return
 
+setInput('')
+setLoading(true)
+
+const newCount = messageCount + 1
+setMessageCount(newCount)
+localStorage.setItem('sakura_message_count', newCount.toString())
+
+const userMessage = { role: 'user', content: messageText }
+const updatedMessages = [...messages, userMessage]
+setMessages(updatedMessages)
+
+try {
+const response = await fetch('/api/chat', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({
+messages: updatedMessages.map(m => ({ role: m.role, content: m.content })),
+userId: user?.id || null,
+}),
+})
+
+const data = await response.json()
+const assistantMessage = {
+role: 'assistant',
+content: data.content || 'Sorry, I could not generate a response. Please try again.',
+}
+setMessages(prev => [...prev, assistantMessage])
+} catch (error) {
+setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, there was an error. Please try again.' }])
+}
+setLoading(false)
+}
     setInput('')
     setLoading(true)
 

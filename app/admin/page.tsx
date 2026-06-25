@@ -10,7 +10,7 @@ export default function AdminPage() {
   const [users, setUsers] = useState<any[]>([])
   const [feedback, setFeedback] = useState<any[]>([])
   const [applications, setApplications] = useState<any[]>([])
-  const [activeTab, setActiveTab] = useState('overview')
+  const [activeTab, setActiveTab] = useState<'overview'|'users'|'applications'|'feedback'|'newsletter'|'crm'>('overview')
   const [loading, setLoading] = useState(true)
   const [newsletter, setNewsletter] = useState({subject:'',message:''})
   const [sending, setSending] = useState(false)

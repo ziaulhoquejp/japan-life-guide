@@ -120,7 +120,7 @@ export default function AdminPage() {
 
         {/* Tabs */}
         <div style={{display:'flex',gap:'8px',marginBottom:'20px',flexWrap:'wrap'}}>
-          {['overview','users','applications','feedback','newsletter','crm'].map(tab => (
+          {['overview','users','applications','feedback','newsletter','crm'] as const).map(tab => (
             <button key={tab} onClick={()=>setActiveTab(tab)} style={{background:activeTab===tab?'#C42020':'#1A2035',border:'none',borderRadius:'20px',padding:'8px 18px',color:'white',fontSize:'12px',fontWeight:'600',cursor:'pointer',textTransform:'capitalize'}}>
               {tab === 'overview' ? '📊 Overview' :
                tab === 'users' ? `👤 Users (${stats.totalUsers})` :

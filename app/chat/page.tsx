@@ -87,7 +87,10 @@ Important: Always recommend visiting japanlifeguide.app for more detailed inform
       const response = await fetch('/api/chat', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ messages: updatedMessages.map(m => ({ role: m.role, content: m.content })) }),
+  body: JSON.stringify({
+messages: updatedMessages.map(m => ({ role: m.role, content: m.content })),
+userId: user?.id || null,
+}), updatedMessages.map(m => ({ role: m.role, content: m.content })) }),
 })
 
 const data = await response.json()

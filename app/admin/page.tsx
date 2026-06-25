@@ -120,13 +120,14 @@ export default function AdminPage() {
 
         {/* Tabs */}
         <div style={{display:'flex',gap:'8px',marginBottom:'20px',flexWrap:'wrap'}}>
-          {['overview','users','applications','feedback','newsletter'].map(tab => (
+          {['overview','users','applications','feedback','newsletter','crm'].map(tab => (
             <button key={tab} onClick={()=>setActiveTab(tab)} style={{background:activeTab===tab?'#C42020':'#1A2035',border:'none',borderRadius:'20px',padding:'8px 18px',color:'white',fontSize:'12px',fontWeight:'600',cursor:'pointer',textTransform:'capitalize'}}>
               {tab === 'overview' ? '📊 Overview' :
                tab === 'users' ? `👤 Users (${stats.totalUsers})` :
                tab === 'applications' ? `📝 Applications (${stats.totalApplications})` :
                tab === 'feedback' ? `💬 Feedback (${stats.totalFeedback})` :
-               '📧 Newsletter'}
+               '📧 Newsletter'} 
+               : '📊 CRM'}
             </button>
           ))}
         </div>
@@ -151,6 +152,87 @@ export default function AdminPage() {
                 </div>
               ))}
             </div>
+            {/* CRM Tab */}
+{activeTab === 'crm' && (
+<div style={{display:'flex',flexDirection:'column',gap:'16px'}}>
+
+{/* Conversion Stats */}
+<div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))',gap:'12px'}}>
+{[
+{label:'Total Users',value:stats.totalUsers,color:'#4A8EFF',icon:'👤'},
+{label:'Pro Members',value:stats.proUsers,color:'#F0A830',icon:'💎'},
+{label:'Conversion Rate',value: stats.totalUsers > 0 ? Math.round((stats.proUsers/stats.totalUsers)*100)+'%' : '0%',color:'#2EC87A',icon:'📈'},
+{label:'Applications',value:stats.totalApplications,color:'#C42020',icon:'📝'},
+{label:'Avg Apps/User',value: stats.totalUsers > 0 ? (stats.totalApplications/stats.totalUsers).toFixed(1) : '0',color:'#A855F7',icon:'📊'},
+].map(stat => (
+<div key={stat.label} style={{background:'#1A2035',borderRadius:'12px',padding:'16px',border:'1px solid rgba(255,255,255,0.08)',textAlign:'center'}}>
+<div style={{fontSize:'24px',marginBottom:'6px'}}>{stat.icon}</div>
+<div style={{color:stat.color,fontSize:'22px',fontWeight:'800',marginBottom:'2px'}}>{stat.value}</div>
+<div style={{color:'rgba(255,255,255,0.4)',fontSize:'11px'}}>{stat.label}</div>
+</div>
+))}
+</div>
+
+{/* User Journey Funnel */}
+<div style={{background:'#1A2035',borderRadius:'12px',padding:'24px',border:'1px solid rgba(255,255,255,0.08)'}}>
+<h3 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'16px'}}>📊 User Journey Funnel</h3>
+{[
+{stage:'Registered',count:stats.totalUsers,color:'#4A8EFF'},
+{stage:'Applied to School',count:stats.totalApplications,color:'#F0A830'},
+{stage:'Upgraded to Pro',count:stats.proUsers,color:'#2EC87A'},
+].map((item,i) => (
+<div key={item.stage} style={{marginBottom:'14px'}}>
+<div style={{display:'flex',justifyContent:'space-between',marginBottom:'6px'}}>
+<span style={{color:'rgba(255,255,255,0.6)',fontSize:'13px'}}>{item.stage}</span>
+<span style={{color:item.color,fontSize:'13px',fontWeight:'700'}}>{item.count}</span>
+</div>
+<div style={{height:'8px',background:'rgba(255,255,255,0.06)',borderRadius:'4px',overflow:'hidden'}}>
+<div style={{width: stats.totalUsers > 0 ? (item.count/stats.totalUsers*100)+'%' : '0%',height:'100%',background:item.color,borderRadius:'4px'}}/>
+</div>
+</div>
+))}
+</div>
+
+{/* Recent Activity */}
+<div style={{background:'#1A2035',borderRadius:'12px',padding:'24px',border:'1px solid rgba(255,255,255,0.08)'}}>
+<h3 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'16px'}}>🕐 Recent User Activity</h3>
+<div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
+{users.slice(0,10).map((u:any) => (
+<div key={u.id} style={{display:'flex',gap:'12px',alignItems:'center',padding:'8px',background:'#0D0907',borderRadius:'8px'}}>
+<div style={{width:'32px',height:'32px',borderRadius:'50%',background:'#C42020',display:'flex',alignItems:'center',justifyContent:'center',color:'white',fontSize:'12px',fontWeight:'700',flexShrink:0}}>
+{u.full_name?.[0]?.toUpperCase() || '?'}
+</div>
+<div style={{flex:1}}>
+<div style={{color:'white',fontSize:'12px',fontWeight:'600'}}>{u.full_name || u.email}</div>
+<div style={{color:'rgba(255,255,255,0.3)',fontSize:'11px'}}>{u.country || 'Unknown'} · Joined {new Date(u.created_at).toLocaleDateString()}</div>
+</div>
+<span style={{background: u.plan==='pro'||u.plan==='lifetime' ? 'rgba(240,168,48,0.2)' : 'rgba(255,255,255,0.06)',color: u.plan==='pro'||u.plan==='lifetime' ? '#F0A830' : 'rgba(255,255,255,0.3)',padding:'2px 8px',borderRadius:'20px',fontSize:'10px',fontWeight:'700',textTransform:'capitalize'}}>
+{u.plan || 'free'}
+</span>
+</div>
+))}
+</div>
+</div>
+
+{/* Quick Actions */}
+<div style={{background:'#1A2035',borderRadius:'12px',padding:'24px',border:'1px solid rgba(255,255,255,0.08)'}}>
+<h3 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'16px'}}>⚡ Quick CRM Actions</h3>
+<div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))',gap:'10px'}}>
+{[
+{label:'Send Newsletter',href:'#',icon:'📧',onClick:()=>setActiveTab('newsletter')},
+{label:'View Applications',href:'#',icon:'📝',onClick:()=>setActiveTab('applications')},
+{label:'View Feedback',href:'#',icon:'💬',onClick:()=>setActiveTab('feedback')},
+{label:'View All Users',href:'#',icon:'👤',onClick:()=>setActiveTab('users')},
+].map(action => (
+<button key={action.label} onClick={action.onClick} style={{background:'#0D0907',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',padding:'14px',cursor:'pointer',textAlign:'center'}}>
+<div style={{fontSize:'24px',marginBottom:'6px'}}>{action.icon}</div>
+<div style={{color:'white',fontSize:'12px',fontWeight:'600'}}>{action.label}</div>
+</button>
+))}
+</div>
+</div>
+</div>
+)}
 
             <div style={{background:'#1A2035',borderRadius:'12px',padding:'20px',border:'1px solid rgba(255,255,255,0.08)'}}>
               <h3 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'14px'}}>📝 Recent Applications</h3>

@@ -126,8 +126,9 @@ export default function AdminPage() {
                tab === 'users' ? `👤 Users (${stats.totalUsers})` :
                tab === 'applications' ? `📝 Applications (${stats.totalApplications})` :
                tab === 'feedback' ? `💬 Feedback (${stats.totalFeedback})` :
-               '📧 Newsletter'} 
-               : '📊 CRM'}
+               tab === 'feedback' ? `💬 Feedback (${stats.totalFeedback})` :
+tab === 'newsletter' ? '📧 Newsletter' :
+'📊 CRM'}
             </button>
           ))}
         </div>

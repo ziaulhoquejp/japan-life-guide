@@ -4,7 +4,80 @@ import { supabase } from '../../lib/supabase'
 
 const ADMIN_EMAILS = ['ziaulhoquejp@gmail.com', 'sacrifice4ever@gmail.com']
 
-type TabType = 'overview' | 'users' | 'applications' | 'feedback' | 'newsletter' | 'crm'
+type TabType = 'overview' | 'users' | 'applications' | 'feedback' | 'newsletter' | 'crm' | 'jobseekers'
+
+function JobSeekersTab() {
+const [seekers, setSeekers] = useState<any[]>([])
+const [loading, setLoading] = useState(true)
+const [sending, setSending] = useState<string|null>(null)
+
+useEffect(() => {
+supabase.from('job_seekers').select('*').order('created_at', { ascending: false }).then(({ data }) => {
+if (data) setSeekers(data)
+setLoading(false)
+})
+}, [])
+
+async function sendOutreach(seekerId: string) {
+setSending(seekerId)
+try {
+const res = await fetch('/api/company-outreach', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ jobSeekerId: seekerId }),
+})
+const data = await res.json()
+alert(`✅ ${data.emailsSent}社に営業メールを送信しました！`)
+setSeekers(prev => prev.map(s => s.id === seekerId ? {...s, status: 'contacted'} : s))
+} catch (error) {
+alert('エラーが発生しました')
+}
+setSending(null)
+}
+
+if (loading) return <div style={{color:'white',padding:'20px'}}>Loading...</div>
+
+return (
+<div style={{display:'flex',flexDirection:'column',gap:'12px'}}>
+<div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'8px'}}>
+<h2 style={{color:'white',fontSize:'16px',fontWeight:'700'}}>💼 Job Seekers ({seekers.length})</h2>
+<span style={{color:'rgba(255,255,255,0.4)',fontSize:'12px'}}>{seekers.filter(s=>s.status==='new').length} new</span>
+</div>
+{seekers.length === 0 ? (
+<div style={{textAlign:'center',padding:'48px',background:'#1A2035',borderRadius:'12px'}}>
+<p style={{color:'rgba(255,255,255,0.4)'}}>No job seekers yet</p>
+</div>
+) : seekers.map(seeker => (
+<div key={seeker.id} style={{background:'#1A2035',borderRadius:'12px',padding:'16px',border:'1px solid ' + (seeker.status==='new' ? 'rgba(196,32,32,0.3)' : 'rgba(255,255,255,0.08)')}}>
+<div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:'10px',marginBottom:'10px'}}>
+<div>
+<div style={{color:'white',fontSize:'14px',fontWeight:'700'}}>{seeker.full_name}</div>
+<div style={{color:'rgba(255,255,255,0.4)',fontSize:'12px'}}>{seeker.email} · {seeker.country}</div>
+</div>
+<div style={{display:'flex',gap:'8px',alignItems:'center'}}>
+<span style={{background: seeker.status==='new' ? 'rgba(196,32,32,0.2)' : 'rgba(46,200,122,0.2)',color: seeker.status==='new' ? '#FF8070' : '#2EC87A',padding:'2px 8px',borderRadius:'20px',fontSize:'10px',fontWeight:'700'}}>
+{seeker.status === 'new' ? '🆕 New' : '✅ Contacted'}
+</span>
+{seeker.status === 'new' && (
+<button onClick={()=>sendOutreach(seeker.id)} disabled={sending===seeker.id} style={{background:'#C42020',color:'white',border:'none',borderRadius:'6px',padding:'6px 12px',fontSize:'11px',fontWeight:'700',cursor:'pointer'}}>
+{sending===seeker.id ? '送信中...' : '🤖 企業に営業メール送信'}
+</button>
+)}
+</div>
+</div>
+<div style={{display:'flex',gap:'8px',flexWrap:'wrap'}}>
+<span style={{background:'rgba(255,255,255,0.06)',color:'rgba(255,255,255,0.5)',padding:'2px 8px',borderRadius:'4px',fontSize:'11px'}}>{seeker.job_type}</span>
+<span style={{background:'rgba(255,255,255,0.06)',color:'rgba(255,255,255,0.5)',padding:'2px 8px',borderRadius:'4px',fontSize:'11px'}}>日本語: {seeker.japanese_level || 'N/A'}</span>
+<span style={{background:'rgba(255,255,255,0.06)',color:'rgba(255,255,255,0.5)',padding:'2px 8px',borderRadius:'4px',fontSize:'11px'}}>{new Date(seeker.created_at).toLocaleDateString()}</span>
+</div>
+{seeker.experience && (
+<p style={{color:'rgba(255,255,255,0.4)',fontSize:'12px',marginTop:'8px',lineHeight:'1.5'}}>{seeker.experience.slice(0,150)}{seeker.experience.length > 150 ? '...' : ''}</p>
+)}
+</div>
+))}
+</div>
+)
+}
 
 export default function AdminPage() {
 const [user, setUser] = useState<any>(null)
@@ -95,6 +168,7 @@ const TABS: {key: TabType, label: string}[] = [
 {key:'feedback', label:`💬 Feedback (${stats.totalFeedback})`},
 {key:'newsletter', label:'📧 Newsletter'},
 {key:'crm', label:'📊 CRM'},
+{key:'jobseekers', label:'💼 Job Seekers'},
 ]
 
 return (
@@ -158,7 +232,6 @@ return (
 </div>
 ))}
 </div>
-
 <div style={{background:'#1A2035',borderRadius:'12px',padding:'20px',border:'1px solid rgba(255,255,255,0.08)'}}>
 <h3 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'14px'}}>📝 Recent Applications</h3>
 {applications.slice(0,5).map(app => (
@@ -275,7 +348,6 @@ return (
 {label:'Pro Members',value:stats.proUsers,color:'#F0A830',icon:'💎'},
 {label:'Conversion Rate',value: stats.totalUsers > 0 ? Math.round((stats.proUsers/stats.totalUsers)*100)+'%' : '0%',color:'#2EC87A',icon:'📈'},
 {label:'Applications',value:stats.totalApplications,color:'#C42020',icon:'📝'},
-{label:'Avg Apps/User',value: stats.totalUsers > 0 ? (stats.totalApplications/stats.totalUsers).toFixed(1) : '0',color:'#A855F7',icon:'📊'},
 ].map(stat => (
 <div key={stat.label} style={{background:'#1A2035',borderRadius:'12px',padding:'16px',border:'1px solid rgba(255,255,255,0.08)',textAlign:'center'}}>
 <div style={{fontSize:'24px',marginBottom:'6px'}}>{stat.icon}</div>
@@ -284,7 +356,6 @@ return (
 </div>
 ))}
 </div>
-
 <div style={{background:'#1A2035',borderRadius:'12px',padding:'24px',border:'1px solid rgba(255,255,255,0.08)'}}>
 <h3 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'16px'}}>📊 User Journey Funnel</h3>
 {[
@@ -303,9 +374,8 @@ return (
 </div>
 ))}
 </div>
-
 <div style={{background:'#1A2035',borderRadius:'12px',padding:'24px',border:'1px solid rgba(255,255,255,0.08)'}}>
-<h3 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'16px'}}>🕐 Recent User Activity</h3>
+<h3 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'16px'}}>🕐 Recent Users</h3>
 <div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
 {users.slice(0,10).map(u => (
 <div key={u.id} style={{display:'flex',gap:'12px',alignItems:'center',padding:'8px',background:'#0D0907',borderRadius:'8px'}}>
@@ -323,26 +393,14 @@ return (
 ))}
 </div>
 </div>
-
-<div style={{background:'#1A2035',borderRadius:'12px',padding:'24px',border:'1px solid rgba(255,255,255,0.08)'}}>
-<h3 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'16px'}}>⚡ Quick Actions</h3>
-<div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(160px,1fr))',gap:'10px'}}>
-{[
-{label:'Newsletter',icon:'📧',tab:'newsletter' as TabType},
-{label:'Applications',icon:'📝',tab:'applications' as TabType},
-{label:'Feedback',icon:'💬',tab:'feedback' as TabType},
-{label:'All Users',icon:'👤',tab:'users' as TabType},
-].map(action => (
-<button key={action.label} onClick={()=>setActiveTab(action.tab)} style={{background:'#0D0907',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'10px',padding:'14px',cursor:'pointer',textAlign:'center'}}>
-<div style={{fontSize:'24px',marginBottom:'6px'}}>{action.icon}</div>
-<div style={{color:'white',fontSize:'12px',fontWeight:'600'}}>{action.label}</div>
-</button>
-))}
-</div>
-</div>
 </div>
 )}
+
+{/* Job Seekers */}
+{activeTab === 'jobseekers' && <JobSeekersTab />}
+
 </div>
 </main>
 )
 }
+

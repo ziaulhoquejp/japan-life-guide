@@ -108,7 +108,111 @@ const USEFUL_SITES = [
 {name:'Gaijinpot Jobs', nameEN:'Gaijinpot', url:'https://jobs.gaijinpot.com/', desc:'Jobs for foreigners in Japan', icon:'💼'},
 {name:'Japan SSW Portal', nameEN:'SSW Official Portal', url:'https://ssw.go.jp/', desc:'Official SSW visa job portal', icon:'🛂'},
 ]
+function ResumeForm() {
+const [form, setForm] = useState({
+fullName: '', email: '', country: '', jobType: '', japaneseLevel: '', experience: ''
+})
+const [submitting, setSubmitting] = useState(false)
+const [submitted, setSubmitted] = useState(false)
+const [result, setResult] = useState<any>(null)
 
+async function handleSubmit() {
+if (!form.fullName || !form.email || !form.jobType) return
+setSubmitting(true)
+try {
+const res = await fetch('/api/submit-resume', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify(form),
+})
+const data = await res.json()
+setResult(data.analysis)
+setSubmitted(true)
+} catch (error) {
+console.error(error)
+}
+setSubmitting(false)
+}
+
+if (submitted) {
+return (
+<div style={{background:'#1A2035',borderRadius:'16px',padding:'32px',border:'1px solid rgba(46,200,122,0.3)',textAlign:'center'}}>
+<div style={{fontSize:'56px',marginBottom:'16px'}}>🎉</div>
+<h2 style={{color:'#2EC87A',fontSize:'22px',fontWeight:'700',marginBottom:'8px'}}>Resume Submitted!</h2>
+<p style={{color:'rgba(255,255,255,0.5)',fontSize:'14px',marginBottom:'24px'}}>Our team will contact you within 2 business days.</p>
+{result && (
+<div style={{background:'#0D0907',borderRadius:'12px',padding:'20px',marginBottom:'20px',textAlign:'left'}}>
+<h3 style={{color:'#F0A830',fontSize:'14px',fontWeight:'700',marginBottom:'12px'}}>🤖 AI Job Match Analysis</h3>
+<p style={{color:'rgba(255,255,255,0.6)',fontSize:'13px',marginBottom:'8px'}}><strong style={{color:'white'}}>Best matching jobs:</strong> {result.suitable_jobs?.join(', ')}</p>
+<p style={{color:'rgba(255,255,255,0.6)',fontSize:'13px',marginBottom:'8px'}}><strong style={{color:'white'}}>Recommended visa:</strong> {result.visa_recommendation}</p>
+<p style={{color:'rgba(255,255,255,0.6)',fontSize:'13px'}}><strong style={{color:'white'}}>Assessment:</strong> {result.overall_assessment}</p>
+</div>
+)}
+<a href="/chat" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'12px 24px',borderRadius:'8px',fontSize:'14px',fontWeight:'700',display:'inline-block'}}>Ask Sakura AI 🌸</a>
+</div>
+)
+}
+
+return (
+<div style={{background:'#1A2035',borderRadius:'16px',padding:'32px',border:'1px solid rgba(255,255,255,0.08)'}}>
+<h2 style={{color:'white',fontSize:'20px',fontWeight:'700',marginBottom:'8px'}}>📄 Submit Your Resume</h2>
+<p style={{color:'rgba(255,255,255,0.5)',fontSize:'14px',marginBottom:'24px'}}>Our AI will match you with the best job opportunities in Japan.</p>
+<div style={{background:'rgba(46,200,122,0.1)',borderRadius:'10px',padding:'16px',marginBottom:'24px',border:'1px solid rgba(46,200,122,0.2)'}}>
+<p style={{color:'#2EC87A',fontSize:'13px',fontWeight:'700',marginBottom:'4px'}}>✅ 完全無料 / Completely Free</p>
+<p style={{color:'rgba(255,255,255,0.5)',fontSize:'12px'}}>有料職業紹介許可・登録支援機関許可取得済み</p>
+</div>
+<div style={{display:'flex',flexDirection:'column',gap:'12px',marginBottom:'20px'}}>
+<div>
+<label style={{color:'rgba(255,255,255,0.5)',fontSize:'12px',display:'block',marginBottom:'6px'}}>Full Name *</label>
+<input value={form.fullName} onChange={e=>setForm(p=>({...p,fullName:e.target.value}))} placeholder="Your full name" style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none'}}/>
+</div>
+<div>
+<label style={{color:'rgba(255,255,255,0.5)',fontSize:'12px',display:'block',marginBottom:'6px'}}>Email *</label>
+<input value={form.email} onChange={e=>setForm(p=>({...p,email:e.target.value}))} placeholder="your@email.com" type="email" style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none'}}/>
+</div>
+<div>
+<label style={{color:'rgba(255,255,255,0.5)',fontSize:'12px',display:'block',marginBottom:'6px'}}>Country</label>
+<select value={form.country} onChange={e=>setForm(p=>({...p,country:e.target.value}))} style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none'}}>
+<option value="">Select country...</option>
+<option value="Bangladesh">🇧🇩 Bangladesh</option>
+<option value="Nepal">🇳🇵 Nepal</option>
+<option value="Other">🌍 Other</option>
+</select>
+</div>
+<div>
+<label style={{color:'rgba(255,255,255,0.5)',fontSize:'12px',display:'block',marginBottom:'6px'}}>Job Type *</label>
+<select value={form.jobType} onChange={e=>setForm(p=>({...p,jobType:e.target.value}))} style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none'}}>
+<option value="">Select job type...</option>
+<option value="SSW特定技能">SSW (特定技能)</option>
+<option value="エンジニア・IT">Engineer/IT</option>
+<option value="介護">Nursing Care (介護)</option>
+<option value="製造・工場">Factory/Manufacturing</option>
+<option value="建設">Construction</option>
+<option value="飲食・サービス">Restaurant/Service</option>
+</select>
+</div>
+<div>
+<label style={{color:'rgba(255,255,255,0.5)',fontSize:'12px',display:'block',marginBottom:'6px'}}>Japanese Level</label>
+<select value={form.japaneseLevel} onChange={e=>setForm(p=>({...p,japaneseLevel:e.target.value}))} style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none'}}>
+<option value="">Select level...</option>
+<option value="なし・初心者">None / Beginner</option>
+<option value="N5">JLPT N5</option>
+<option value="N4">JLPT N4</option>
+<option value="N3">JLPT N3</option>
+<option value="N2以上">JLPT N2 or above</option>
+</select>
+</div>
+<div>
+<label style={{color:'rgba(255,255,255,0.5)',fontSize:'12px',display:'block',marginBottom:'6px'}}>Work Experience & Skills</label>
+<textarea value={form.experience} onChange={e=>setForm(p=>({...p,experience:e.target.value}))} placeholder="Describe your experience, skills, certifications..." style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none',resize:'vertical',minHeight:'100px'}}/>
+</div>
+</div>
+<button onClick={handleSubmit} disabled={submitting||!form.fullName||!form.email||!form.jobType} style={{background: form.fullName&&form.email&&form.jobType ? '#C42020' : 'rgba(255,255,255,0.1)',color:'white',border:'none',borderRadius:'8px',padding:'14px',fontSize:'14px',fontWeight:'700',cursor: form.fullName&&form.email&&form.jobType ? 'pointer' : 'not-allowed',width:'100%'}}>
+{submitting ? '🤖 AI is analyzing...' : 'Submit & Get AI Match 🌸'}
+</button>
+</div>
+)
+}
 export default function JobsPage() {
 const [selectedCategory, setSelectedCategory] = useState<any>(null)
 const [activeTab, setActiveTab] = useState<'jobs'|'resume'|'consult'>('jobs')
@@ -326,7 +430,9 @@ We are paid by employers only when a successful hire is made.
 </div>
 
 <button style={{background:'#C42020',color:'white',border:'none',borderRadius:'8px',padding:'14px',fontSize:'14px',fontWeight:'700',cursor:'pointer',width:'100%',marginBottom:'12px'}}>
-Submit Resume & Get Matched 🌸
+{activeTab === 'resume' && (
+<ResumeForm />
+)}
 </button>
 <p style={{color:'rgba(255,255,255,0.3)',fontSize:'12px',textAlign:'center'}}>
 Our team will contact you within 2 business days

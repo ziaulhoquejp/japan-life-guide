@@ -3,249 +3,249 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 
 export default function ProfilePage() {
-  const [user, setUser] = useState<any>(null)
-  const [favorites, setFavorites] = useState<any[]>([])
-  const [applications, setApplications] = useState<any[]>([])
-  const [reviews, setReviews] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const [name, setName] = useState('')
-  const [phone, setPhone] = useState('')
-  const [country, setCountry] = useState('')
-  const [saved, setSaved] = useState(false)
-  const [activeTab, setActiveTab] = useState('profile')
+const [user, setUser] = useState<any>(null)
+const [profile, setProfile] = useState<any>(null)
+const [loading, setLoading] = useState(true)
+const [saving, setSaving] = useState(false)
+const [saved, setSaved] = useState(false)
+const [activeTab, setActiveTab] = useState<'profile'|'security'|'danger'>('profile')
+const [form, setForm] = useState({
+full_name: '',
+country: '',
+japanese_level: '',
+purpose: '',
+phone: '',
+bio: '',
+})
+const [passwordForm, setPasswordForm] = useState({
+newPassword: '',
+confirmPassword: '',
+})
+const [passwordMsg, setPasswordMsg] = useState('')
 
-  useEffect(() => {
-    async function getData() {
-      const { data: userData } = await supabase.auth.getUser()
-      if (!userData.user) { window.location.href = '/login'; return }
-      setUser(userData.user)
-      setName(userData.user.user_metadata?.full_name || '')
-      setPhone(userData.user.user_metadata?.phone || '')
-      setCountry(userData.user.user_metadata?.country || '')
+useEffect(() => {
+async function load() {
+const { data: userData } = await supabase.auth.getUser()
+if (!userData.user) { window.location.href = '/login'; return }
+setUser(userData.user)
+const { data: profileData } = await supabase.from('profiles').select('*').eq('id', userData.user.id).single()
+if (profileData) {
+setProfile(profileData)
+setForm({
+full_name: profileData.full_name || '',
+country: profileData.country || '',
+japanese_level: profileData.japanese_level || '',
+purpose: profileData.purpose || '',
+phone: profileData.phone || '',
+bio: profileData.bio || '',
+})
+}
+setLoading(false)
+}
+load()
+}, [])
 
-      const [favData, appData, revData] = await Promise.all([
-        supabase.from('favorites').select('school_id, schools(name_en, name_jp, city, icon, annual_fee_jpy, rating)').eq('user_id', userData.user.id),
-        supabase.from('applications').select('*, schools(name_en, city, icon)').eq('user_id', userData.user.id).order('created_at', { ascending: false }),
-        supabase.from('reviews').select('*, schools(name_en, icon)').eq('user_id', userData.user.id),
-      ])
-      if (favData.data) setFavorites(favData.data)
-      if (appData.data) setApplications(appData.data)
-      if (revData.data) setReviews(revData.data)
-      setLoading(false)
-    }
-    getData()
-  }, [])
+function update(field: string, value: string) {
+setForm(prev => ({...prev, [field]: value}))
+}
 
-  async function updateProfile() {
-    await supabase.auth.updateUser({ data: { full_name: name, phone, country } })
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
-  }
+async function saveProfile() {
+setSaving(true)
+await supabase.from('profiles').update({
+full_name: form.full_name,
+country: form.country,
+japanese_level: form.japanese_level,
+purpose: form.purpose,
+phone: form.phone,
+bio: form.bio,
+}).eq('id', user.id)
+setSaved(true)
+setSaving(false)
+setTimeout(() => setSaved(false), 3000)
+}
 
-  async function removeFavorite(schoolId: string) {
-    await supabase.from('favorites').delete().eq('user_id', user.id).eq('school_id', schoolId)
-    setFavorites(prev => prev.filter((f: any) => f.school_id !== schoolId))
-  }
+async function changePassword() {
+if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+setPasswordMsg('Passwords do not match!')
+return
+}
+if (passwordForm.newPassword.length < 6) {
+setPasswordMsg('Password must be at least 6 characters!')
+return
+}
+const { error } = await supabase.auth.updateUser({ password: passwordForm.newPassword })
+if (error) {
+setPasswordMsg('Error: ' + error.message)
+} else {
+setPasswordMsg('Password updated successfully!')
+setPasswordForm({ newPassword: '', confirmPassword: '' })
+}
+}
 
-  async function handleLogout() {
-    await supabase.auth.signOut()
-    window.location.href = '/'
-  }
+async function deleteAccount() {
+if (confirm('Are you sure you want to delete your account? This cannot be undone.')) {
+await supabase.from('profiles').delete().eq('id', user?.id)
+await supabase.auth.signOut()
+window.location.href = '/'
+}
+}
 
-  const statusColors: any = {
-    pending: '#F0A830',
-    applied: '#4A8EFF',
-    accepted: '#2EC87A',
-    rejected: '#C42020',
-    withdrawn: 'rgba(255,255,255,0.3)',
-  }
+if (loading) return <div style={{minHeight:'100vh',background:'#0D0907',display:'flex',alignItems:'center',justifyContent:'center',color:'white'}}>Loading...</div>
 
-  if (loading) return <div style={{minHeight:'100vh',background:'#0D0907',display:'flex',alignItems:'center',justifyContent:'center',color:'white',fontSize:'24px'}}>Loading...</div>
+const isPro = profile?.plan === 'pro' || profile?.plan === 'lifetime'
 
-  const tabs = ['profile', 'favorites', 'applications', 'reviews']
-
-  return (
-    <main style={{minHeight:'100vh',background:'#0D0907',fontFamily:'sans-serif'}}>
-      <div style={{background:'#1A2035',padding:'40px',borderBottom:'3px solid #C42020'}}>
-        <div style={{display:'flex',alignItems:'center',gap:'20px',flexWrap:'wrap'}}>
-          <div style={{width:'80px',height:'80px',borderRadius:'50%',background:'#C42020',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'32px',fontWeight:'700',color:'white',flexShrink:0,boxShadow:'0 0 20px rgba(196,32,32,0.4)'}}>
-            {name ? name[0].toUpperCase() : user?.email?.[0]?.toUpperCase() || '?'}
-          </div>
-          <div style={{flex:1}}>
-            <h1 style={{color:'white',fontSize:'24px',fontWeight:'700',marginBottom:'4px'}}>{name || 'My Profile'}</h1>
-            <p style={{color:'rgba(255,255,255,0.4)',fontSize:'14px',marginBottom:'4px'}}>{user?.email}</p>
-            <div style={{display:'flex',gap:'12px',flexWrap:'wrap'}}>
-              <span style={{color:'rgba(255,255,255,0.3)',fontSize:'12px'}}>Member since {new Date(user?.created_at).toLocaleDateString()}</span>
-              {country && <span style={{color:'rgba(255,255,255,0.3)',fontSize:'12px'}}>🌍 {country}</span>}
-            </div>
-          </div>
-          <div style={{display:'flex',gap:'8px',flexWrap:'wrap'}}>
-            <a href="/dashboard" style={{background:'rgba(255,255,255,0.08)',color:'white',textDecoration:'none',padding:'8px 16px',borderRadius:'8px',fontSize:'13px',border:'1px solid rgba(255,255,255,0.15)'}}>Dashboard</a>
-            <button onClick={handleLogout} style={{background:'rgba(196,32,32,0.2)',color:'#FF8070',border:'1px solid rgba(196,32,32,0.3)',borderRadius:'8px',padding:'8px 16px',fontSize:'13px',cursor:'pointer'}}>Sign Out</button>
-          </div>
-        </div>
-
-        <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:'12px',marginTop:'24px'}}>
-          {[
-            {icon:'❤️',label:'Favorites',value:favorites.length},
-            {icon:'📝',label:'Applications',value:applications.length},
-            {icon:'⭐',label:'Reviews',value:reviews.length},
-            {icon:'✅',label:'Accepted',value:applications.filter(a=>a.status==='accepted').length},
-          ].map(stat=>(
-            <div key={stat.label} style={{background:'rgba(255,255,255,0.05)',borderRadius:'10px',padding:'14px',textAlign:'center'}}>
-              <div style={{fontSize:'20px',marginBottom:'4px'}}>{stat.icon}</div>
-              <div style={{color:'white',fontSize:'20px',fontWeight:'700'}}>{stat.value}</div>
-              <div style={{color:'rgba(255,255,255,0.4)',fontSize:'11px'}}>{stat.label}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div style={{maxWidth:'900px',margin:'0 auto',padding:'32px 20px'}}>
-        <div style={{display:'flex',gap:'8px',marginBottom:'24px',flexWrap:'wrap'}}>
-          {tabs.map(tab=>(
-            <button key={tab} onClick={()=>setActiveTab(tab)} style={{background:activeTab===tab?'#C42020':'#1A2035',border:'none',borderRadius:'20px',padding:'8px 18px',color:'white',fontSize:'12px',fontWeight:'600',cursor:'pointer',textTransform:'capitalize'}}>
-              {tab}
-            </button>
-          ))}
-        </div>
-
-        {activeTab === 'profile' && (
-          <div style={{background:'#1A2035',borderRadius:'12px',padding:'24px',border:'1px solid rgba(255,255,255,0.08)'}}>
-            <h2 style={{color:'white',fontSize:'18px',fontWeight:'700',marginBottom:'16px'}}>Edit Profile</h2>
-            <div style={{display:'flex',flexDirection:'column',gap:'14px'}}>
-              <div>
-                <label style={{color:'rgba(255,255,255,0.6)',fontSize:'12px',display:'block',marginBottom:'6px'}}>Full Name</label>
-                <input value={name} onChange={e=>setName(e.target.value)} placeholder="Full Name" style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none'}}/>
-              </div>
-              <div>
-                <label style={{color:'rgba(255,255,255,0.6)',fontSize:'12px',display:'block',marginBottom:'6px'}}>Phone Number</label>
-                <input value={phone} onChange={e=>setPhone(e.target.value)} placeholder="+880 1XXX XXXXXX" style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none'}}/>
-              </div>
-              <div>
-                <label style={{color:'rgba(255,255,255,0.6)',fontSize:'12px',display:'block',marginBottom:'8px'}}>Country</label>
-                <div style={{display:'flex',gap:'8px'}}>
-                  {[{code:'Bangladesh',flag:'🇧🇩'},{code:'Nepal',flag:'🇳🇵'},{code:'Other',flag:'🌍'}].map(c=>(
-                    <button key={c.code} onClick={()=>setCountry(c.code)} style={{flex:1,background:country===c.code?'rgba(196,32,32,0.2)':'#0D0907',border:'1px solid ' + (country===c.code?'#C42020':'rgba(255,255,255,0.2)'),borderRadius:'8px',padding:'10px',color:'white',fontSize:'12px',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:'4px'}}>
-                      <span style={{fontSize:'20px'}}>{c.flag}</span>
-                      <span>{c.code}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <label style={{color:'rgba(255,255,255,0.6)',fontSize:'12px',display:'block',marginBottom:'6px'}}>Email Address</label>
-                <input value={user?.email} disabled style={{width:'100%',background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'8px',padding:'12px',color:'rgba(255,255,255,0.4)',fontSize:'14px',outline:'none',cursor:'not-allowed'}}/>
-              </div>
-              <button onClick={updateProfile} style={{background:saved?'#2EC87A':'#C42020',color:'white',border:'none',borderRadius:'8px',padding:'12px 24px',fontSize:'14px',fontWeight:'700',cursor:'pointer'}}>
-                {saved ? '✓ Saved!' : 'Save Profile'}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'favorites' && (
-          <div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'8px'}}>
-              <h2 style={{color:'white',fontSize:'18px',fontWeight:'700'}}>Favorite Schools ({favorites.length})</h2>
-              <a href="/schools" style={{color:'#C42020',fontSize:'13px',textDecoration:'none',fontWeight:'600'}}>+ Add More</a>
-            </div>
-            {favorites.length === 0 ? (
-              <div style={{background:'#1A2035',borderRadius:'12px',padding:'48px',textAlign:'center',border:'1px solid rgba(255,255,255,0.08)'}}>
-                <div style={{fontSize:'48px',marginBottom:'16px'}}>❤️</div>
-                <p style={{color:'rgba(255,255,255,0.4)',fontSize:'14px',marginBottom:'16px'}}>No favorites yet!</p>
-                <a href="/schools" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'10px 20px',borderRadius:'8px',fontSize:'13px',fontWeight:'700'}}>Browse Schools</a>
-              </div>
-            ) : favorites.map((fav:any)=>(
-              <div key={fav.school_id} style={{background:'#1A2035',borderRadius:'10px',padding:'16px',display:'flex',alignItems:'center',gap:'14px',border:'1px solid rgba(255,255,255,0.08)'}}>
-                <div style={{fontSize:'32px'}}>{fav.schools?.icon}</div>
-                <div style={{flex:1}}>
-                  <div style={{color:'white',fontSize:'14px',fontWeight:'600'}}>{fav.schools?.name_en}</div>
-                  <div style={{color:'#C42020',fontSize:'11px',marginBottom:'2px'}}>{fav.schools?.name_jp}</div>
-                  <div style={{color:'rgba(255,255,255,0.4)',fontSize:'12px'}}>{fav.schools?.city}</div>
-                </div>
-                <div style={{textAlign:'right'}}>
-                  <div style={{color:'#F0A830',fontSize:'13px',fontFamily:'monospace'}}>¥{fav.schools?.annual_fee_jpy?.toLocaleString()}</div>
-                  <div style={{color:'#F0A830',fontSize:'12px'}}>⭐ {fav.schools?.rating}</div>
-                </div>
-                <div style={{display:'flex',gap:'6px'}}>
-                  <a href={'/schools/' + fav.school_id} style={{background:'rgba(196,32,32,0.15)',color:'#FF8070',textDecoration:'none',padding:'6px 12px',borderRadius:'6px',fontSize:'12px',fontWeight:'600'}}>View</a>
-                  <button onClick={()=>removeFavorite(fav.school_id)} style={{background:'rgba(255,255,255,0.06)',color:'rgba(255,255,255,0.4)',border:'none',padding:'6px 12px',borderRadius:'6px',fontSize:'12px',cursor:'pointer'}}>Remove</button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {activeTab === 'applications' && (
-          <div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'8px'}}>
-              <h2 style={{color:'white',fontSize:'18px',fontWeight:'700'}}>My Applications ({applications.length})</h2>
-              <a href="/apply" style={{color:'#C42020',fontSize:'13px',textDecoration:'none',fontWeight:'600'}}>+ New Application</a>
-            </div>
-            {applications.length === 0 ? (
-              <div style={{background:'#1A2035',borderRadius:'12px',padding:'48px',textAlign:'center',border:'1px solid rgba(255,255,255,0.08)'}}>
-                <div style={{fontSize:'48px',marginBottom:'16px'}}>📝</div>
-                <p style={{color:'rgba(255,255,255,0.4)',fontSize:'14px',marginBottom:'16px'}}>No applications yet!</p>
-                <a href="/apply" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'10px 20px',borderRadius:'8px',fontSize:'13px',fontWeight:'700'}}>Apply Now</a>
-              </div>
-            ) : applications.map((app:any)=>(
-              <div key={app.id} style={{background:'#1A2035',borderRadius:'10px',padding:'16px',display:'flex',alignItems:'center',gap:'14px',border:'1px solid rgba(255,255,255,0.08)'}}>
-                <div style={{fontSize:'32px'}}>{app.schools?.icon}</div>
-                <div style={{flex:1}}>
-                  <div style={{color:'white',fontSize:'14px',fontWeight:'600'}}>{app.schools?.name_en}</div>
-                  <div style={{color:'rgba(255,255,255,0.4)',fontSize:'12px'}}>{app.schools?.city}</div>
-                  <div style={{color:'rgba(255,255,255,0.3)',fontSize:'11px'}}>Applied: {new Date(app.created_at).toLocaleDateString()}</div>
-                </div>
-                <span style={{background:statusColors[app.status]+'20',color:statusColors[app.status],padding:'4px 10px',borderRadius:'20px',fontSize:'11px',fontWeight:'700',textTransform:'capitalize'}}>{app.status}</span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {activeTab === 'reviews' && (
-          <div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
-            <h2 style={{color:'white',fontSize:'18px',fontWeight:'700',marginBottom:'8px'}}>My Reviews ({reviews.length})</h2>
-            {reviews.length === 0 ? (
-              <div style={{background:'#1A2035',borderRadius:'12px',padding:'48px',textAlign:'center',border:'1px solid rgba(255,255,255,0.08)'}}>
-                <div style={{fontSize:'48px',marginBottom:'16px'}}>⭐</div>
-                <p style={{color:'rgba(255,255,255,0.4)',fontSize:'14px',marginBottom:'16px'}}>No reviews yet!</p>
-                <a href="/schools" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'10px 20px',borderRadius:'8px',fontSize:'13px',fontWeight:'700'}}>Review a School</a>
-              </div>
-            ) : reviews.map((review:any)=>(
-              <div key={review.id} style={{background:'#1A2035',borderRadius:'10px',padding:'16px',border:'1px solid rgba(255,255,255,0.08)'}}>
-                <div style={{display:'flex',gap:'12px',alignItems:'flex-start'}}>
-                  <div style={{fontSize:'28px'}}>{review.schools?.icon}</div>
-                  <div style={{flex:1}}>
-                    <div style={{display:'flex',justifyContent:'space-between',marginBottom:'6px',flexWrap:'wrap',gap:'8px'}}>
-                      <span style={{color:'white',fontSize:'14px',fontWeight:'600'}}>{review.schools?.name_en}</span>
-                      <div>
-                        <span style={{color:'#F0A830',fontSize:'16px'}}>{'★'.repeat(review.rating)}{'☆'.repeat(5-review.rating)}</span>
-                        <span style={{color:'rgba(255,255,255,0.3)',fontSize:'11px',marginLeft:'8px'}}>{new Date(review.created_at).toLocaleDateString()}</span>
-                      </div>
-                    </div>
-                    <p style={{color:'rgba(255,255,255,0.6)',fontSize:'13px',lineHeight:'1.6'}}>{review.comment}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-      {/* Delete Account */}
-<div style={{background:'rgba(196,32,32,0.1)',borderRadius:'12px',padding:'20px',marginTop:'24px',border:'1px solid rgba(196,32,32,0.2)'}}>
-  <h3 style={{color:'#FF8070',fontSize:'15px',fontWeight:'700',marginBottom:'8px'}}>⚠️ Danger Zone</h3>
-  <p style={{color:'rgba(255,255,255,0.5)',fontSize:'13px',marginBottom:'14px'}}>Permanently delete your account and all associated data. This action cannot be undone.</p>
-  <button onClick={async()=>{
-    if(confirm('Are you sure you want to delete your account? This cannot be undone.')){
-      await supabase.from('profiles').delete().eq('id',user?.id)
-      await supabase.auth.signOut()
-      window.location.href='/'
-    }
-  }} style={{background:'rgba(196,32,32,0.2)',color:'#FF8070',border:'1px solid rgba(196,32,32,0.3)',borderRadius:'8px',padding:'10px 20px',fontSize:'13px',fontWeight:'700',cursor:'pointer'}}>
-    Delete My Account
-  </button>
+return (
+<main style={{minHeight:'100vh',background:'#0D0907',fontFamily:'sans-serif'}}>
+<div style={{background:'#1A2035',padding:'32px 20px',borderBottom:'3px solid #C42020'}}>
+<div style={{maxWidth:'700px',margin:'0 auto',display:'flex',gap:'16px',alignItems:'center',flexWrap:'wrap'}}>
+<div style={{width:'64px',height:'64px',borderRadius:'50%',background:'linear-gradient(135deg,#C42020,#FF8070)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'28px',fontWeight:'700',color:'white',flexShrink:0}}>
+{form.full_name?.[0]?.toUpperCase() || '👤'}
 </div>
-    </main>
-  )
+<div style={{flex:1}}>
+<h1 style={{color:'white',fontSize:'22px',fontWeight:'700',marginBottom:'4px'}}>{form.full_name || 'My Profile'}</h1>
+<p style={{color:'rgba(255,255,255,0.4)',fontSize:'13px',marginBottom:'6px'}}>{user?.email}</p>
+<span style={{background: isPro ? 'rgba(240,168,48,0.2)' : 'rgba(255,255,255,0.08)',color: isPro ? '#F0A830' : 'rgba(255,255,255,0.4)',padding:'3px 10px',borderRadius:'20px',fontSize:'11px',fontWeight:'700'}}>
+{isPro ? '💎 Pro Member' : '🆓 Free Plan'}
+</span>
+</div>
+{!isPro && (
+<a href="/pricing" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'10px 20px',borderRadius:'8px',fontSize:'13px',fontWeight:'700'}}>
+Upgrade to Pro 💎
+</a>
+)}
+</div>
+</div>
+
+<div style={{maxWidth:'700px',margin:'0 auto',padding:'32px 20px'}}>
+<div style={{display:'flex',gap:'8px',marginBottom:'20px'}}>
+{[
+{key:'profile' as const, label:'👤 Profile'},
+{key:'security' as const, label:'🔒 Security'},
+{key:'danger' as const, label:'⚠️ Danger Zone'},
+].map(tab => (
+<button key={tab.key} onClick={()=>setActiveTab(tab.key)} style={{background:activeTab===tab.key?'#C42020':'#1A2035',border:'none',borderRadius:'20px',padding:'8px 18px',color:'white',fontSize:'12px',fontWeight:'600',cursor:'pointer'}}>
+{tab.label}
+</button>
+))}
+</div>
+
+{/* Profile Tab */}
+{activeTab === 'profile' && (
+<div style={{background:'#1A2035',borderRadius:'16px',padding:'28px',border:'1px solid rgba(255,255,255,0.08)'}}>
+<h2 style={{color:'white',fontSize:'16px',fontWeight:'700',marginBottom:'20px'}}>Personal Information</h2>
+<div style={{display:'flex',flexDirection:'column',gap:'14px',marginBottom:'20px'}}>
+<div>
+<label style={{color:'rgba(255,255,255,0.5)',fontSize:'12px',display:'block',marginBottom:'6px'}}>Full Name</label>
+<input value={form.full_name} onChange={e=>update('full_name', e.target.value)} style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none'}}/>
+</div>
+<div>
+<label style={{color:'rgba(255,255,255,0.5)',fontSize:'12px',display:'block',marginBottom:'6px'}}>Email Address</label>
+<input value={user?.email} disabled style={{width:'100%',background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.1)',borderRadius:'8px',padding:'12px',color:'rgba(255,255,255,0.4)',fontSize:'14px',outline:'none',cursor:'not-allowed'}}/>
+</div>
+<div>
+<label style={{color:'rgba(255,255,255,0.5)',fontSize:'12px',display:'block',marginBottom:'6px'}}>Phone Number</label>
+<input value={form.phone} onChange={e=>update('phone', e.target.value)} placeholder="+880 or +977..." style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none'}}/>
+</div>
+<div>
+<label style={{color:'rgba(255,255,255,0.5)',fontSize:'12px',display:'block',marginBottom:'6px'}}>Country</label>
+<select value={form.country} onChange={e=>update('country', e.target.value)} style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none'}}>
+<option value="">Select country...</option>
+<option value="Bangladesh">🇧🇩 Bangladesh</option>
+<option value="Nepal">🇳🇵 Nepal</option>
+<option value="India">🇮🇳 India</option>
+<option value="Other">🌍 Other</option>
+</select>
+</div>
+<div>
+<label style={{color:'rgba(255,255,255,0.5)',fontSize:'12px',display:'block',marginBottom:'6px'}}>Japanese Level</label>
+<select value={form.japanese_level} onChange={e=>update('japanese_level', e.target.value)} style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none'}}>
+<option value="">Select level...</option>
+<option value="none">Complete Beginner</option>
+<option value="n5">JLPT N5</option>
+<option value="n4">JLPT N4</option>
+<option value="n3">JLPT N3</option>
+<option value="n2">JLPT N2</option>
+<option value="n1">JLPT N1</option>
+</select>
+</div>
+<div>
+<label style={{color:'rgba(255,255,255,0.5)',fontSize:'12px',display:'block',marginBottom:'6px'}}>Goal in Japan</label>
+<select value={form.purpose} onChange={e=>update('purpose', e.target.value)} style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none'}}>
+<option value="">Select goal...</option>
+<option value="study">🎓 Study at language school</option>
+<option value="work_ssw">🏭 Work with SSW visa</option>
+<option value="work_engineer">💻 Work as IT/Engineer</option>
+<option value="explore">🔍 Just exploring</option>
+</select>
+</div>
+<div>
+<label style={{color:'rgba(255,255,255,0.5)',fontSize:'12px',display:'block',marginBottom:'6px'}}>Bio (Optional)</label>
+<textarea value={form.bio} onChange={e=>update('bio', e.target.value)} placeholder="Tell us about yourself..." style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none',resize:'vertical',minHeight:'80px'}}/>
+</div>
+</div>
+
+{saved && (
+<div style={{background:'rgba(46,200,122,0.1)',border:'1px solid rgba(46,200,122,0.3)',borderRadius:'8px',padding:'10px',marginBottom:'12px',textAlign:'center'}}>
+<p style={{color:'#2EC87A',fontSize:'13px',fontWeight:'700'}}>✅ Profile saved successfully!</p>
+</div>
+)}
+
+<button onClick={saveProfile} disabled={saving} style={{background:'#C42020',color:'white',border:'none',borderRadius:'8px',padding:'14px',fontSize:'14px',fontWeight:'700',cursor:'pointer',width:'100%'}}>
+{saving ? 'Saving...' : 'Save Profile'}
+</button>
+</div>
+)}
+
+{/* Security Tab */}
+{activeTab === 'security' && (
+<div style={{background:'#1A2035',borderRadius:'16px',padding:'28px',border:'1px solid rgba(255,255,255,0.08)'}}>
+<h2 style={{color:'white',fontSize:'16px',fontWeight:'700',marginBottom:'20px'}}>🔒 Change Password</h2>
+<div style={{display:'flex',flexDirection:'column',gap:'12px',marginBottom:'16px'}}>
+<div>
+<label style={{color:'rgba(255,255,255,0.5)',fontSize:'12px',display:'block',marginBottom:'6px'}}>New Password</label>
+<input value={passwordForm.newPassword} onChange={e=>setPasswordForm(prev=>({...prev,newPassword:e.target.value}))} type="password" placeholder="Minimum 6 characters" style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none'}}/>
+</div>
+<div>
+<label style={{color:'rgba(255,255,255,0.5)',fontSize:'12px',display:'block',marginBottom:'6px'}}>Confirm New Password</label>
+<input value={passwordForm.confirmPassword} onChange={e=>setPasswordForm(prev=>({...prev,confirmPassword:e.target.value}))} type="password" placeholder="Repeat new password" style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none'}}/>
+</div>
+</div>
+{passwordMsg && (
+<p style={{color: passwordMsg.includes('success') ? '#2EC87A' : '#FF8070',fontSize:'13px',marginBottom:'12px'}}>{passwordMsg}</p>
+)}
+<button onClick={changePassword} style={{background:'#C42020',color:'white',border:'none',borderRadius:'8px',padding:'14px',fontSize:'14px',fontWeight:'700',cursor:'pointer',width:'100%'}}>
+Update Password
+</button>
+
+<div style={{marginTop:'24px',padding:'16px',background:'rgba(255,255,255,0.04)',borderRadius:'10px'}}>
+<h3 style={{color:'white',fontSize:'14px',fontWeight:'700',marginBottom:'8px'}}>Account Info</h3>
+<p style={{color:'rgba(255,255,255,0.4)',fontSize:'13px',marginBottom:'4px'}}>Email: {user?.email}</p>
+<p style={{color:'rgba(255,255,255,0.4)',fontSize:'13px',marginBottom:'4px'}}>Member since: {new Date(user?.created_at).toLocaleDateString()}</p>
+<p style={{color:'rgba(255,255,255,0.4)',fontSize:'13px'}}>Plan: <span style={{color: isPro ? '#F0A830' : 'rgba(255,255,255,0.6)',fontWeight:'700'}}>{isPro ? 'Pro' : 'Free'}</span></p>
+</div>
+</div>
+)}
+
+{/* Danger Zone Tab */}
+{activeTab === 'danger' && (
+<div style={{background:'#1A2035',borderRadius:'16px',padding:'28px',border:'1px solid rgba(196,32,32,0.3)'}}>
+<h2 style={{color:'#FF8070',fontSize:'16px',fontWeight:'700',marginBottom:'8px'}}>⚠️ Danger Zone</h2>
+<p style={{color:'rgba(255,255,255,0.5)',fontSize:'13px',marginBottom:'24px',lineHeight:'1.7'}}>
+Actions here are permanent and cannot be undone. Please be careful.
+</p>
+
+<div style={{background:'rgba(196,32,32,0.1)',borderRadius:'12px',padding:'20px',border:'1px solid rgba(196,32,32,0.2)'}}>
+<h3 style={{color:'#FF8070',fontSize:'14px',fontWeight:'700',marginBottom:'8px'}}>Delete Account</h3>
+<p style={{color:'rgba(255,255,255,0.5)',fontSize:'13px',marginBottom:'16px',lineHeight:'1.6'}}>
+This will permanently delete your account, all applications, saved schools, and personal data.
+</p>
+<button onClick={deleteAccount} style={{background:'rgba(196,32,32,0.2)',color:'#FF8070',border:'1px solid rgba(196,32,32,0.3)',borderRadius:'8px',padding:'12px 24px',fontSize:'13px',fontWeight:'700',cursor:'pointer'}}>
+Delete My Account
+</button>
+</div>
+</div>
+)}
+</div>
+</main>
+)
 }

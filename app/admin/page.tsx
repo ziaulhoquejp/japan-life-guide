@@ -4,7 +4,8 @@ import { supabase } from '../../lib/supabase'
 
 const ADMIN_EMAILS = ['ziaulhoquejp@gmail.com', 'sacrifice4ever@gmail.com']
 
-type TabType = 'overview' | 'users' | 'applications' | 'feedback' | 'newsletter' | 'crm' | 'jobseekers'
+type TabType = 'overview' | 'users' | 'applications' | 'feedback' | 'newsletter' | 'crm' | 'jobseekers' | 'analytics'
+
 
 function JobSeekersTab() {
 const [seekers, setSeekers] = useState<any[]>([])
@@ -169,6 +170,7 @@ const TABS: {key: TabType, label: string}[] = [
 {key:'newsletter', label:'📧 Newsletter'},
 {key:'crm', label:'📊 CRM'},
 {key:'jobseekers', label:'💼 Job Seekers'},
+{key:'analytics' as TabType, label:'📈 Analytics'},
 ]
 
 return (
@@ -398,6 +400,71 @@ return (
 
 {/* Job Seekers */}
 {activeTab === 'jobseekers' && <JobSeekersTab />}
+{/* Analytics */}
+{activeTab === 'analytics' && (
+<div style={{display:'flex',flexDirection:'column',gap:'16px'}}>
+<div style={{background:'#1A2035',borderRadius:'12px',padding:'24px',border:'1px solid rgba(255,255,255,0.08)'}}>
+<h3 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'16px'}}>📈 Google Analytics</h3>
+<p style={{color:'rgba(255,255,255,0.5)',fontSize:'13px',marginBottom:'16px'}}>View detailed analytics in Google Analytics dashboard.</p>
+<a href="https://analytics.google.com" target="_blank" rel="noopener noreferrer" style={{background:'#4A8EFF',color:'white',textDecoration:'none',padding:'12px 24px',borderRadius:'8px',fontSize:'13px',fontWeight:'700',display:'inline-block',marginBottom:'24px'}}>
+Open Google Analytics →
+</a>
+
+<div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))',gap:'12px',marginBottom:'20px'}}>
+{[
+{label:'GA Property ID',value:process.env.NEXT_PUBLIC_GA_ID || 'Not set',color:'#4A8EFF',icon:'🔑'},
+{label:'Total Users (DB)',value:stats.totalUsers,color:'#2EC87A',icon:'👤'},
+{label:'Total Applications',value:stats.totalApplications,color:'#F0A830',icon:'📝'},
+{label:'Pro Members',value:stats.proUsers,color:'#A855F7',icon:'💎'},
+].map(item => (
+<div key={item.label} style={{background:'#0D0907',borderRadius:'10px',padding:'14px'}}>
+<div style={{fontSize:'20px',marginBottom:'6px'}}>{item.icon}</div>
+<div style={{color:item.color,fontSize:'16px',fontWeight:'700',marginBottom:'2px'}}>{item.value}</div>
+<div style={{color:'rgba(255,255,255,0.4)',fontSize:'11px'}}>{item.label}</div>
+</div>
+))}
+</div>
+
+<div style={{background:'rgba(74,142,255,0.1)',borderRadius:'10px',padding:'16px',border:'1px solid rgba(74,142,255,0.2)'}}>
+<h4 style={{color:'#4A8EFF',fontSize:'13px',fontWeight:'700',marginBottom:'12px'}}>📊 Key Pages to Track</h4>
+<div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
+{[
+{page:'/schools',label:'School Search'},
+{page:'/apply',label:'Apply Page'},
+{page:'/chat',label:'Sakura AI Chat'},
+{page:'/pricing',label:'Pricing Page'},
+{page:'/register',label:'Registration'},
+{page:'/jobs',label:'Jobs Page'},
+{page:'/visa-consult',label:'Visa Consultation'},
+{page:'/recruit',label:'Company Recruitment'},
+].map(item => (
+<div key={item.page} style={{display:'flex',justifyContent:'space-between',padding:'6px 0',borderBottom:'1px solid rgba(255,255,255,0.04)'}}>
+<span style={{color:'rgba(255,255,255,0.6)',fontSize:'12px'}}>{item.label}</span>
+<span style={{color:'rgba(255,255,255,0.3)',fontSize:'12px'}}>{item.page}</span>
+</div>
+))}
+</div>
+</div>
+</div>
+
+<div style={{background:'#1A2035',borderRadius:'12px',padding:'24px',border:'1px solid rgba(255,255,255,0.08)'}}>
+<h3 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'16px'}}>🎯 Conversion Goals</h3>
+<div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
+{[
+{label:'Registration → School Apply',rate: stats.totalUsers > 0 ? Math.round((stats.totalApplications/stats.totalUsers)*100) + '%' : '0%',color:'#F0A830'},
+{label:'Free → Pro Conversion',rate: stats.totalUsers > 0 ? Math.round((stats.proUsers/stats.totalUsers)*100) + '%' : '0%',color:'#2EC87A'},
+{label:'Total Pro Members',rate: stats.proUsers + ' users',color:'#A855F7'},
+].map(item => (
+<div key={item.label} style={{display:'flex',justifyContent:'space-between',alignItems:'center',background:'#0D0907',borderRadius:'8px',padding:'12px'}}>
+<span style={{color:'rgba(255,255,255,0.6)',fontSize:'13px'}}>{item.label}</span>
+<span style={{color:item.color,fontSize:'14px',fontWeight:'700'}}>{item.rate}</span>
+</div>
+))}
+</div>
+</div>
+</div>
+)}
+
 
 </div>
 </main>

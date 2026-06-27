@@ -87,6 +87,7 @@ export default function Navbar() {
     {href:'/affiliate',label:'Affiliate Program'},
     {href:'/contact',label:'Contact'},
     {href:'/admin',label:'Admin'},
+    {href:'/recruit', label:'企業様へ（求人掲載）'},
   ]
 
   const filteredSearch = SEARCH_ITEMS.filter(item =>

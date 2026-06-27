@@ -32,7 +32,6 @@ links: [
 {label:'Townwork (求人サイト)', url:'https://townwork.net/'},
 {label:'Baitoru (バイトル)', url:'https://www.baitoru.com/'},
 {label:'Indeed Japan', url:'https://jp.indeed.com/'},
-{label:'Shigoto.net', url:'https://www.shigoto.net/'},
 ]
 },
 {
@@ -42,14 +41,13 @@ title: 'Engineer / IT Jobs',
 titleJP: '技術・人文知識・国際業務',
 color: '#2EC87A',
 desc: 'Work as engineer, IT specialist, or international business professional.',
-industries: ['Software Development', 'Web Development', 'Network Engineer', 'Data Analysis', 'International Sales', 'Interpreter/Translator', 'Marketing'],
+industries: ['Software Development', 'Web Development', 'Network Engineer', 'Data Analysis', 'International Sales', 'Interpreter/Translator'],
 avgSalary: '¥250,000 - ¥450,000/month',
 requirement: 'Degree in relevant field + Job offer',
 links: [
 {label:'Daijob (外資・グローバル)', url:'https://www.daijob.com/'},
 {label:'Gaijinpot Jobs', url:'https://jobs.gaijinpot.com/'},
 {label:'LinkedIn Japan', url:'https://www.linkedin.com/jobs/'},
-{label:'Wantedly', url:'https://www.wantedly.com/'},
 ]
 },
 {
@@ -65,7 +63,6 @@ requirement: 'JLPT N4 + Care Worker Certificate',
 links: [
 {label:'介護求人ナビ', url:'https://www.kaigo-kyuujin.com/'},
 {label:'カイゴジョブ', url:'https://carejob.ansinc.co.jp/'},
-{label:'ジョブメドレー', url:'https://job-medley.com/'},
 ]
 },
 {
@@ -90,12 +87,11 @@ title: 'Factory / Manufacturing',
 titleJP: '製造業',
 color: '#FF8070',
 desc: 'Stable factory work with good benefits. Popular among Bangladeshi and Nepali workers.',
-industries: ['Food Processing', 'Electronics Assembly', 'Auto Parts', 'Packaging', 'Printing', 'Chemical'],
+industries: ['Food Processing', 'Electronics Assembly', 'Auto Parts', 'Packaging', 'Printing'],
 avgSalary: '¥190,000 - ¥270,000/month',
 requirement: 'SSW Type 1 or Student Visa (part-time)',
 links: [
 {label:'工場求人.com', url:'https://www.factory-job.com/'},
-{label:'はたらこねっと', url:'https://www.hatarakone.com/'},
 {label:'スタッフサービス', url:'https://www.staffservice.co.jp/'},
 ]
 },
@@ -108,22 +104,40 @@ const USEFUL_SITES = [
 {name:'Gaijinpot Jobs', nameEN:'Gaijinpot', url:'https://jobs.gaijinpot.com/', desc:'Jobs for foreigners in Japan', icon:'💼'},
 {name:'Japan SSW Portal', nameEN:'SSW Official Portal', url:'https://ssw.go.jp/', desc:'Official SSW visa job portal', icon:'🛂'},
 ]
+
 function ResumeForm() {
 const [form, setForm] = useState({
 fullName: '', email: '', country: '', jobType: '', japaneseLevel: '', experience: ''
 })
+const [pdfFile, setPdfFile] = useState<File|null>(null)
 const [submitting, setSubmitting] = useState(false)
 const [submitted, setSubmitted] = useState(false)
 const [result, setResult] = useState<any>(null)
+const [uploadProgress, setUploadProgress] = useState('')
 
 async function handleSubmit() {
 if (!form.fullName || !form.email || !form.jobType) return
 setSubmitting(true)
+setUploadProgress('Uploading...')
 try {
+let resumeUrl = ''
+if (pdfFile) {
+const { createClient } = await import('@supabase/supabase-js')
+const supabaseClient = createClient(
+process.env.NEXT_PUBLIC_SUPABASE_URL!,
+process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
+const fileName = `${Date.now()}_${form.fullName.replace(/\s/g,'_')}.pdf`
+const { data: uploadData, error } = await supabaseClient.storage
+.from('resumes')
+.upload(fileName, pdfFile)
+if (!error && uploadData) resumeUrl = uploadData.path
+}
+setUploadProgress('AI analyzing...')
 const res = await fetch('/api/submit-resume', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify(form),
+body: JSON.stringify({...form, resumeUrl}),
 })
 const data = await res.json()
 setResult(data.analysis)
@@ -132,6 +146,7 @@ setSubmitted(true)
 console.error(error)
 }
 setSubmitting(false)
+setUploadProgress('')
 }
 
 if (submitted) {
@@ -206,13 +221,40 @@ return (
 <label style={{color:'rgba(255,255,255,0.5)',fontSize:'12px',display:'block',marginBottom:'6px'}}>Work Experience & Skills</label>
 <textarea value={form.experience} onChange={e=>setForm(p=>({...p,experience:e.target.value}))} placeholder="Describe your experience, skills, certifications..." style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none',resize:'vertical',minHeight:'100px'}}/>
 </div>
+<div>
+<label style={{color:'rgba(255,255,255,0.5)',fontSize:'12px',display:'block',marginBottom:'6px'}}>Resume PDF (Optional)</label>
+<div style={{background:'#0D0907',border:'2px dashed rgba(255,255,255,0.2)',borderRadius:'8px',padding:'20px',textAlign:'center',cursor:'pointer'}}
+onClick={()=>document.getElementById('pdf-upload')?.click()}
+onDragOver={e=>e.preventDefault()}
+onDrop={e=>{e.preventDefault(); const file = e.dataTransfer.files[0]; if(file?.type==='application/pdf') setPdfFile(file)}}>
+<input id="pdf-upload" type="file" accept=".pdf" style={{display:'none'}} onChange={e=>{const file = e.target.files?.[0]; if(file) setPdfFile(file)}}/>
+{pdfFile ? (
+<div>
+<p style={{color:'#2EC87A',fontSize:'14px',fontWeight:'700'}}>✅ {pdfFile.name}</p>
+<p style={{color:'rgba(255,255,255,0.3)',fontSize:'12px'}}>{(pdfFile.size/1024/1024).toFixed(2)} MB</p>
+<button onClick={e=>{e.stopPropagation(); setPdfFile(null)}} style={{background:'none',border:'none',color:'#FF8070',cursor:'pointer',fontSize:'12px',marginTop:'4px'}}>Remove</button>
 </div>
+) : (
+<div>
+<p style={{color:'rgba(255,255,255,0.5)',fontSize:'14px',marginBottom:'4px'}}>📄 Click or drag & drop PDF here</p>
+<p style={{color:'rgba(255,255,255,0.3)',fontSize:'12px'}}>Max 10MB · PDF only</p>
+</div>
+)}
+</div>
+</div>
+</div>
+{submitting && uploadProgress && (
+<div style={{background:'rgba(196,32,32,0.1)',borderRadius:'8px',padding:'10px',marginBottom:'12px',textAlign:'center'}}>
+<p style={{color:'#FF8070',fontSize:'13px'}}>⏳ {uploadProgress}</p>
+</div>
+)}
 <button onClick={handleSubmit} disabled={submitting||!form.fullName||!form.email||!form.jobType} style={{background: form.fullName&&form.email&&form.jobType ? '#C42020' : 'rgba(255,255,255,0.1)',color:'white',border:'none',borderRadius:'8px',padding:'14px',fontSize:'14px',fontWeight:'700',cursor: form.fullName&&form.email&&form.jobType ? 'pointer' : 'not-allowed',width:'100%'}}>
 {submitting ? '🤖 AI is analyzing...' : 'Submit & Get AI Match 🌸'}
 </button>
 </div>
 )
 }
+
 export default function JobsPage() {
 const [selectedCategory, setSelectedCategory] = useState<any>(null)
 const [activeTab, setActiveTab] = useState<'jobs'|'resume'|'consult'>('jobs')
@@ -226,8 +268,6 @@ return (
 </div>
 
 <div style={{maxWidth:'1000px',margin:'0 auto',padding:'32px 20px'}}>
-
-{/* Tabs */}
 <div style={{display:'flex',gap:'8px',marginBottom:'24px'}}>
 {[
 {key:'jobs' as const, label:'💼 Job Categories'},
@@ -240,12 +280,11 @@ return (
 ))}
 </div>
 
-{/* Jobs Tab */}
 {activeTab === 'jobs' && (
 <div>
 {selectedCategory ? (
 <div>
-<button onClick={()=>setSelectedCategory(null)} style={{background:'none',border:'none',color:'rgba(255,255,255,0.5)',cursor:'pointer',fontSize:'14px',marginBottom:'16px',display:'flex',alignItems:'center',gap:'6px'}}>
+<button onClick={()=>setSelectedCategory(null)} style={{background:'none',border:'none',color:'rgba(255,255,255,0.5)',cursor:'pointer',fontSize:'14px',marginBottom:'16px'}}>
 ← Back to categories
 </button>
 <div style={{background:'#1A2035',borderRadius:'16px',padding:'28px',border:'1px solid rgba(255,255,255,0.08)'}}>
@@ -257,7 +296,6 @@ return (
 <p style={{color:'rgba(255,255,255,0.6)',fontSize:'14px',lineHeight:'1.6'}}>{selectedCategory.desc}</p>
 </div>
 </div>
-
 <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'12px',marginBottom:'20px'}}>
 <div style={{background:'#0D0907',borderRadius:'10px',padding:'14px'}}>
 <p style={{color:'rgba(255,255,255,0.4)',fontSize:'11px',marginBottom:'4px'}}>Average Salary</p>
@@ -268,33 +306,21 @@ return (
 <p style={{color:'#F0A830',fontSize:'13px',fontWeight:'600'}}>{selectedCategory.requirement}</p>
 </div>
 </div>
-
 <h3 style={{color:'white',fontSize:'14px',fontWeight:'700',marginBottom:'12px'}}>Available Industries</h3>
 <div style={{display:'flex',gap:'8px',flexWrap:'wrap',marginBottom:'20px'}}>
 {selectedCategory.industries.map((ind: string) => (
-<span key={ind} style={{background:selectedCategory.color+'15',color:selectedCategory.color,padding:'4px 12px',borderRadius:'20px',fontSize:'12px',fontWeight:'600'}}>
-{ind}
-</span>
+<span key={ind} style={{background:selectedCategory.color+'15',color:selectedCategory.color,padding:'4px 12px',borderRadius:'20px',fontSize:'12px',fontWeight:'600'}}>{ind}</span>
 ))}
 </div>
-
 <h3 style={{color:'white',fontSize:'14px',fontWeight:'700',marginBottom:'12px'}}>🔗 Job Search Sites</h3>
 <div style={{display:'flex',flexDirection:'column',gap:'8px',marginBottom:'20px'}}>
 {selectedCategory.links.map((link: any) => (
-<a key={link.url} href={link.url} target="_blank" rel="noopener noreferrer" style={{background:'#0D0907',borderRadius:'8px',padding:'12px 16px',display:'flex',justifyContent:'space-between',alignItems:'center',textDecoration:'none',border:'1px solid rgba(255,255,255,0.06)'}}
-onMouseEnter={e=>(e.currentTarget.style.borderColor='rgba(196,32,32,0.3)')}
-onMouseLeave={e=>(e.currentTarget.style.borderColor='rgba(255,255,255,0.06)')}>
+<a key={link.url} href={link.url} target="_blank" rel="noopener noreferrer" style={{background:'#0D0907',borderRadius:'8px',padding:'12px 16px',display:'flex',justifyContent:'space-between',alignItems:'center',textDecoration:'none',border:'1px solid rgba(255,255,255,0.06)'}}>
 <span style={{color:'white',fontSize:'13px',fontWeight:'600'}}>{link.label}</span>
 <span style={{color:'#C42020',fontSize:'12px'}}>Visit →</span>
 </a>
 ))}
 </div>
-
-<div style={{background:'rgba(46,200,122,0.1)',borderRadius:'10px',padding:'16px',border:'1px solid rgba(46,200,122,0.2)',marginBottom:'16px'}}>
-<p style={{color:'#2EC87A',fontSize:'13px',fontWeight:'700',marginBottom:'4px'}}>✅ Japan Life Guide is a Licensed Recruitment Agency</p>
-<p style={{color:'rgba(255,255,255,0.5)',fontSize:'12px',lineHeight:'1.6'}}>有料職業紹介許可・登録支援機関許可取得済み。We can support your entire job search and visa process in Japan.</p>
-</div>
-
 <div style={{display:'flex',gap:'10px',flexWrap:'wrap'}}>
 <button onClick={()=>setActiveTab('resume')} style={{background:'#C42020',color:'white',border:'none',borderRadius:'8px',padding:'12px 24px',fontSize:'13px',fontWeight:'700',cursor:'pointer'}}>
 Submit Your Resume 📄
@@ -328,14 +354,11 @@ onMouseLeave={e=>(e.currentTarget.style.borderColor='rgba(255,255,255,0.08)')}>
 ))}
 </div>
 
-{/* Useful Sites */}
 <div style={{background:'#1A2035',borderRadius:'12px',padding:'24px',marginBottom:'24px',border:'1px solid rgba(255,255,255,0.08)'}}>
 <h2 style={{color:'white',fontSize:'16px',fontWeight:'700',marginBottom:'16px'}}>🔍 Job Search Websites</h2>
 <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))',gap:'10px'}}>
 {USEFUL_SITES.map(site => (
-<a key={site.url} href={site.url} target="_blank" rel="noopener noreferrer" style={{background:'#0D0907',borderRadius:'10px',padding:'14px',textDecoration:'none',border:'1px solid rgba(255,255,255,0.06)',display:'block'}}
-onMouseEnter={e=>(e.currentTarget.style.borderColor='rgba(196,32,32,0.3)')}
-onMouseLeave={e=>(e.currentTarget.style.borderColor='rgba(255,255,255,0.06)')}>
+<a key={site.url} href={site.url} target="_blank" rel="noopener noreferrer" style={{background:'#0D0907',borderRadius:'10px',padding:'14px',textDecoration:'none',border:'1px solid rgba(255,255,255,0.06)',display:'block'}}>
 <div style={{fontSize:'24px',marginBottom:'6px'}}>{site.icon}</div>
 <div style={{color:'white',fontSize:'13px',fontWeight:'700',marginBottom:'2px'}}>{site.nameEN}</div>
 <div style={{color:'rgba(255,255,255,0.4)',fontSize:'11px'}}>{site.desc}</div>
@@ -344,7 +367,6 @@ onMouseLeave={e=>(e.currentTarget.style.borderColor='rgba(255,255,255,0.06)')}>
 </div>
 </div>
 
-{/* License Banner */}
 <div style={{background:'linear-gradient(135deg,rgba(46,200,122,0.15),rgba(46,200,122,0.05))',borderRadius:'12px',padding:'24px',border:'1px solid rgba(46,200,122,0.3)',textAlign:'center'}}>
 <p style={{color:'#2EC87A',fontSize:'16px',fontWeight:'700',marginBottom:'8px'}}>🌸 Japan Life Guide - Licensed Recruitment Agency</p>
 <p style={{color:'rgba(255,255,255,0.5)',fontSize:'13px',marginBottom:'16px',lineHeight:'1.7'}}>
@@ -365,97 +387,21 @@ Free Career Consultation
 </div>
 )}
 
-{/* Resume Tab */}
-{activeTab === 'resume' && (
-<div style={{background:'#1A2035',borderRadius:'16px',padding:'32px',border:'1px solid rgba(255,255,255,0.08)'}}>
-<h2 style={{color:'white',fontSize:'20px',fontWeight:'700',marginBottom:'8px'}}>📄 Submit Your Resume</h2>
-<p style={{color:'rgba(255,255,255,0.5)',fontSize:'14px',marginBottom:'24px',lineHeight:'1.7'}}>
-Submit your resume and our AI will match you with the best job opportunities in Japan.
-Our licensed recruiters will contact you within 2 business days.
-</p>
+{activeTab === 'resume' && <ResumeForm />}
 
-<div style={{background:'rgba(46,200,122,0.1)',borderRadius:'10px',padding:'16px',marginBottom:'24px',border:'1px solid rgba(46,200,122,0.2)'}}>
-<p style={{color:'#2EC87A',fontSize:'13px',fontWeight:'700',marginBottom:'4px'}}>✅ Free Service</p>
-<p style={{color:'rgba(255,255,255,0.5)',fontSize:'12px',lineHeight:'1.6'}}>
-Japan Life Guide is a licensed recruitment agency. Our job matching service is completely free for job seekers.
-We are paid by employers only when a successful hire is made.
-</p>
-</div>
-
-<div style={{display:'flex',flexDirection:'column',gap:'12px',marginBottom:'20px'}}>
-<div>
-<label style={{color:'rgba(255,255,255,0.5)',fontSize:'12px',display:'block',marginBottom:'6px'}}>Full Name</label>
-<input placeholder="Your full name" style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none'}}/>
-</div>
-<div>
-<label style={{color:'rgba(255,255,255,0.5)',fontSize:'12px',display:'block',marginBottom:'6px'}}>Email</label>
-<input placeholder="your@email.com" type="email" style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none'}}/>
-</div>
-<div>
-<label style={{color:'rgba(255,255,255,0.5)',fontSize:'12px',display:'block',marginBottom:'6px'}}>Country</label>
-<select style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none'}}>
-<option value="">Select country...</option>
-<option value="Bangladesh">🇧🇩 Bangladesh</option>
-<option value="Nepal">🇳🇵 Nepal</option>
-<option value="Other">🌍 Other</option>
-</select>
-</div>
-<div>
-<label style={{color:'rgba(255,255,255,0.5)',fontSize:'12px',display:'block',marginBottom:'6px'}}>Job Type Interested In</label>
-<select style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none'}}>
-<option value="">Select job type...</option>
-<option value="ssw">SSW (特定技能)</option>
-<option value="engineer">Engineer/IT</option>
-<option value="nursing">Nursing Care</option>
-<option value="factory">Factory/Manufacturing</option>
-<option value="construction">Construction</option>
-<option value="parttime">Part-time (Student)</option>
-</select>
-</div>
-<div>
-<label style={{color:'rgba(255,255,255,0.5)',fontSize:'12px',display:'block',marginBottom:'6px'}}>Japanese Level</label>
-<select style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none'}}>
-<option value="">Select level...</option>
-<option value="none">Beginner / None</option>
-<option value="n5">JLPT N5</option>
-<option value="n4">JLPT N4</option>
-<option value="n3">JLPT N3</option>
-<option value="n2">JLPT N2 or above</option>
-</select>
-</div>
-<div>
-<label style={{color:'rgba(255,255,255,0.5)',fontSize:'12px',display:'block',marginBottom:'6px'}}>Work Experience & Skills</label>
-<textarea placeholder="Describe your work experience, skills, and what kind of job you are looking for in Japan..." style={{width:'100%',background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none',resize:'vertical',minHeight:'100px'}}/>
-</div>
-</div>
-
-<button style={{background:'#C42020',color:'white',border:'none',borderRadius:'8px',padding:'14px',fontSize:'14px',fontWeight:'700',cursor:'pointer',width:'100%',marginBottom:'12px'}}>
-{activeTab === 'resume' && (
-<ResumeForm />
-)}
-</button>
-<p style={{color:'rgba(255,255,255,0.3)',fontSize:'12px',textAlign:'center'}}>
-Our team will contact you within 2 business days
-</p>
-</div>
-)}
-
-{/* Consult Tab */}
 {activeTab === 'consult' && (
 <div style={{background:'#1A2035',borderRadius:'16px',padding:'32px',border:'1px solid rgba(255,255,255,0.08)',textAlign:'center'}}>
 <div style={{fontSize:'56px',marginBottom:'16px'}}>👨‍💼</div>
 <h2 style={{color:'white',fontSize:'22px',fontWeight:'700',marginBottom:'8px'}}>Free Career Consultation</h2>
 <p style={{color:'rgba(255,255,255,0.5)',fontSize:'14px',marginBottom:'24px',lineHeight:'1.7',maxWidth:'500px',margin:'0 auto 24px'}}>
 Get personalized career advice from our Japan employment specialists.
-We help you choose the right visa, find the right job, and navigate the entire process.
 </p>
-
 <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:'12px',marginBottom:'24px',textAlign:'left'}}>
 {[
-{icon:'🛂',title:'Visa Guidance',desc:'Which visa is right for your situation'},
-{icon:'🏭',title:'Job Matching',desc:'Find jobs matching your skills and goals'},
-{icon:'📝',title:'Document Support',desc:'Resume, application, and document help'},
-{icon:'🌸',title:'Full Support',desc:'End-to-end support until you start working'},
+{icon:'🛂',title:'Visa Guidance',desc:'Which visa is right for you'},
+{icon:'🏭',title:'Job Matching',desc:'Find jobs matching your skills'},
+{icon:'📝',title:'Document Support',desc:'Resume and application help'},
+{icon:'🌸',title:'Full Support',desc:'End-to-end support'},
 ].map((item,i) => (
 <div key={i} style={{background:'#0D0907',borderRadius:'10px',padding:'14px',border:'1px solid rgba(255,255,255,0.06)'}}>
 <div style={{fontSize:'24px',marginBottom:'6px'}}>{item.icon}</div>
@@ -464,13 +410,9 @@ We help you choose the right visa, find the right job, and navigate the entire p
 </div>
 ))}
 </div>
-
-<a href="/visa-consult" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'14px 32px',borderRadius:'10px',fontSize:'15px',fontWeight:'700',display:'inline-block',marginBottom:'12px'}}>
+<a href="/visa-consult" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'14px 32px',borderRadius:'10px',fontSize:'15px',fontWeight:'700',display:'inline-block'}}>
 Get Free Consultation 🌸
 </a>
-<p style={{color:'rgba(255,255,255,0.3)',fontSize:'12px'}}>
-Powered by Japan Life Guide AI · Licensed Recruitment Agency
-</p>
 </div>
 )}
 </div>

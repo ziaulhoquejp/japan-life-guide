@@ -91,6 +91,8 @@ export default function Navbar() {
     {href:'/interview-practice', label:'🎤 Interview Practice'},
     {href:'/bulk-apply', label:'📨 Bulk School Inquiry'},
     {href:'/motivation-letter', label:'📝 Motivation Letter AI'},
+    {href:'/ssw-test', label:'🏭 SSW Test Practice'},
+
   ]
 
   const filteredSearch = SEARCH_ITEMS.filter(item =>

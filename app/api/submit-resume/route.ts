@@ -169,6 +169,27 @@ ${aiResult ? `
 `,
 })
 
+// 自動で企業マッチング・営業メール送信
+try {
+const { data: savedSeeker } = await supabase
+.from('job_seekers')
+.select('id')
+.eq('email', email)
+.order('created_at', { ascending: false })
+.limit(1)
+.single()
+
+if (savedSeeker) {
+// バックグラウンドで企業マッチング実行
+fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/company-outreach`, {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ jobSeekerId: savedSeeker.id }),
+}).catch(err => console.error('Auto outreach error:', err))
+}
+} catch (err) {
+console.error('Auto match error:', err)
+}
 return NextResponse.json({
 success: true,
 analysis: aiResult,

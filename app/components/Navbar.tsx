@@ -88,6 +88,7 @@ export default function Navbar() {
     {href:'/contact',label:'Contact'},
     {href:'/admin',label:'Admin'},
     {href:'/recruit', label:'企業様へ（求人掲載）'},
+    {href:'/interview-practice', label:'🎤 Interview Practice'},
   ]
 
   const filteredSearch = SEARCH_ITEMS.filter(item =>

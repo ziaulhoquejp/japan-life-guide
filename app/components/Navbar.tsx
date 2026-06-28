@@ -92,6 +92,8 @@ export default function Navbar() {
     {href:'/bulk-apply', label:'📨 Bulk School Inquiry'},
     {href:'/motivation-letter', label:'📝 Motivation Letter AI'},
     {href:'/ssw-test', label:'🏭 SSW Test Practice'},
+    {href:'/referral', label:'🎁 Refer & Earn'},
+
 
   ]
 

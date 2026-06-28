@@ -1,10 +1,13 @@
 'use client'
 import { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
 import Link from 'next/link'
 
 export default function RegisterPage() {
 const [step, setStep] = useState(1)
+const searchParams = useSearchParams()
+const refCode = searchParams.get('ref') || ''
 const [loading, setLoading] = useState(false)
 const [error, setError] = useState('')
 const [form, setForm] = useState({
@@ -47,6 +50,7 @@ country: form.country,
 purpose: form.purpose,
 japanese_level: form.japanese_level,
 plan: 'free',
+referred_by: refCode || null,
 })
 
 // Welcome email

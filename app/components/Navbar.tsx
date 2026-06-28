@@ -90,6 +90,7 @@ export default function Navbar() {
     {href:'/recruit', label:'企業様へ（求人掲載）'},
     {href:'/interview-practice', label:'🎤 Interview Practice'},
     {href:'/bulk-apply', label:'📨 Bulk School Inquiry'},
+    {href:'/motivation-letter', label:'📝 Motivation Letter AI'},
   ]
 
   const filteredSearch = SEARCH_ITEMS.filter(item =>

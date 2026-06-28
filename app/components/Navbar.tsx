@@ -157,7 +157,19 @@ export default function Navbar() {
         </div>
 
         {/* Desktop Menu */}
-        <div className="nav-desktop">
+        <div className="nav-desktop"> {/* Language Switcher */}
+<div style={{display:'flex',gap:'4px',marginRight:'4px'}}>
+{[
+{href:'/',label:'EN',flag:'🇬🇧'},
+{href:'/bn',label:'বাং',flag:'🇧🇩'},
+{href:'/ne',label:'नेप',flag:'🇳🇵'},
+].map(lang => (
+<a key={lang.href} href={lang.href} style={{background:'rgba(255,255,255,0.08)',color:'white',textDecoration:'none',padding:'4px 8px',borderRadius:'6px',fontSize:'11px',fontWeight:'600',whiteSpace:'nowrap'}}>
+{lang.flag} {lang.label}
+</a>
+))}
+</div>
+
           {mainLinks.map(l=>(
             <Link key={l.href} href={l.href} style={{color:'rgba(255,255,255,0.7)',textDecoration:'none',fontSize:'11px',fontWeight:'500',whiteSpace:'nowrap'}}>{l.label}</Link>
           ))}

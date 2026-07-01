@@ -93,6 +93,9 @@ export default function Navbar() {
     {href:'/motivation-letter', label:'📝 Motivation Letter AI'},
     {href:'/ssw-test', label:'🏭 SSW Test Practice'},
     {href:'/referral', label:'🎁 Refer & Earn'},
+    {href:'/visa-check', label:'✅ Visa Document Checker'},
+
+
 
 
   ]

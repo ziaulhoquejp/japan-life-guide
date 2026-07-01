@@ -94,6 +94,8 @@ export default function Navbar() {
     {href:'/ssw-test', label:'🏭 SSW Test Practice'},
     {href:'/referral', label:'🎁 Refer & Earn'},
     {href:'/visa-check', label:'✅ Visa Document Checker'},
+    {href:'/visa-tracker', label:'🪪 Visa & Document Tracker'},
+
 
 
 

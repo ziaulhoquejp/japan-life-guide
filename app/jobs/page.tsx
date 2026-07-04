@@ -1,108 +1,20 @@
-'use client'
-import { useState } from 'react'
+use client'
+import { useEffect, useState } from 'react'
+import { supabase } from '../../lib/supabase'
 
 const JOB_CATEGORIES = [
-{
-id: 'ssw',
-icon: '🏭',
-title: 'Specified Skilled Worker (SSW)',
-titleJP: '特定技能',
-color: '#C42020',
-desc: 'Work in Japan with SSW visa. 16 industries available for foreign workers.',
-industries: ['Food Manufacturing', 'Restaurant/Food Service', 'Building Cleaning', 'Industrial Machinery', 'Electrical/Electronics', 'Construction', 'Shipbuilding', 'Automobile Repair', 'Aviation', 'Lodging', 'Agriculture', 'Fishery', 'Nursing Care'],
-avgSalary: '¥180,000 - ¥250,000/month',
-requirement: 'JLPT N4 + Skills Test',
-links: [
-{label:'JOPUS (SSW Jobs)', url:'https://jopus.net/en/'},
-{label:'Japan SSW Job Board', url:'https://ssw.go.jp/'},
-{label:'ハローワーク外国人向け', url:'https://www.hellowork.mhlw.go.jp/'},
-]
-},
-{
-id: 'parttime',
-icon: '⏰',
-title: 'Part-time Jobs (Students)',
-titleJP: 'アルバイト',
-color: '#4A8EFF',
-desc: 'Work up to 28 hours/week on student visa. Many options available.',
-industries: ['Convenience Store', 'Restaurant/Cafe', 'Factory', 'Delivery', 'Hotel/Hospitality', 'Retail Shop', 'English Teaching', 'IT Support'],
-avgSalary: '¥1,000 - ¥1,500/hour',
-requirement: 'Student Visa + 資格外活動許可',
-links: [
-{label:'Townwork (求人サイト)', url:'https://townwork.net/'},
-{label:'Baitoru (バイトル)', url:'https://www.baitoru.com/'},
-{label:'Indeed Japan', url:'https://jp.indeed.com/'},
-]
-},
-{
-id: 'engineer',
-icon: '💻',
-title: 'Engineer / IT Jobs',
-titleJP: '技術・人文知識・国際業務',
-color: '#2EC87A',
-desc: 'Work as engineer, IT specialist, or international business professional.',
-industries: ['Software Development', 'Web Development', 'Network Engineer', 'Data Analysis', 'International Sales', 'Interpreter/Translator'],
-avgSalary: '¥250,000 - ¥450,000/month',
-requirement: 'Degree in relevant field + Job offer',
-links: [
-{label:'Daijob (外資・グローバル)', url:'https://www.daijob.com/'},
-{label:'Gaijinpot Jobs', url:'https://jobs.gaijinpot.com/'},
-{label:'LinkedIn Japan', url:'https://www.linkedin.com/jobs/'},
-]
-},
-{
-id: 'nursing',
-icon: '🏥',
-title: 'Nursing Care (介護)',
-titleJP: '介護',
-color: '#A855F7',
-desc: 'Japan needs nursing care workers urgently. Good salary and career path.',
-industries: ['Elderly Care Facility', 'Home Care', 'Hospital Support', 'Rehabilitation Center'],
-avgSalary: '¥200,000 - ¥280,000/month',
-requirement: 'JLPT N4 + Care Worker Certificate',
-links: [
-{label:'介護求人ナビ', url:'https://www.kaigo-kyuujin.com/'},
-{label:'カイゴジョブ', url:'https://carejob.ansinc.co.jp/'},
-]
-},
-{
-id: 'construction',
-icon: '🏗️',
-title: 'Construction (建設)',
-titleJP: '建設',
-color: '#F0A830',
-desc: 'Construction industry in Japan has many opportunities for foreign workers.',
-industries: ['General Construction', 'Carpentry', 'Plumbing', 'Electrical Work', 'Painting', 'Welding'],
-avgSalary: '¥200,000 - ¥320,000/month',
-requirement: 'SSW Type 1 or Technical Intern',
-links: [
-{label:'建設業求人サイト', url:'https://www.kensetsu-job.com/'},
-{label:'Indeed 建設', url:'https://jp.indeed.com/建設-求人'},
-]
-},
-{
-id: 'factory',
-icon: '🔧',
-title: 'Factory / Manufacturing',
-titleJP: '製造業',
-color: '#FF8070',
-desc: 'Stable factory work with good benefits. Popular among Bangladeshi and Nepali workers.',
-industries: ['Food Processing', 'Electronics Assembly', 'Auto Parts', 'Packaging', 'Printing'],
-avgSalary: '¥190,000 - ¥270,000/month',
-requirement: 'SSW Type 1 or Student Visa (part-time)',
-links: [
-{label:'工場求人.com', url:'https://www.factory-job.com/'},
-{label:'スタッフサービス', url:'https://www.staffservice.co.jp/'},
-]
-},
+{id:'all', label:'All Jobs', icon:'💼'},
+{id:'SSW特定技能', label:'SSW (特定技能)', icon:'🏭'},
+{id:'エンジニア・IT', label:'Engineer/IT', icon:'💻'},
+{id:'介護', label:'Nursing Care', icon:'🏥'},
+{id:'アルバイト', label:'Part-time', icon:'⏰'},
 ]
 
-const USEFUL_SITES = [
-{name:'ハローワーク', nameEN:'Hello Work (Official)', url:'https://www.hellowork.mhlw.go.jp/', desc:'Official Japanese government job center', icon:'🏛️'},
-{name:'Indeed Japan', nameEN:'Indeed Japan', url:'https://jp.indeed.com/', desc:'Japan\'s largest job search engine', icon:'🔍'},
-{name:'JOPUS', nameEN:'JOPUS (Foreign Workers)', url:'https://jopus.net/en/', desc:'Specialized for foreign workers in Japan', icon:'🌏'},
-{name:'Gaijinpot Jobs', nameEN:'Gaijinpot', url:'https://jobs.gaijinpot.com/', desc:'Jobs for foreigners in Japan', icon:'💼'},
-{name:'Japan SSW Portal', nameEN:'SSW Official Portal', url:'https://ssw.go.jp/', desc:'Official SSW visa job portal', icon:'🛂'},
+const SALARY_RANGES = [
+{label:'All', min:0, max:9999999},
+{label:'¥150,000+', min:150000, max:9999999},
+{label:'¥200,000+', min:200000, max:9999999},
+{label:'¥250,000+', min:250000, max:9999999},
 ]
 
 function ResumeForm() {
@@ -256,21 +168,64 @@ onDrop={e=>{e.preventDefault(); const file = e.dataTransfer.files[0]; if(file?.t
 }
 
 export default function JobsPage() {
-const [selectedCategory, setSelectedCategory] = useState<any>(null)
-const [activeTab, setActiveTab] = useState<'jobs'|'resume'|'consult'>('jobs')
+const [jobs, setJobs] = useState<any[]>([])
+const [loading, setLoading] = useState(true)
+const [selectedCategory, setSelectedCategory] = useState('all')
+const [selectedSalary, setSelectedSalary] = useState(0)
+const [search, setSearch] = useState('')
+const [selectedJob, setSelectedJob] = useState<any>(null)
+const [activeTab, setActiveTab] = useState<'browse'|'resume'|'consult'>('browse')
+
+useEffect(() => {
+async function load() {
+const { data } = await supabase
+.from('jobs')
+.select('*')
+.eq('is_active', true)
+.order('is_featured', { ascending: false })
+.order('created_at', { ascending: false })
+if (data) setJobs(data)
+setLoading(false)
+}
+load()
+}, [])
+
+const filtered = jobs.filter(job => {
+const matchCategory = selectedCategory === 'all' || job.job_type === selectedCategory
+const matchSalary = job.salary_min >= SALARY_RANGES[selectedSalary].min
+const matchSearch = !search || job.title?.toLowerCase().includes(search.toLowerCase()) || job.company_name?.toLowerCase().includes(search.toLowerCase()) || job.location?.toLowerCase().includes(search.toLowerCase())
+return matchCategory && matchSalary && matchSearch
+})
+
+const featuredJobs = filtered.filter(j => j.is_featured)
+const regularJobs = filtered.filter(j => !j.is_featured)
+
+function getJobTypeColor(type: string) {
+const colors: any = {
+'SSW特定技能': '#C42020',
+'エンジニア・IT': '#2EC87A',
+'介護': '#A855F7',
+'アルバイト': '#4A8EFF',
+'製造・工場': '#F0A830',
+'建設': '#FF8070',
+}
+return colors[type] || '#4A8EFF'
+}
 
 return (
 <main style={{minHeight:'100vh',background:'#0D0907',fontFamily:'sans-serif'}}>
 <div style={{background:'#1A2035',padding:'40px',borderBottom:'3px solid #C42020',textAlign:'center'}}>
-<h1 style={{color:'white',fontSize:'32px',fontWeight:'700',marginBottom:'8px'}}>Jobs in Japan</h1>
-<p style={{color:'rgba(255,255,255,0.4)',fontSize:'16px',marginBottom:'8px'}}>Find the right job opportunity in Japan</p>
+<h1 style={{color:'white',fontSize:'32px',fontWeight:'700',marginBottom:'8px'}}>Jobs in Japan 💼</h1>
+<p style={{color:'rgba(255,255,255,0.4)',fontSize:'16px',marginBottom:'8px'}}>Find real job opportunities in Japan</p>
 <p style={{color:'#2EC87A',fontSize:'13px'}}>✅ 有料職業紹介許可 · ✅ 登録支援機関許可 · 🌸 Japan Life Guide</p>
 </div>
 
-<div style={{maxWidth:'1000px',margin:'0 auto',padding:'32px 20px'}}>
-<div style={{display:'flex',gap:'8px',marginBottom:'24px'}}>
+<div style={{maxWidth:'1100px',margin:'0 auto',padding:'32px 20px'}}>
+
+{/* Tabs */}
+<div style={{display:'flex',gap:'8px',marginBottom:'24px',flexWrap:'wrap'}}>
 {[
-{key:'jobs' as const, label:'💼 Job Categories'},
+{key:'browse' as const, label:'🔍 Browse Jobs'},
 {key:'resume' as const, label:'📄 Submit Resume'},
 {key:'consult' as const, label:'👨‍💼 Career Consult'},
 ].map(tab => (
@@ -280,99 +235,169 @@ return (
 ))}
 </div>
 
-{activeTab === 'jobs' && (
+{/* Browse Jobs */}
+{activeTab === 'browse' && (
 <div>
-{selectedCategory ? (
-<div>
-<button onClick={()=>setSelectedCategory(null)} style={{background:'none',border:'none',color:'rgba(255,255,255,0.5)',cursor:'pointer',fontSize:'14px',marginBottom:'16px'}}>
-← Back to categories
+{/* Search & Filters */}
+<div style={{display:'flex',gap:'10px',marginBottom:'16px',flexWrap:'wrap'}}>
+<input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 Search jobs, companies, locations..." style={{flex:1,minWidth:'200px',background:'#1A2035',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none'}}/>
+</div>
+
+<div style={{display:'flex',gap:'8px',marginBottom:'16px',flexWrap:'wrap'}}>
+{JOB_CATEGORIES.map(cat => (
+<button key={cat.id} onClick={()=>setSelectedCategory(cat.id)} style={{background:selectedCategory===cat.id?'#C42020':'#1A2035',border:'none',borderRadius:'20px',padding:'8px 16px',color:'white',fontSize:'12px',fontWeight:'600',cursor:'pointer'}}>
+{cat.icon} {cat.label}
 </button>
+))}
+</div>
+
+<div style={{display:'flex',gap:'8px',marginBottom:'24px',flexWrap:'wrap'}}>
+{SALARY_RANGES.map((range,i) => (
+<button key={i} onClick={()=>setSelectedSalary(i)} style={{background:selectedSalary===i?'rgba(240,168,48,0.2)':'#1A2035',border:'1px solid ' + (selectedSalary===i?'#F0A830':'rgba(255,255,255,0.08)'),borderRadius:'20px',padding:'6px 14px',color:selectedSalary===i?'#F0A830':'rgba(255,255,255,0.5)',fontSize:'12px',cursor:'pointer'}}>
+{range.label}
+</button>
+))}
+</div>
+
+{loading ? (
+<div style={{textAlign:'center',padding:'48px',color:'rgba(255,255,255,0.4)'}}>Loading jobs...</div>
+) : selectedJob ? (
+<div>
+<button onClick={()=>setSelectedJob(null)} style={{background:'none',border:'none',color:'rgba(255,255,255,0.5)',cursor:'pointer',fontSize:'14px',marginBottom:'16px'}}>← Back to jobs</button>
 <div style={{background:'#1A2035',borderRadius:'16px',padding:'28px',border:'1px solid rgba(255,255,255,0.08)'}}>
 <div style={{display:'flex',gap:'14px',alignItems:'flex-start',marginBottom:'20px',flexWrap:'wrap'}}>
-<span style={{fontSize:'48px'}}>{selectedCategory.icon}</span>
-<div>
-<h2 style={{color:'white',fontSize:'22px',fontWeight:'700',marginBottom:'4px'}}>{selectedCategory.title}</h2>
-<p style={{color:'rgba(255,255,255,0.4)',fontSize:'14px',marginBottom:'8px'}}>{selectedCategory.titleJP}</p>
-<p style={{color:'rgba(255,255,255,0.6)',fontSize:'14px',lineHeight:'1.6'}}>{selectedCategory.desc}</p>
+<div style={{flex:1}}>
+{selectedJob.is_featured && <span style={{background:'rgba(240,168,48,0.2)',color:'#F0A830',padding:'3px 10px',borderRadius:'20px',fontSize:'10px',fontWeight:'700',display:'inline-block',marginBottom:'8px'}}>⭐ FEATURED</span>}
+<h2 style={{color:'white',fontSize:'22px',fontWeight:'700',marginBottom:'4px'}}>{selectedJob.title}</h2>
+<p style={{color:'rgba(255,255,255,0.5)',fontSize:'14px',marginBottom:'8px'}}>{selectedJob.title_jp}</p>
+<div style={{display:'flex',gap:'8px',flexWrap:'wrap',marginBottom:'12px'}}>
+<span style={{background:getJobTypeColor(selectedJob.job_type)+'20',color:getJobTypeColor(selectedJob.job_type),padding:'4px 12px',borderRadius:'20px',fontSize:'12px',fontWeight:'700'}}>{selectedJob.job_type}</span>
+<span style={{color:'rgba(255,255,255,0.5)',fontSize:'13px'}}>📍 {selectedJob.location}</span>
+<span style={{color:'#2EC87A',fontSize:'13px',fontWeight:'700'}}>💴 ¥{selectedJob.salary_min?.toLocaleString()} - ¥{selectedJob.salary_max?.toLocaleString()}/month</span>
 </div>
 </div>
+</div>
+
 <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'12px',marginBottom:'20px'}}>
 <div style={{background:'#0D0907',borderRadius:'10px',padding:'14px'}}>
-<p style={{color:'rgba(255,255,255,0.4)',fontSize:'11px',marginBottom:'4px'}}>Average Salary</p>
-<p style={{color:'#2EC87A',fontSize:'15px',fontWeight:'700'}}>{selectedCategory.avgSalary}</p>
+<p style={{color:'rgba(255,255,255,0.4)',fontSize:'11px',marginBottom:'4px'}}>Company</p>
+<p style={{color:'white',fontSize:'14px',fontWeight:'700'}}>{selectedJob.company_name}</p>
+<p style={{color:'rgba(255,255,255,0.4)',fontSize:'12px'}}>{selectedJob.company_name_jp}</p>
 </div>
 <div style={{background:'#0D0907',borderRadius:'10px',padding:'14px'}}>
-<p style={{color:'rgba(255,255,255,0.4)',fontSize:'11px',marginBottom:'4px'}}>Requirements</p>
-<p style={{color:'#F0A830',fontSize:'13px',fontWeight:'600'}}>{selectedCategory.requirement}</p>
+<p style={{color:'rgba(255,255,255,0.4)',fontSize:'11px',marginBottom:'4px'}}>Japanese Required</p>
+<p style={{color:'#F0A830',fontSize:'14px',fontWeight:'700'}}>{selectedJob.japanese_required}</p>
 </div>
 </div>
-<h3 style={{color:'white',fontSize:'14px',fontWeight:'700',marginBottom:'12px'}}>Available Industries</h3>
-<div style={{display:'flex',gap:'8px',flexWrap:'wrap',marginBottom:'20px'}}>
-{selectedCategory.industries.map((ind: string) => (
-<span key={ind} style={{background:selectedCategory.color+'15',color:selectedCategory.color,padding:'4px 12px',borderRadius:'20px',fontSize:'12px',fontWeight:'600'}}>{ind}</span>
-))}
+
+{selectedJob.description && (
+<div style={{marginBottom:'16px'}}>
+<h3 style={{color:'white',fontSize:'14px',fontWeight:'700',marginBottom:'8px'}}>Job Description</h3>
+<p style={{color:'rgba(255,255,255,0.6)',fontSize:'13px',lineHeight:'1.8'}}>{selectedJob.description}</p>
 </div>
-<h3 style={{color:'white',fontSize:'14px',fontWeight:'700',marginBottom:'12px'}}>🔗 Job Search Sites</h3>
-<div style={{display:'flex',flexDirection:'column',gap:'8px',marginBottom:'20px'}}>
-{selectedCategory.links.map((link: any) => (
-<a key={link.url} href={link.url} target="_blank" rel="noopener noreferrer" style={{background:'#0D0907',borderRadius:'8px',padding:'12px 16px',display:'flex',justifyContent:'space-between',alignItems:'center',textDecoration:'none',border:'1px solid rgba(255,255,255,0.06)'}}>
-<span style={{color:'white',fontSize:'13px',fontWeight:'600'}}>{link.label}</span>
-<span style={{color:'#C42020',fontSize:'12px'}}>Visit →</span>
-</a>
-))}
+)}
+
+{selectedJob.requirements && (
+<div style={{background:'rgba(74,142,255,0.1)',borderRadius:'10px',padding:'14px',marginBottom:'16px',border:'1px solid rgba(74,142,255,0.2)'}}>
+<h3 style={{color:'#4A8EFF',fontSize:'13px',fontWeight:'700',marginBottom:'8px'}}>📋 Requirements</h3>
+<p style={{color:'rgba(255,255,255,0.6)',fontSize:'13px',lineHeight:'1.7'}}>{selectedJob.requirements}</p>
 </div>
+)}
+
+{selectedJob.benefits && (
+<div style={{background:'rgba(46,200,122,0.1)',borderRadius:'10px',padding:'14px',marginBottom:'16px',border:'1px solid rgba(46,200,122,0.2)'}}>
+<h3 style={{color:'#2EC87A',fontSize:'13px',fontWeight:'700',marginBottom:'8px'}}>✅ Benefits</h3>
+<p style={{color:'rgba(255,255,255,0.6)',fontSize:'13px',lineHeight:'1.7'}}>{selectedJob.benefits}</p>
+</div>
+)}
+
 <div style={{display:'flex',gap:'10px',flexWrap:'wrap'}}>
-<button onClick={()=>setActiveTab('resume')} style={{background:'#C42020',color:'white',border:'none',borderRadius:'8px',padding:'12px 24px',fontSize:'13px',fontWeight:'700',cursor:'pointer'}}>
-Submit Your Resume 📄
+<button onClick={()=>setActiveTab('resume')} style={{background:'#C42020',color:'white',border:'none',borderRadius:'8px',padding:'14px 24px',fontSize:'14px',fontWeight:'700',cursor:'pointer',flex:2}}>
+Submit Resume & Apply 📄
 </button>
-<button onClick={()=>setActiveTab('consult')} style={{background:'rgba(255,255,255,0.08)',color:'white',border:'1px solid rgba(255,255,255,0.15)',borderRadius:'8px',padding:'12px 24px',fontSize:'13px',cursor:'pointer'}}>
-Get Career Advice 👨‍💼
-</button>
+<a href="/chat" style={{background:'rgba(255,255,255,0.08)',color:'white',textDecoration:'none',padding:'14px 24px',borderRadius:'8px',fontSize:'14px',border:'1px solid rgba(255,255,255,0.15)',flex:1,textAlign:'center'}}>
+Ask Sakura AI 🌸
+</a>
 </div>
 </div>
 </div>
 ) : (
 <div>
-<div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))',gap:'14px',marginBottom:'32px'}}>
-{JOB_CATEGORIES.map(cat => (
-<div key={cat.id} onClick={()=>setSelectedCategory(cat)} style={{background:'#1A2035',borderRadius:'12px',padding:'20px',border:'1px solid rgba(255,255,255,0.08)',cursor:'pointer'}}
-onMouseEnter={e=>(e.currentTarget.style.borderColor=cat.color+'60')}
-onMouseLeave={e=>(e.currentTarget.style.borderColor='rgba(255,255,255,0.08)')}>
-<div style={{display:'flex',gap:'12px',alignItems:'flex-start',marginBottom:'12px'}}>
-<span style={{fontSize:'36px'}}>{cat.icon}</span>
-<div>
-<h3 style={{color:'white',fontSize:'14px',fontWeight:'700',marginBottom:'2px'}}>{cat.title}</h3>
-<p style={{color:'rgba(255,255,255,0.3)',fontSize:'11px'}}>{cat.titleJP}</p>
-</div>
-</div>
-<p style={{color:'rgba(255,255,255,0.5)',fontSize:'12px',lineHeight:'1.6',marginBottom:'12px'}}>{cat.desc}</p>
-<div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-<span style={{color:cat.color,fontSize:'12px',fontWeight:'700'}}>{cat.avgSalary}</span>
-<span style={{color:'rgba(255,255,255,0.3)',fontSize:'11px'}}>View jobs →</span>
-</div>
-</div>
-))}
-</div>
-
-<div style={{background:'#1A2035',borderRadius:'12px',padding:'24px',marginBottom:'24px',border:'1px solid rgba(255,255,255,0.08)'}}>
-<h2 style={{color:'white',fontSize:'16px',fontWeight:'700',marginBottom:'16px'}}>🔍 Job Search Websites</h2>
-<div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))',gap:'10px'}}>
-{USEFUL_SITES.map(site => (
-<a key={site.url} href={site.url} target="_blank" rel="noopener noreferrer" style={{background:'#0D0907',borderRadius:'10px',padding:'14px',textDecoration:'none',border:'1px solid rgba(255,255,255,0.06)',display:'block'}}>
-<div style={{fontSize:'24px',marginBottom:'6px'}}>{site.icon}</div>
-<div style={{color:'white',fontSize:'13px',fontWeight:'700',marginBottom:'2px'}}>{site.nameEN}</div>
-<div style={{color:'rgba(255,255,255,0.4)',fontSize:'11px'}}>{site.desc}</div>
-</a>
-))}
-</div>
-</div>
-
-<div style={{background:'linear-gradient(135deg,rgba(46,200,122,0.15),rgba(46,200,122,0.05))',borderRadius:'12px',padding:'24px',border:'1px solid rgba(46,200,122,0.3)',textAlign:'center'}}>
-<p style={{color:'#2EC87A',fontSize:'16px',fontWeight:'700',marginBottom:'8px'}}>🌸 Japan Life Guide - Licensed Recruitment Agency</p>
-<p style={{color:'rgba(255,255,255,0.5)',fontSize:'13px',marginBottom:'16px',lineHeight:'1.7'}}>
-有料職業紹介許可・登録支援機関許可取得済み<br/>
-We support Bangladesh and Nepal workers throughout their entire Japan work journey
+<p style={{color:'rgba(255,255,255,0.5)',fontSize:'13px',marginBottom:'16px'}}>
+Showing <strong style={{color:'white'}}>{filtered.length}</strong> jobs
 </p>
+
+{/* Featured Jobs */}
+{featuredJobs.length > 0 && (
+<div style={{marginBottom:'24px'}}>
+<h2 style={{color:'#F0A830',fontSize:'14px',fontWeight:'700',marginBottom:'12px'}}>⭐ Featured Jobs</h2>
+<div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
+{featuredJobs.map(job => (
+<div key={job.id} onClick={()=>setSelectedJob(job)} style={{background:'#1A2035',borderRadius:'12px',padding:'18px',border:'2px solid rgba(240,168,48,0.3)',cursor:'pointer'}}
+onMouseEnter={e=>(e.currentTarget.style.borderColor='#F0A830')}
+onMouseLeave={e=>(e.currentTarget.style.borderColor='rgba(240,168,48,0.3)')}>
+<div style={{display:'flex',gap:'12px',alignItems:'flex-start',flexWrap:'wrap'}}>
+<div style={{flex:1}}>
+<div style={{display:'flex',gap:'8px',alignItems:'center',flexWrap:'wrap',marginBottom:'6px'}}>
+<span style={{background:'rgba(240,168,48,0.2)',color:'#F0A830',padding:'2px 8px',borderRadius:'20px',fontSize:'10px',fontWeight:'700'}}>⭐ FEATURED</span>
+<span style={{background:getJobTypeColor(job.job_type)+'20',color:getJobTypeColor(job.job_type),padding:'2px 8px',borderRadius:'20px',fontSize:'10px',fontWeight:'700'}}>{job.job_type}</span>
+</div>
+<h3 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'2px'}}>{job.title}</h3>
+<p style={{color:'rgba(255,255,255,0.4)',fontSize:'12px',marginBottom:'6px'}}>{job.company_name} · {job.location}</p>
+<div style={{display:'flex',gap:'12px',flexWrap:'wrap'}}>
+<span style={{color:'#2EC87A',fontSize:'13px',fontWeight:'700'}}>¥{job.salary_min?.toLocaleString()} - ¥{job.salary_max?.toLocaleString()}/mo</span>
+<span style={{color:'rgba(255,255,255,0.4)',fontSize:'12px'}}>🗣 {job.japanese_required}</span>
+</div>
+</div>
+<span style={{color:'#C42020',fontSize:'12px',fontWeight:'600',whiteSpace:'nowrap'}}>View →</span>
+</div>
+</div>
+))}
+</div>
+</div>
+)}
+
+{/* Regular Jobs */}
+{regularJobs.length > 0 && (
+<div>
+<h2 style={{color:'white',fontSize:'14px',fontWeight:'700',marginBottom:'12px'}}>All Jobs</h2>
+<div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
+{regularJobs.map(job => (
+<div key={job.id} onClick={()=>setSelectedJob(job)} style={{background:'#1A2035',borderRadius:'12px',padding:'16px',border:'1px solid rgba(255,255,255,0.08)',cursor:'pointer'}}
+onMouseEnter={e=>(e.currentTarget.style.borderColor='rgba(196,32,32,0.3)')}
+onMouseLeave={e=>(e.currentTarget.style.borderColor='rgba(255,255,255,0.08)')}>
+<div style={{display:'flex',gap:'12px',alignItems:'flex-start',flexWrap:'wrap'}}>
+<div style={{flex:1}}>
+<div style={{display:'flex',gap:'8px',alignItems:'center',marginBottom:'6px',flexWrap:'wrap'}}>
+<span style={{background:getJobTypeColor(job.job_type)+'20',color:getJobTypeColor(job.job_type),padding:'2px 8px',borderRadius:'20px',fontSize:'10px',fontWeight:'700'}}>{job.job_type}</span>
+<span style={{color:'rgba(255,255,255,0.3)',fontSize:'11px'}}>📍 {job.location}</span>
+</div>
+<h3 style={{color:'white',fontSize:'14px',fontWeight:'700',marginBottom:'2px'}}>{job.title}</h3>
+<p style={{color:'rgba(255,255,255,0.4)',fontSize:'12px',marginBottom:'6px'}}>{job.company_name} · {job.company_name_jp}</p>
+<div style={{display:'flex',gap:'12px',flexWrap:'wrap'}}>
+<span style={{color:'#2EC87A',fontSize:'12px',fontWeight:'700'}}>¥{job.salary_min?.toLocaleString()} - ¥{job.salary_max?.toLocaleString()}/mo</span>
+<span style={{color:'rgba(255,255,255,0.4)',fontSize:'11px'}}>🗣 {job.japanese_required}</span>
+</div>
+</div>
+<span style={{color:'#C42020',fontSize:'12px',fontWeight:'600',whiteSpace:'nowrap'}}>View →</span>
+</div>
+</div>
+))}
+</div>
+</div>
+)}
+
+{filtered.length === 0 && (
+<div style={{textAlign:'center',padding:'48px',background:'#1A2035',borderRadius:'12px'}}>
+<p style={{color:'rgba(255,255,255,0.4)',fontSize:'14px',marginBottom:'12px'}}>No jobs found</p>
+<button onClick={()=>{setSelectedCategory('all'); setSearch(''); setSelectedSalary(0)}} style={{background:'#C42020',color:'white',border:'none',borderRadius:'8px',padding:'10px 20px',fontSize:'13px',cursor:'pointer'}}>Clear Filters</button>
+</div>
+)}
+
+{/* License Banner */}
+<div style={{background:'linear-gradient(135deg,rgba(46,200,122,0.15),rgba(46,200,122,0.05))',borderRadius:'12px',padding:'24px',marginTop:'24px',border:'1px solid rgba(46,200,122,0.3)',textAlign:'center'}}>
+<p style={{color:'#2EC87A',fontSize:'15px',fontWeight:'700',marginBottom:'8px'}}>🌸 Japan Life Guide - Licensed Recruitment Agency</p>
+<p style={{color:'rgba(255,255,255,0.5)',fontSize:'13px',marginBottom:'16px'}}>有料職業紹介許可・登録支援機関許可取得済み</p>
 <div style={{display:'flex',gap:'10px',justifyContent:'center',flexWrap:'wrap'}}>
 <button onClick={()=>setActiveTab('resume')} style={{background:'#2EC87A',color:'#0D0907',border:'none',borderRadius:'8px',padding:'12px 24px',fontSize:'13px',fontWeight:'700',cursor:'pointer'}}>
 Submit Your Resume 📄

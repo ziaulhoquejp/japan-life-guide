@@ -117,14 +117,69 @@ export default function SchoolDetailPage({ params }: { params: Promise<{ id: str
 
       <div style={{maxWidth:'900px',margin:'0 auto',padding:'32px 20px'}}>
         <div style={{display:'flex',gap:'8px',marginBottom:'24px',flexWrap:'wrap'}}>
-          {['overview','details','reviews','apply'].map(tab => (
+          {['overview','details','reviews','videos','apply'].map(tab => (
             <button key={tab} onClick={()=>setActiveTab(tab)} style={{background:activeTab===tab?'#C42020':'#1A2035',border:'none',borderRadius:'20px',padding:'8px 18px',color:'white',fontSize:'12px',fontWeight:'600',cursor:'pointer',textTransform:'capitalize'}}>
-              {tab === 'overview' ? '📋 Overview' : tab === 'details' ? '📊 Details' : tab === 'reviews' ? `⭐ Reviews (${reviews.length})` : '📝 Apply'}
+              {tab === 'overview' ? '📋 Overview' : tab === 'details' ? '📊 Details' : tab === 'reviews' ? `⭐ Reviews (${reviews.length})` : tab === 'videos' ? '🎥 Videos' : '📝 Apply'}
             </button>
           ))}
         </div>
 
-        {activeTab === 'overview' && (
+        {activeTab === 'overview' && ({/* Videos Tab */}
+{activeTab === 'videos' && (
+<div>
+<div style={{background:'#1A2035',borderRadius:'12px',padding:'24px',border:'1px solid rgba(255,255,255,0.08)',marginBottom:'16px'}}>
+<h3 style={{color:'white',fontSize:'16px',fontWeight:'700',marginBottom:'16px'}}>🎥 School Introduction Videos</h3>
+<p style={{color:'rgba(255,255,255,0.5)',fontSize:'13px',marginBottom:'20px'}}>
+Watch videos about {school.name_en} to learn more about campus life and facilities.
+</p>
+<div style={{display:'flex',flexDirection:'column',gap:'10px',marginBottom:'20px'}}>
+{[
+{label:`${school.name_en} 学校紹介`, query:`${school.name_en} 学校紹介`},
+{label:`${school.name_en} campus tour`, query:`${school.name_en} campus tour`},
+{label:`${school.name_jp || school.name_en} 日本語学校`, query:`${school.name_jp || school.name_en} 日本語学校`},
+].map((item, i) => (
+<a key={i} href={`https://www.youtube.com/results?search_query=${encodeURIComponent(item.query)}`} target="_blank" rel="noopener noreferrer"
+style={{background:'#0D0907',borderRadius:'10px',padding:'14px 16px',display:'flex',justifyContent:'space-between',alignItems:'center',textDecoration:'none',border:'1px solid rgba(255,255,255,0.06)'}}>
+<div style={{display:'flex',gap:'10px',alignItems:'center'}}>
+<span style={{fontSize:'20px'}}>▶️</span>
+<span style={{color:'white',fontSize:'13px',fontWeight:'600'}}>{item.label}</span>
+</div>
+<span style={{color:'#FF0000',fontSize:'12px',fontWeight:'700'}}>YouTube →</span>
+</a>
+))}
+</div>
+<div style={{background:'rgba(255,0,0,0.1)',borderRadius:'10px',padding:'16px',border:'1px solid rgba(255,0,0,0.2)',textAlign:'center'}}>
+<p style={{color:'rgba(255,255,255,0.5)',fontSize:'13px',marginBottom:'12px'}}>
+🎥 Search for {school.name_en} videos on YouTube
+</p>
+<a href={`https://www.youtube.com/results?search_query=${encodeURIComponent(school.name_en + ' japanese language school')}`}
+target="_blank" rel="noopener noreferrer"
+style={{background:'#FF0000',color:'white',textDecoration:'none',padding:'12px 24px',borderRadius:'8px',fontSize:'14px',fontWeight:'700',display:'inline-block'}}>
+🎥 Watch on YouTube
+</a>
+</div>
+</div>
+<div style={{background:'#1A2035',borderRadius:'12px',padding:'24px',border:'1px solid rgba(255,255,255,0.08)'}}>
+<h3 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'16px'}}>📺 Japan Study Guide Videos</h3>
+<div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
+{[
+{title:'How to apply for Student Visa', query:'japan student visa application process bangladesh nepal'},
+{title:'Life in Japan as a foreign student', query:'life in japan as foreign student bangladesh nepal'},
+{title:'Japanese language school guide', query:'japanese language school guide international students'},
+{title:'Part-time jobs in Japan for students', query:'part time job japan international student'},
+].map((item, i) => (
+<a key={i} href={`https://www.youtube.com/results?search_query=${encodeURIComponent(item.query)}`}
+target="_blank" rel="noopener noreferrer"
+style={{background:'#0D0907',borderRadius:'8px',padding:'12px',display:'flex',gap:'10px',alignItems:'center',textDecoration:'none',border:'1px solid rgba(255,255,255,0.06)'}}>
+<span style={{fontSize:'18px'}}>▶️</span>
+<span style={{color:'rgba(255,255,255,0.7)',fontSize:'13px'}}>{item.title}</span>
+</a>
+))}
+</div>
+</div>
+</div>
+)}
+
           <div style={{display:'flex',flexDirection:'column',gap:'16px'}}>
             <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))',gap:'12px'}}>
               {[

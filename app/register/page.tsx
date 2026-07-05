@@ -60,8 +60,12 @@ headers: { 'Content-Type': 'application/json' },
 body: JSON.stringify({
 email: form.email,
 name: form.full_name,
-}),
+country: form.country,
+referralCode: 'JLG' + data.user.id.slice(0, 8).toUpperCase(),
 })
+
+}),
+
 }
 
 setStep(4)

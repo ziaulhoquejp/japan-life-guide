@@ -99,6 +99,11 @@ return (
 <div style={{background:'#1A2035',padding:'32px 20px',borderBottom:'3px solid #C42020'}}>
 <div style={{maxWidth:'1200px',margin:'0 auto'}}>
 <h1 style={{color:'white',fontSize:'28px',fontWeight:'700',marginBottom:'8px'}}>Japanese Language Schools</h1>
+<div style={{display:'flex',gap:'8px',justifyContent:'center',flexWrap:'wrap',marginTop:'8px'}}>
+<span style={{color:'rgba(255,255,255,0.4)',fontSize:'13px'}}>🇧🇩 জাপানি ভাষা স্কুল খুঁজুন</span>
+<span style={{color:'rgba(255,255,255,0.2)',fontSize:'13px'}}>|</span>
+<span style={{color:'rgba(255,255,255,0.4)',fontSize:'13px'}}>🇳🇵 जापानी भाषा स्कुल खोज्नुस्</span>
+</div>
 <div style={{background:'rgba(46,200,122,0.1)',border:'1px solid rgba(46,200,122,0.2)',borderRadius:'8px',padding:'8px 14px',marginBottom:'14px',display:'inline-flex',gap:'8px',alignItems:'center'}}>
 <span>✅</span>
 <p style={{color:'#2EC87A',fontSize:'12px',margin:0,fontWeight:'600'}}>All 724 schools are real Japanese language schools with official website links.</p>

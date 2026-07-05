@@ -69,7 +69,13 @@ referralCode: 'JLG' + data.user.id.slice(0, 8).toUpperCase(),
 setStep(4)
 } //if(data.user)
 } catch (err: any) {
-setError(err.message || 'Registration failed. Please try again.')
+const lang = navigator.language || 'en'
+const errorMsg = lang.startsWith('bn')
+? 'নিবন্ধন ব্যর্থ হয়েছে। আবার চেষ্টা করুন।'
+: lang.startsWith('ne')
+? 'दर्ता असफल भयो। फेरि प्रयास गर्नुहोस्।'
+: 'Registration failed. Please try again.'
+setError(err.message || errorMsg)
 }
 setLoading(false)
 }

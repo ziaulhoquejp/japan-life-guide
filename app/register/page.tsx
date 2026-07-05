@@ -62,13 +62,12 @@ email: form.email,
 name: form.full_name,
 country: form.country,
 referralCode: 'JLG' + data.user.id.slice(0, 8).toUpperCase(),
+}),
 })
 
-}),
-
-}
 
 setStep(4)
+} //if(data.user)
 } catch (err: any) {
 setError(err.message || 'Registration failed. Please try again.')
 }

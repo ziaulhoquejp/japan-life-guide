@@ -1,41 +1,15 @@
 name: iOS Deploy
-
 on:
 workflow_dispatch:
-
 jobs:
 build:
 runs-on: macos-14
 steps:
 - uses: actions/checkout@v4
-
-- name: Setup Node
-uses: actions/setup-node@v4
+- uses: actions/setup-node@v4
 with:
 node-version: 18
-
-- name: Install pnpm
-run: npm install -g pnpm
-
-- name: Install deps
-run: pnpm install
-
-- name: Build
-run: pnpm build
-env:
-NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-
-- name: Cap sync
-run: npx cap sync ios
-
-- name: Pod install
-run: cd ios/App && pod install
-
-- name: Build IPA
-run: |
-xcodebuild -workspace ios/App/App.xcworkspace \
--scheme App \
--configuration Release \
--archivePath $RUNNER_TEMP/App.xcarchive \
-archive CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
+- run: npm install -g pnpm
+- run: pnpm install
+- run: cd ios/App && pod install
+- run: xcodebuild -workspace ios/App/App.xcworkspace -scheme App -configuration Release -archivePath $RUNNER_TEMP/App.xcarchive archive CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO

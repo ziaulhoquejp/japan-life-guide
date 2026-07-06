@@ -11,15 +11,25 @@ XCODE_WORKSPACE: ios/App/App.xcworkspace
 XCODE_SCHEME: App
 node: v18
 scripts:
+- name: Install pnpm
+script: |
+curl -fsSL https://get.pnpm.io/install.sh | sh -
+export PNPM_HOME="$HOME/.local/share/pnpm"
+export PATH="$PNPM_HOME:$PATH"
 - name: Install dependencies
 script: |
-npm install -g pnpm
+export PNPM_HOME="$HOME/.local/share/pnpm"
+export PATH="$PNPM_HOME:$PATH"
 pnpm install
 - name: Build web assets
 script: |
+export PNPM_HOME="$HOME/.local/share/pnpm"
+export PATH="$PNPM_HOME:$PATH"
 pnpm build
 - name: Capacitor sync
 script: |
+export PNPM_HOME="$HOME/.local/share/pnpm"
+export PATH="$PNPM_HOME:$PATH"
 npx cap sync ios
 - name: Install CocoaPods
 script: |
@@ -34,5 +44,4 @@ artifacts:
 publishing:
 app_store_connect:
 auth: integration
-
 

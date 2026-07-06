@@ -3,42 +3,23 @@ ios-workflow:
 name: iOS Build
 max_build_duration: 60
 environment:
-ios_signing:
-distribution_type: app_store
-bundle_identifier: app.japanlifeguide.www
 vars:
 XCODE_WORKSPACE: ios/App/App.xcworkspace
 XCODE_SCHEME: App
 node: v18
 scripts:
 - name: Install pnpm
-script: |
-curl -fsSL https://get.pnpm.io/install.sh | sh -
-export PNPM_HOME="$HOME/.local/share/pnpm"
-export PATH="$PNPM_HOME:$PATH"
+script: npm install -g pnpm
 - name: Install dependencies
-script: |
-export PNPM_HOME="$HOME/.local/share/pnpm"
-export PATH="$PNPM_HOME:$PATH"
-pnpm install
+script: pnpm install
 - name: Build web assets
-script: |
-export PNPM_HOME="$HOME/.local/share/pnpm"
-export PATH="$PNPM_HOME:$PATH"
-pnpm build
+script: pnpm build
 - name: Capacitor sync
-script: |
-export PNPM_HOME="$HOME/.local/share/pnpm"
-export PATH="$PNPM_HOME:$PATH"
-npx cap sync ios
+script: npx cap sync ios
 - name: Install CocoaPods
-script: |
-cd ios/App && pod install
+script: cd ios/App && pod install
 - name: Build iOS
-script: |
-xcode-project build-ipa \
---workspace "$XCODE_WORKSPACE" \
---scheme "$XCODE_SCHEME"
+script: xcode-project build-ipa --workspace "$XCODE_WORKSPACE" --scheme "$XCODE_SCHEME"
 artifacts:
 - build/ios/ipa/*.ipa
 publishing:

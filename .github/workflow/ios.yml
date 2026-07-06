@@ -1,45 +1,13 @@
-name: iOS Build and Deploy
-
+name: iOS Deploy
 on:
-push:
-branches: [main]
-
+workflow_dispatch:
 jobs:
 build:
-runs-on: macos-latest
+runs-on: macos-14
 steps:
-- uses: actions/checkout@v3
-
-- name: Setup Node.js
-uses: actions/setup-node@v3
+- uses: actions/checkout@v4
+- uses: actions/setup-node@v4
 with:
-node-version: '18'
-
-- name: Install pnpm
-run: npm install -g pnpm
-
-- name: Install dependencies
-run: pnpm install
-
-- name: Build Next.js
-run: pnpm build
-env:
-NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-
-- name: Install Capacitor
-run: npx cap sync ios
-
-- name: Install CocoaPods
-run: |
-cd ios/App
-pod install
-
-- name: Build iOS App
-run: |
-xcodebuild -workspace ios/App/App.xcworkspace \
--scheme App \
--configuration Release \
--archivePath build/App.xcarchive \
-archive
-
+node-version: 18
+- run: npm install -g pnpm
+- run: pnpm install

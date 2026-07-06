@@ -11,5 +11,3 @@ with:
 node-version: 18
 - run: npm install -g pnpm
 - run: pnpm install
-- run: cd ios/App && pod install
-- run: xcodebuild -workspace ios/App/App.xcworkspace -scheme App -configuration Release -archivePath $RUNNER_TEMP/App.xcarchive archive CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO

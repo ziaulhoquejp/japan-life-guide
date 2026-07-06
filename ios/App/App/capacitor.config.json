@@ -1,0 +1,10 @@
+{
+	"appId": "app.japanlifeguide.www",
+	"appName": "Japan Life Guide",
+	"webDir": "public",
+	"server": {
+		"url": "https://japanlifeguide.app",
+		"cleartext": true
+	},
+	"packageClassList": []
+}

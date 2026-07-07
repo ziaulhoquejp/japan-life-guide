@@ -12,11 +12,18 @@ workflows:
         script: |
           touch yarn.lock
           yarn install --no-immutable
-      - name: Sync Capacitor project
-        script: yarn cap sync ios
+      - name: Sync/Add Capacitor iOS Platform
+        script: |
+          # Check if the ios folder exists. If not, add it first.
+          if [ ! -d "ios" ]; then
+            echo "iOS platform folder not found. Adding it now..."
+            yarn cap add ios
+          else
+            echo "iOS platform folder found. Syncing..."
+          fi
+          yarn cap sync ios
       - name: CocoaPods installation
         script: |
-          # Automatically find where the Podfile is located and navigate to it
           PODFILE_DIR=$(find . -name "Podfile" -not -path "*/node_modules/*" -exec dirname {} \;)
           if [ -z "$PODFILE_DIR" ]; then
             echo "Error: Could not find a Podfile anywhere in the project!"
@@ -27,7 +34,6 @@ workflows:
           pod install
       - name: Build iOS App
         script: |
-          # Dynamically locate the .xcworkspace file for the build step
           WORKSPACE_PATH=$(find . -name "*.xcworkspace" -not -path "*/node_modules/*" | head -n 1)
           if [ -z "$WORKSPACE_PATH" ]; then
             echo "Error: Could not find an .xcworkspace file!"

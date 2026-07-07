@@ -12,23 +12,14 @@ workflows:
         script: |
           touch yarn.lock
           yarn install --no-immutable
-      - name: Prepare Web Assets & Capacitor
+      - name: Prepare Web Assets
         script: |
-          # 1. Ensure the web assets exist so Capacitor doesn't crash
           echo "Building web project..."
-          yarn build || echo "No web build script found or build failed, continuing anyway..."
-
-          # 2. Ensure a fallback output folder exists just in case
+          yarn build || echo "No web build script found or build failed, continuing..."
           mkdir -p dist build www
-
-          # 3. Check if capacitor config exists, initialize if missing
-          if [ ! -f "capacitor.config.json" ] && [ ! -f "capacitor.config.ts" ]; then
-            echo "Capacitor config not found. Initializing..."
-            yarn cap init "MyApp" "com.example.myapp" --web-dir=dist
-          fi
-      - name: Sync/Add Capacitor iOS Platform
+      - name: Recreate Capacitor iOS Platform
         script: |
-          # Force remove any corrupted/empty ios directory if it exists
+          # FORCE DELETE the existing, empty 'ios' directory from Git
           rm -rf ios
           
           echo "Adding fresh iOS platform..."
@@ -41,8 +32,8 @@ workflows:
           PODFILE_DIR=$(find . -name "Podfile" -not -path "*/node_modules/*" -exec dirname {} \;)
           if [ -z "$PODFILE_DIR" ]; then
             echo "--- DEBUG INFO ---"
-            echo "Current directory contents:"
-            ls -la
+            echo "Contents of regenerated ios folder:"
+            ls -la ios || echo "ios directory still does not exist!"
             echo "------------------"
             echo "Error: Could not find a Podfile anywhere in the project!"
             exit 1
@@ -67,4 +58,4 @@ workflows:
           build \
           CODE_SIGNING_ALLOWED=NO
     artifacts:
-      - "**/build/**/*.ipa"   # Made the artifact locator flexible too
+      - "**/build/**/*.ipa"

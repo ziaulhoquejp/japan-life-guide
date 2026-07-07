@@ -6,8 +6,8 @@ workflows:
     scripts:
       - name: deps
         script: |
-          touch yarn.lock      # Forces Yarn to treat this directory as an isolated project
-          yarn install
+          touch yarn.lock
+          yarn install --no-immutable  # <-- Added the flag here
       - name: sync
         script: npx cap sync ios
       - name: pods

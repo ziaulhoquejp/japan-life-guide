@@ -7,6 +7,9 @@ workflows:
       node: latest
       xcode: latest
       cocoapods: default
+      # This links your team's API key integration to this specific build
+      integrations:
+        - app_store_connect
       ios_signing:
         distribution_type: app_store
         bundle_identifier: app.japanlifeguide.www

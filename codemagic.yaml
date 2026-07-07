@@ -2,12 +2,16 @@ workflows:
   ios:
     name: iOS
     max_build_duration: 60
+
     scripts:
       - name: deps
-        script: pnpm install
+        script: yarn install
+
       - name: sync
         script: npx cap sync ios
+
       - name: pods
         script: cd ios/App && pod install
+
     artifacts:
       - ios/App/build/**/*.ipa

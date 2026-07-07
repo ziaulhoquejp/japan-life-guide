@@ -23,7 +23,9 @@ xcode-project build-ipa \
 --workspace ios/App/App.xcworkspace \
 --scheme App
 artifacts:
-- build/ios/ipa/*.ipa
+- ios/App/build/**/*.ipa
+- /Users/builder/Library/Developer/Xcode/DerivedData/**/*.ipa
+- "**/*.ipa"
 publishing:
 app_store_connect:
 auth: integration

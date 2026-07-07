@@ -1,25 +1,31 @@
 workflows:
-ios:
-name: iOS
-max_build_duration: 60
-instance_type: mac_mini_m1 # Specifying the machine type is highly recommended
-environment:
-node: latest # Good practice to lock down environment versions
-xcode: latest
-cocoapods: default
-scripts:
-- name: Install dependencies
-script: npm install
-- name: Sync Capacitor project
-script: npx cap sync ios
-- name: CocoaPods installation
-script: |
-cd ios/App
-pod install
-- name: Build iOS App (Missing Step)
-script: |
-cd ios/App
-# This compiles the workspace. Change configuration to Release for production.
-xcodebuild build -workspace App.xcworkspace -scheme App -configuration Debug -allowProvisioningUpdates
-artifacts:
-- ios/App/build/**/*.ipa
+  ios:
+    name: iOS
+    max_build_duration: 60
+    instance_type: mac_mini_m1
+    environment:
+      node: latest
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Install dependencies
+        script: |
+          touch yarn.lock
+          yarn install --no-immutable  # Matches your Yarn 4 project setup
+      - name: Sync Capacitor project
+        script: npx cap sync ios
+      - name: CocoaPods installation
+        script: |
+          cd ios/App
+          pod install
+      - name: Build iOS App
+        script: |
+          xcodebuild \
+          -workspace ios/App/App.xcworkspace \
+          -scheme App \
+          -sdk iphoneos \
+          -configuration Release \
+          build \
+          CODE_SIGNING_ALLOWED=NO
+    artifacts:
+      - ios/App/build/**/*.ipa

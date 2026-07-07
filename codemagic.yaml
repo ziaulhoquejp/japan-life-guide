@@ -5,7 +5,9 @@ workflows:
     instance_type: mac_mini_m1
     scripts:
       - name: deps
-        script: yarn install   # <-- Changed from pnpm install
+        script: |
+          touch yarn.lock      # Forces Yarn to treat this directory as an isolated project
+          yarn install
       - name: sync
         script: npx cap sync ios
       - name: pods

@@ -6,7 +6,6 @@ workflows:
     environment:
       node: latest
       xcode: latest
-      cocoapods: default
     scripts:
       - name: Install dependencies
         script: |
@@ -27,31 +26,18 @@ workflows:
           
           echo "Syncing iOS platform..."
           yarn cap sync ios
-      - name: CocoaPods installation
-        script: |
-          PODFILE_DIR=$(find . -name "Podfile" -not -path "*/node_modules/*" -exec dirname {} \;)
-          if [ -z "$PODFILE_DIR" ]; then
-            echo "--- DEBUG INFO ---"
-            echo "Contents of regenerated ios folder:"
-            ls -la ios || echo "ios directory still does not exist!"
-            echo "------------------"
-            echo "Error: Could not find a Podfile anywhere in the project!"
-            exit 1
-          fi
-          echo "Found Podfile in: $PODFILE_DIR"
-          cd "$PODFILE_DIR"
-          pod install
       - name: Build iOS App
         script: |
-          WORKSPACE_PATH=$(find . -name "*.xcworkspace" -not -path "*/node_modules/*" | head -n 1)
-          if [ -z "$WORKSPACE_PATH" ]; then
-            echo "Error: Could not find an .xcworkspace file!"
+          # Look for the Xcode Project file (Capacitor 6 SPM default)
+          PROJECT_PATH=$(find . -name "*.xcodeproj" -not -path "*/node_modules/*" | head -n 1)
+          if [ -z "$PROJECT_PATH" ]; then
+            echo "Error: Could not find an .xcodeproj file!"
             exit 1
           fi
-          echo "Building workspace: $WORKSPACE_PATH"
+          echo "Building project: $PROJECT_PATH"
           
           xcodebuild \
-          -workspace "$WORKSPACE_PATH" \
+          -project "$PROJECT_PATH" \
           -scheme App \
           -sdk iphoneos \
           -configuration Release \

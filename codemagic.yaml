@@ -1,47 +1,29 @@
 workflows:
-  ios:
-    name: iOS
-    max_build_duration: 60
-    instance_type: mac_mini_m1
-    environment:
-      node: latest
-      xcode: latest
-    scripts:
-      - name: Install dependencies
-        script: |
-          touch yarn.lock
-          yarn install --no-immutable
-      - name: Prepare Web Assets
-        script: |
-          echo "Building web project..."
-          yarn build || echo "No web build script found or build failed, continuing..."
-          mkdir -p dist build www
-      - name: Recreate Capacitor iOS Platform
-        script: |
-          # FORCE DELETE the existing, empty 'ios' directory from Git
-          rm -rf ios
-          
-          echo "Adding fresh iOS platform..."
-          yarn cap add ios
-          
-          echo "Syncing iOS platform..."
-          yarn cap sync ios
-      - name: Build iOS App
-        script: |
-          # Look for the Xcode Project file (Capacitor 6 SPM default)
-          PROJECT_PATH=$(find . -name "*.xcodeproj" -not -path "*/node_modules/*" | head -n 1)
-          if [ -z "$PROJECT_PATH" ]; then
-            echo "Error: Could not find an .xcodeproj file!"
-            exit 1
-          fi
-          echo "Building project: $PROJECT_PATH"
-          
-          xcodebuild \
-          -project "$PROJECT_PATH" \
-          -scheme App \
-          -sdk iphoneos \
-          -configuration Release \
-          build \
-          CODE_SIGNING_ALLOWED=NO
-    artifacts:
-      - "**/build/**/*.ipa"
+ios:
+name: iOS
+max_build_duration: 60
+instance_type: mac_mini_m1
+environment:
+node: latest
+xcode: latest
+cocoapods: default
+ios_signing:
+distribution_type: app_store
+bundle_identifier: app.japanlifeguide.www
+scripts:
+- name: Install dependencies
+script: npm install
+- name: Sync Capacitor
+script: npx cap sync ios
+- name: CocoaPods
+script: cd ios/App && pod install
+- name: Build IPA
+script: |
+xcode-project build-ipa \
+--workspace ios/App/App.xcworkspace \
+--scheme App
+artifacts:
+- build/ios/ipa/*.ipa
+publishing:
+app_store_connect:
+auth: integration

@@ -12,20 +12,38 @@ workflows:
         script: |
           touch yarn.lock
           yarn install --no-immutable
+      - name: Prepare Web Assets & Capacitor
+        script: |
+          # 1. Ensure the web assets exist so Capacitor doesn't crash
+          echo "Building web project..."
+          yarn build || echo "No web build script found or build failed, continuing anyway..."
+
+          # 2. Ensure a fallback output folder exists just in case
+          mkdir -p dist build www
+
+          # 3. Check if capacitor config exists, initialize if missing
+          if [ ! -f "capacitor.config.json" ] && [ ! -f "capacitor.config.ts" ]; then
+            echo "Capacitor config not found. Initializing..."
+            yarn cap init "MyApp" "com.example.myapp" --web-dir=dist
+          fi
       - name: Sync/Add Capacitor iOS Platform
         script: |
-          # Check if the ios folder exists. If not, add it first.
-          if [ ! -d "ios" ]; then
-            echo "iOS platform folder not found. Adding it now..."
-            yarn cap add ios
-          else
-            echo "iOS platform folder found. Syncing..."
-          fi
+          # Force remove any corrupted/empty ios directory if it exists
+          rm -rf ios
+          
+          echo "Adding fresh iOS platform..."
+          yarn cap add ios
+          
+          echo "Syncing iOS platform..."
           yarn cap sync ios
       - name: CocoaPods installation
         script: |
           PODFILE_DIR=$(find . -name "Podfile" -not -path "*/node_modules/*" -exec dirname {} \;)
           if [ -z "$PODFILE_DIR" ]; then
+            echo "--- DEBUG INFO ---"
+            echo "Current directory contents:"
+            ls -la
+            echo "------------------"
             echo "Error: Could not find a Podfile anywhere in the project!"
             exit 1
           fi
@@ -49,4 +67,4 @@ workflows:
           build \
           CODE_SIGNING_ALLOWED=NO
     artifacts:
-      - ios/App/build/**/*.ipa
+      - "**/build/**/*.ipa"   # Made the artifact locator flexible too

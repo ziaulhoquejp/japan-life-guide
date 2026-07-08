@@ -12,6 +12,8 @@ workflows:
     scripts:
       - name: Install dependencies
         script: npm install
+      - name: Build Web Application
+        script: npm run build # 👈 CRITICAL: Compiles your React/Vue/Angular/Ionic web assets first
       - name: Sync Capacitor
         script: npx cap sync ios
       - name: Build IPA
@@ -21,7 +23,7 @@ workflows:
             --scheme App \
             --config Release
     artifacts:
-      - "**/*.ipa"
+      - "ios/App/build/ios/ipa/*.ipa" # 👈 Optimized: Specific path instead of a slow global search
     publishing:
       app_store_connect:
         auth: integration

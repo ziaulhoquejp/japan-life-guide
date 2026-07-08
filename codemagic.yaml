@@ -1,6 +1,30 @@
 - name: Build iOS App
         script: |
           PROJECT_PATH=$(find . -name "*.xcodeproj" -not -path "*/node_modules/*" | head -n 1)
-          xcode-project build-ipa \
-            --project "$PROJECT_PATH" \
-            --scheme App
+          xcodebuild \
+            -project "$PROJECT_PATH" \
+            -scheme App \
+            -sdk iphoneos \
+            -configuration Release \
+            archive \
+            -archivePath $CM_BUILD_DIR/App.xcarchive \
+            CODE_SIGNING_ALLOWED=NO
+          
+          xcodebuild \
+            -exportArchive \
+            -archivePath $CM_BUILD_DIR/App.xcarchive \
+            -exportPath $CM_BUILD_DIR \
+            -exportOptionsPlist /dev/stdin << 'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>app-store-connect</string>
+            <key>signingStyle</key>
+            <string>automatic</string>
+          </dict>
+          </plist>
+          EOF
+    artifacts:
+      - $CM_BUILD_DIR/*.ipa

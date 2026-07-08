@@ -1,10 +1,33 @@
-- name: Build iOS App
-        script: |
-          APP_PATH=$(find /Users/builder/Library/Developer/Xcode/DerivedData -name "App.app" -path "*/Release-iphoneos/*" | head -n 1)
-          echo "App path: $APP_PATH"
-          mkdir -p Payload
-          cp -r "$APP_PATH" Payload/
+workflows:
+  ios:
+    name: iOS
+    max_build_duration: 60
+    instance_type: mac_mini_m1
+    environment:
+      node: latest
+      xcode: latest
+    scripts:
+      - name: Install dependencies
+        script: npm install
+      - name: Sync Capacitor
+        script: npx cap sync ios
+      - name: Build iOS App
+        script: >-
+          xcodebuild
+          -project ios/App/App.xcodeproj
+          -scheme App
+          -sdk iphoneos
+          -configuration Release
+          build
+          CODE_SIGNING_ALLOWED=NO
+          CODE_SIGNING_REQUIRED=NO
+      - name: Create IPA
+        script: >-
+          APP_PATH=$(find /Users/builder/Library/Developer/Xcode/DerivedData
+          -name "App.app"
+          -path "*/Release-iphoneos/*" | head -n 1) &&
+          mkdir -p Payload &&
+          cp -r "$APP_PATH" Payload/ &&
           zip -r App.ipa Payload
-          echo "IPA created!"
     artifacts:
       - App.ipa

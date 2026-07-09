@@ -1,4 +1,15 @@
-scripts:
+workflows:
+  ios:
+    name: iOS
+    max_build_duration: 60
+    instance_type: mac_mini_m1
+    environment:
+      node: latest
+      xcode: latest
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: app.japanlifeguide.www
+    scripts:
       - name: Install dependencies
         script: npm install
       - name: Build Web Application
@@ -6,12 +17,16 @@ scripts:
       - name: Sync Capacitor
         script: npx cap sync ios
       - name: Set up code signing settings
-        script: |
-          # Explicitly tell Codemagic where the project is for code signing
-          xcode-project use-profiles --project ios/App/App.xcodeproj
+        script: xcode-project use-profiles --project ios/App/App.xcodeproj
       - name: Build IPA
         script: |
           xcode-project build-ipa \
             --workspace ios/App/App.xcworkspace \
             --scheme App \
             --config Release
+    artifacts:
+      - "ios/App/build/ios/ipa/*.ipa"
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: false

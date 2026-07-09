@@ -28,23 +28,17 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync ios
 
-      # 👇 We explicitly set the working directory to ios/App for Xcode actions
-      - name: Build IPA
+      - name: Build Xcode Project
         working-directory: ios/App
         run: |
           xcodebuild -workspace App.xcworkspace \
             -scheme App \
             -configuration Release \
             -archivePath build/App.xcarchive \
-            archive
-            
-          xcodebuild -exportArchive \
-            -archivePath build/App.xcarchive \
-            -exportOptionsPlist App/ExportOptions.plist \
-            -exportPath build/ios/ipa
+            clean archive CODE_SIGNING_ALLOWED=NO
 
-      - name: Upload IPA Artifact
+      - name: Upload Build Archive
         uses: actions/upload-artifact@v4
         with:
-          name: ios-app
-          path: ios/App/build/ios/ipa/*.ipa
+          name: ios-xcarchive
+          path: ios/App/build/App.xcarchive

@@ -2,12 +2,12 @@ name: iOS Build
 
 on:
   push:
-    branches: [ main ] # 👈 Triggers when you push to main. Change if needed.
+    branches: [ main ]
 
 jobs:
   ios-build:
     name: iOS Build
-    runs-on: macos-14 # 👈 GitHub-hosted macOS runner with Apple Silicon M1/M2/M3 capability
+    runs-on: macos-14
     timeout-minutes: 60
 
     steps:
@@ -28,25 +28,23 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync ios
 
-      # NOTE: For GitHub Actions, you need to manually manage Apple certificates.
-      # The below xcodebuild command assumes automatic signing is handled or 
-      # profiles are provisioned on the runner via an earlier step.
-      
+      # 👇 We explicitly set the working directory to ios/App for Xcode actions
       - name: Build IPA
+        working-directory: ios/App
         run: |
-          xcodebuild -workspace ios/App/App.xcworkspace \
+          xcodebuild -workspace App.xcworkspace \
             -scheme App \
             -configuration Release \
-            -archivePath ios/App/build/App.xcarchive \
+            -archivePath build/App.xcarchive \
             archive
             
           xcodebuild -exportArchive \
-            -archivePath ios/App/build/App.xcarchive \
-            -exportOptionsPlist ios/App/App/ExportOptions.plist \
-            -exportPath ios/App/build/ios/ipa
+            -archivePath build/App.xcarchive \
+            -exportOptionsPlist App/ExportOptions.plist \
+            -exportPath build/ios/ipa
 
       - name: Upload IPA Artifact
-        uses: actions/actions-artifact@v4
+        uses: actions/upload-artifact@v4
         with:
           name: ios-app
           path: ios/App/build/ios/ipa/*.ipa

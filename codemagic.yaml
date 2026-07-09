@@ -5,11 +5,13 @@ scripts:
         script: npm run build
       - name: Sync Capacitor
         script: npx cap sync ios
-      - name: Set up code signing settings on Xcode project # 👈 ADD THIS STEP
-        script: xcode-project use-profiles
+      - name: Set up code signing settings
+        script: |
+          # Explicitly tell Codemagic where the project is for code signing
+          xcode-project use-profiles --project ios/App/App.xcodeproj
       - name: Build IPA
         script: |
           xcode-project build-ipa \
-            --project ios/App/App.xcodeproj \
+            --workspace ios/App/App.xcworkspace \
             --scheme App \
             --config Release

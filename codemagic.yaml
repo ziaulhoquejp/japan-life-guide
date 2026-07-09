@@ -9,6 +9,8 @@ workflows:
       ios_signing:
         distribution_type: app_store
         bundle_identifier: app.japanlifeguide.www
+        certificate: Japan Life Guide Distribution
+        provisioning_profile: Japan Life Guide App Store
     scripts:
       - name: Install dependencies
         script: npm install

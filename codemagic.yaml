@@ -1,32 +1,52 @@
-workflows:
-  ios:
-    name: iOS
-    max_build_duration: 60
-    instance_type: mac_mini_m1
-    environment:
-      node: latest
-      xcode: latest
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: app.japanlifeguide.www
-    scripts:
+name: iOS Build
+
+on:
+  push:
+    branches: [ main ] # 👈 Triggers when you push to main. Change if needed.
+
+jobs:
+  ios-build:
+    name: iOS Build
+    runs-on: macos-14 # 👈 GitHub-hosted macOS runner with Apple Silicon M1/M2/M3 capability
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'latest'
+
       - name: Install dependencies
-        script: npm install
+        run: npm install
+
       - name: Build Web Application
-        script: npm run build
+        run: npm run build
+
       - name: Sync Capacitor
-        script: npx cap sync ios
-      - name: Set up code signing settings
-        script: xcode-project use-profiles --project ios/App/App.xcodeproj
+        run: npx cap sync ios
+
+      # NOTE: For GitHub Actions, you need to manually manage Apple certificates.
+      # The below xcodebuild command assumes automatic signing is handled or 
+      # profiles are provisioned on the runner via an earlier step.
+      
       - name: Build IPA
-        script: |
-          xcode-project build-ipa \
-            --workspace ios/App/App.xcworkspace \
-            --scheme App \
-            --config Release
-    artifacts:
-      - "ios/App/build/ios/ipa/*.ipa"
-    publishing:
-      app_store_connect:
-        auth: integration
-        submit_to_testflight: false
+        run: |
+          xcodebuild -workspace ios/App/App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -archivePath ios/App/build/App.xcarchive \
+            archive
+            
+          xcodebuild -exportArchive \
+            -archivePath ios/App/build/App.xcarchive \
+            -exportOptionsPlist ios/App/App/ExportOptions.plist \
+            -exportPath ios/App/build/ios/ipa
+
+      - name: Upload IPA Artifact
+        uses: actions/actions-artifact@v4
+        with:
+          name: ios-app
+          path: ios/App/build/ios/ipa/*.ipa

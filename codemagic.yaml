@@ -2,11 +2,12 @@ name: iOS Build
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
   ios-build:
-    name: iOS Build
     runs-on: macos-14
     timeout-minutes: 60
 
@@ -14,30 +15,34 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 'latest'
+          node-version: 20
+          cache: npm
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
-      - name: Build Web Application
+      - name: Build web app
         run: npm run build
 
       - name: Sync Capacitor
         run: npx cap sync ios
 
-      - name: Build Xcode Project
+      - name: Build iOS archive
         working-directory: ios/App
         run: |
-          xcodebuild -workspace App.xcworkspace \
+          xcodebuild \
+            -workspace App.xcworkspace \
             -scheme App \
             -configuration Release \
+            -sdk iphoneos \
             -archivePath build/App.xcarchive \
-            clean archive CODE_SIGNING_ALLOWED=NO
+            clean archive \
+            CODE_SIGNING_ALLOWED=NO
 
-      - name: Upload Build Archive
+      - name: Upload archive
         uses: actions/upload-artifact@v4
         with:
           name: ios-xcarchive

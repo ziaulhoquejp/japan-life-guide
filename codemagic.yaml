@@ -4,6 +4,9 @@ workflows:
     max_build_duration: 60
     instance_type: mac_mini_m1
     environment:
+      # 1. IMPORT YOUR API KEYS HERE
+      groups:
+        - appstore_credentials # Create this group in your Codemagic UI settings
       node: latest
       xcode: latest
       cocoapods: default
@@ -15,21 +18,26 @@ workflows:
         script: npm install
       - name: Sync Capacitor
         script: npx cap sync ios
+      # 2. Run Pod install inside the iOS directory before configuring signing
+      - name: Pod install
+        script: |
+          cd ios/App
+          pod install
       - name: Set up code signing
         script: |
           keychain initialize
+          # 3. Pass the required credentials (populated from your environment group)
           app-store-connect fetch-signing-files \
-            app.japanlifeguide.www \
+            "app.japanlifeguide.www" \
             --type IOS_APP_STORE \
             --create
           keychain add-certificates
           xcode-project use-profiles
-      - name: Pod install
-        script: cd ios/App && pod install
       - name: Build IPA
         script: |
+          # 4. Target the WORKSPACE (.xcworkspace) instead of the .xcodeproj
           xcode-project build-ipa \
-            --project ios/App/App.xcodeproj \
+            --workspace ios/App/App.xcworkspace \
             --scheme App
     artifacts:
-      - "**/*.ipa"
+      - build/ios/ipa/*.ipa # Codemagic's default output path for build-ipa

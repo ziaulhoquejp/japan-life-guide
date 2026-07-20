@@ -1,42 +1,62 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
+import Link from 'next/link'
 
 export default function ReviewsPage() {
   const [reviews, setReviews] = useState<any[]>([])
+  const [schools, setSchools] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
-  const [ratingFilter, setRatingFilter] = useState(0)
-  const [sortBy, setSortBy] = useState('recent')
+  const [selectedSchool, setSelectedSchool] = useState('all')
+  const [selectedRating, setSelectedRating] = useState(0)
+  const [user, setUser] = useState<any>(null)
+  const [helpfulVotes, setHelpfulVotes] = useState<string[]>([])
 
   useEffect(() => {
     async function load() {
-      const { data } = await supabase
-        .from('reviews')
-        .select('*, schools(name_en, city, icon)')
-        .order('created_at', { ascending: false })
-      if (data) setReviews(data)
+      const { data: userData } = await supabase.auth.getUser()
+      if (userData.user) setUser(userData.user)
+
+      const [reviewsData, schoolsData] = await Promise.all([
+        supabase.from('reviews')
+          .select('*, schools(name_en, name_jp, city, icon)')
+          .order('created_at', { ascending: false })
+          .limit(50),
+        supabase.from('schools')
+          .select('id, name_en, city')
+          .eq('data_verified', true)
+          .order('rating', { ascending: false })
+          .limit(50),
+      ])
+
+      if (reviewsData.data) setReviews(reviewsData.data)
+      if (schoolsData.data) setSchools(schoolsData.data)
       setLoading(false)
     }
     load()
   }, [])
 
-  const filtered = reviews
-    .filter(r => !search || r.schools?.name_en?.toLowerCase().includes(search.toLowerCase()) || r.comment?.toLowerCase().includes(search.toLowerCase()))
-    .filter(r => ratingFilter === 0 || r.rating === ratingFilter)
-    .sort((a, b) => {
-      if (sortBy === 'recent') return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      if (sortBy === 'highest') return b.rating - a.rating
-      if (sortBy === 'lowest') return a.rating - b.rating
-      return 0
-    })
+  async function markHelpful(reviewId: string) {
+    if (!user) { window.location.href = '/login'; return }
+    if (helpfulVotes.includes(reviewId)) return
+    setHelpfulVotes(prev => [...prev, reviewId])
+    setReviews(prev => prev.map(r => r.id === reviewId ? {...r, helpful: (r.helpful || 0) + 1} : r))
+  }
 
-  const avgRating = reviews.length > 0 ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1) : '0.0'
+  const filtered = reviews.filter(r => {
+    const matchSchool = selectedSchool === 'all' || r.school_id === selectedSchool
+    const matchRating = selectedRating === 0 || r.rating === selectedRating
+    return matchSchool && matchRating
+  })
 
-  const ratingCounts = [5,4,3,2,1].map(star => ({
+  const avgRating = filtered.length > 0
+    ? (filtered.reduce((sum, r) => sum + r.rating, 0) / filtered.length).toFixed(1)
+    : '0.0'
+
+  const ratingCounts = [5, 4, 3, 2, 1].map(star => ({
     star,
-    count: reviews.filter(r => r.rating === star).length,
-    percent: reviews.length > 0 ? (reviews.filter(r => r.rating === star).length / reviews.length) * 100 : 0,
+    count: filtered.filter(r => r.rating === star).length,
+    percent: filtered.length > 0 ? Math.round((filtered.filter(r => r.rating === star).length / filtered.length) * 100) : 0,
   }))
 
   if (loading) return <div style={{minHeight:'100vh',background:'#0D0907',display:'flex',alignItems:'center',justifyContent:'center',color:'white'}}>Loading...</div>
@@ -44,87 +64,112 @@ export default function ReviewsPage() {
   return (
     <main style={{minHeight:'100vh',background:'#0D0907',fontFamily:'sans-serif'}}>
       <div style={{background:'#1A2035',padding:'40px',borderBottom:'3px solid #C42020',textAlign:'center'}}>
-        <h1 style={{color:'white',fontSize:'32px',fontWeight:'700',marginBottom:'8px'}}>School Reviews</h1>
-        <p style={{color:'rgba(255,255,255,0.4)',fontSize:'16px'}}>Read honest reviews from students who attended Japanese language schools</p>
+        <h1 style={{color:'white',fontSize:'32px',fontWeight:'700',marginBottom:'8px'}}>⭐ School Reviews</h1>
+        <p style={{color:'rgba(255,255,255,0.4)',fontSize:'16px',marginBottom:'8px'}}>Real reviews from Bangladesh and Nepal students</p>
+        <div style={{display:'inline-flex',gap:'12px',flexWrap:'wrap',justifyContent:'center'}}>
+          <span style={{background:'rgba(240,168,48,0.2)',color:'#F0A830',padding:'4px 12px',borderRadius:'20px',fontSize:'12px',fontWeight:'700'}}>⭐ {avgRating} Average Rating</span>
+          <span style={{background:'rgba(74,142,255,0.2)',color:'#4A8EFF',padding:'4px 12px',borderRadius:'20px',fontSize:'12px',fontWeight:'700'}}>📝 {filtered.length} Reviews</span>
+        </div>
       </div>
 
       <div style={{maxWidth:'900px',margin:'0 auto',padding:'32px 20px'}}>
 
-        {/* Rating Breakdown */}
-        <div style={{background:'#1A2035',borderRadius:'12px',padding:'24px',marginBottom:'24px',border:'1px solid rgba(255,255,255,0.08)'}}>
-          <div style={{display:'flex',gap:'24px',alignItems:'center',flexWrap:'wrap'}}>
+        {/* Rating Summary */}
+        <div style={{background:'#1A2035',borderRadius:'16px',padding:'24px',marginBottom:'24px',border:'1px solid rgba(255,255,255,0.08)'}}>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 2fr',gap:'24px',alignItems:'center'}}>
             <div style={{textAlign:'center'}}>
-              <div style={{color:'#F0A830',fontSize:'40px',fontWeight:'800'}}>{avgRating}</div>
-              <div style={{color:'#F0A830',fontSize:'16px',marginBottom:'4px'}}>{'★'.repeat(Math.round(Number(avgRating)))}</div>
-              <div style={{color:'rgba(255,255,255,0.4)',fontSize:'12px'}}>{reviews.length} reviews</div>
+              <div style={{color:'#F0A830',fontSize:'56px',fontWeight:'800',lineHeight:'1'}}>{avgRating}</div>
+              <div style={{color:'#F0A830',fontSize:'20px',marginTop:'8px'}}>{'★'.repeat(Math.round(parseFloat(avgRating)))}{'☆'.repeat(5-Math.round(parseFloat(avgRating)))}</div>
+              <div style={{color:'rgba(255,255,255,0.4)',fontSize:'12px',marginTop:'4px'}}>{filtered.length} reviews</div>
             </div>
-            <div style={{flex:1,minWidth:'200px'}}>
-              {ratingCounts.map(r => (
-                <div key={r.star} onClick={()=>setRatingFilter(ratingFilter === r.star ? 0 : r.star)} style={{display:'flex',gap:'8px',alignItems:'center',marginBottom:'6px',cursor:'pointer'}}>
-                  <span style={{color:'rgba(255,255,255,0.5)',fontSize:'12px',width:'40px'}}>{r.star} ★</span>
-                  <div style={{flex:1,height:'8px',background:'rgba(255,255,255,0.08)',borderRadius:'4px',overflow:'hidden'}}>
-                    <div style={{width:r.percent+'%',height:'100%',background:'#F0A830',borderRadius:'4px'}}/>
+            <div>
+              {ratingCounts.map(({star, count, percent}) => (
+                <div key={star} style={{display:'flex',gap:'10px',alignItems:'center',marginBottom:'6px'}}>
+                  <span style={{color:'rgba(255,255,255,0.5)',fontSize:'12px',width:'20px'}}>{star}★</span>
+                  <div style={{flex:1,height:'8px',background:'rgba(255,255,255,0.1)',borderRadius:'4px',overflow:'hidden'}}>
+                    <div style={{width:percent+'%',height:'100%',background:'#F0A830',borderRadius:'4px',transition:'width 0.5s'}}/>
                   </div>
-                  <span style={{color:'rgba(255,255,255,0.4)',fontSize:'11px',width:'24px'}}>{r.count}</span>
+                  <span style={{color:'rgba(255,255,255,0.4)',fontSize:'12px',width:'30px'}}>{count}</span>
                 </div>
               ))}
             </div>
           </div>
         </div>
 
-        {/* Search & Filters */}
+        {/* Filters */}
         <div style={{display:'flex',gap:'10px',marginBottom:'20px',flexWrap:'wrap'}}>
-          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search reviews or schools..." style={{flex:1,minWidth:'200px',background:'#1A2035',border:'1px solid rgba(255,255,255,0.15)',borderRadius:'8px',padding:'10px 14px',color:'white',fontSize:'13px',outline:'none'}}/>
-          <select value={sortBy} onChange={e=>setSortBy(e.target.value)} style={{background:'#1A2035',border:'1px solid rgba(255,255,255,0.15)',borderRadius:'8px',padding:'10px 14px',color:'white',fontSize:'13px',outline:'none',cursor:'pointer'}}>
-            <option value="recent">Most Recent</option>
-            <option value="highest">Highest Rated</option>
-            <option value="lowest">Lowest Rated</option>
+          <select value={selectedSchool} onChange={e=>setSelectedSchool(e.target.value)} style={{background:'#1A2035',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'8px 12px',color:'white',fontSize:'13px',outline:'none'}}>
+            <option value="all">All Schools</option>
+            {schools.map(s => (
+              <option key={s.id} value={s.id}>{s.name_en} - {s.city}</option>
+            ))}
           </select>
-        </div>
 
-        {ratingFilter > 0 && (
-          <div style={{marginBottom:'16px'}}>
-            <span style={{background:'rgba(240,168,48,0.2)',color:'#F0A830',padding:'6px 14px',borderRadius:'20px',fontSize:'12px',fontWeight:'600',display:'inline-flex',gap:'6px',alignItems:'center'}}>
-              {ratingFilter} ★ only
-              <button onClick={()=>setRatingFilter(0)} style={{background:'none',border:'none',color:'#F0A830',cursor:'pointer',fontSize:'12px'}}>✕</button>
-            </span>
+          <div style={{display:'flex',gap:'6px'}}>
+            {[0,5,4,3,2,1].map(star => (
+              <button key={star} onClick={()=>setSelectedRating(star)} style={{background:selectedRating===star?'rgba(240,168,48,0.2)':'#1A2035',border:'1px solid '+(selectedRating===star?'#F0A830':'rgba(255,255,255,0.1)'),borderRadius:'8px',padding:'8px 12px',color:selectedRating===star?'#F0A830':'rgba(255,255,255,0.5)',fontSize:'12px',cursor:'pointer'}}>
+                {star === 0 ? 'All' : `${star}★`}
+              </button>
+            ))}
           </div>
-        )}
+        </div>
 
         {/* Reviews List */}
         {filtered.length === 0 ? (
           <div style={{textAlign:'center',padding:'48px',background:'#1A2035',borderRadius:'12px',border:'1px solid rgba(255,255,255,0.08)'}}>
-            <div style={{fontSize:'48px',marginBottom:'16px'}}>⭐</div>
-            <p style={{color:'rgba(255,255,255,0.4)',fontSize:'14px'}}>No reviews found matching your filters</p>
+            <p style={{color:'rgba(255,255,255,0.4)',fontSize:'14px',marginBottom:'16px'}}>No reviews yet!</p>
+            <Link href="/schools" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'12px 24px',borderRadius:'8px',fontSize:'14px',fontWeight:'700'}}>
+              Browse Schools & Review 🏫
+            </Link>
           </div>
         ) : (
-          <div style={{display:'flex',flexDirection:'column',gap:'12px'}}>
+          <div style={{display:'flex',flexDirection:'column',gap:'14px'}}>
             {filtered.map(review => (
-              <div key={review.id} style={{background:'#1A2035',borderRadius:'12px',padding:'20px',border:'1px solid rgba(255,255,255,0.08)'}}>
-                <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:'12px',flexWrap:'wrap',gap:'8px'}}>
-                  <a href={'/schools/' + review.school_id} style={{display:'flex',gap:'10px',alignItems:'center',textDecoration:'none'}}>
-                    <span style={{fontSize:'24px'}}>{review.schools?.icon || '🏫'}</span>
+              <div key={review.id} style={{background:'#1A2035',borderRadius:'14px',padding:'22px',border:'1px solid rgba(255,255,255,0.08)'}}>
+                {/* School Info */}
+                {review.schools && (
+                  <Link href={`/schools/${review.school_id}`} style={{display:'flex',gap:'10px',alignItems:'center',marginBottom:'14px',textDecoration:'none'}}>
+                    <span style={{fontSize:'24px'}}>{review.schools.icon || '🏫'}</span>
                     <div>
-                      <div style={{color:'white',fontSize:'13px',fontWeight:'700'}}>{review.schools?.name_en}</div>
-                      <div style={{color:'rgba(255,255,255,0.4)',fontSize:'11px'}}>{review.schools?.city}</div>
+                      <p style={{color:'#C42020',fontSize:'13px',fontWeight:'700'}}>{review.schools.name_en}</p>
+                      <p style={{color:'rgba(255,255,255,0.4)',fontSize:'11px'}}>📍 {review.schools.city}</p>
                     </div>
-                  </a>
-                  <div style={{textAlign:'right'}}>
-                    <div style={{color:'#F0A830',fontSize:'14px'}}>{'★'.repeat(review.rating)}{'☆'.repeat(5-review.rating)}</div>
-                    <div style={{color:'rgba(255,255,255,0.3)',fontSize:'11px'}}>{new Date(review.created_at).toLocaleDateString()}</div>
-                  </div>
-                </div>
-                {review.comment && (
-                  <p style={{color:'rgba(255,255,255,0.6)',fontSize:'13px',lineHeight:'1.7'}}>{review.comment}</p>
+                  </Link>
                 )}
+
+                {/* Rating & Date */}
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'10px'}}>
+                  <div style={{color:'#F0A830',fontSize:'18px'}}>
+                    {'★'.repeat(review.rating)}{'☆'.repeat(5-review.rating)}
+                  </div>
+                  <span style={{color:'rgba(255,255,255,0.3)',fontSize:'11px'}}>
+                    {new Date(review.created_at).toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'})}
+                  </span>
+                </div>
+
+                {/* Comment */}
+                <p style={{color:'rgba(255,255,255,0.7)',fontSize:'14px',lineHeight:'1.7',marginBottom:'14px'}}>
+                  {review.comment || 'No comment provided.'}
+                </p>
+
+                {/* Helpful */}
+                <div style={{display:'flex',gap:'10px',alignItems:'center'}}>
+                  <button onClick={()=>markHelpful(review.id)} disabled={helpfulVotes.includes(review.id)} style={{background: helpfulVotes.includes(review.id) ? 'rgba(46,200,122,0.2)' : 'rgba(255,255,255,0.06)',border:'1px solid '+(helpfulVotes.includes(review.id)?'rgba(46,200,122,0.4)':'rgba(255,255,255,0.1)'),borderRadius:'20px',padding:'4px 12px',color: helpfulVotes.includes(review.id)?'#2EC87A':'rgba(255,255,255,0.4)',fontSize:'12px',cursor: helpfulVotes.includes(review.id)?'default':'pointer'}}>
+                    👍 Helpful {review.helpful ? `(${review.helpful})` : ''}
+                  </button>
+                </div>
               </div>
             ))}
           </div>
         )}
 
-        <div style={{background:'#1A2035',borderRadius:'12px',padding:'20px',marginTop:'24px',textAlign:'center',border:'1px solid rgba(255,255,255,0.08)'}}>
-          <p style={{color:'rgba(255,255,255,0.5)',fontSize:'13px',marginBottom:'12px'}}>Attended a school? Share your experience!</p>
-          <a href="/schools" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'10px 20px',borderRadius:'8px',fontSize:'13px',fontWeight:'700'}}>Find Your School to Review</a>
+        {/* Write Review CTA */}
+        <div style={{background:'linear-gradient(135deg,rgba(196,32,32,0.15),rgba(196,32,32,0.05))',borderRadius:'14px',padding:'24px',marginTop:'24px',textAlign:'center',border:'1px solid rgba(196,32,32,0.3)'}}>
+          <h3 style={{color:'white',fontSize:'16px',fontWeight:'700',marginBottom:'8px'}}>Share Your Experience! 🌸</h3>
+          <p style={{color:'rgba(255,255,255,0.5)',fontSize:'13px',marginBottom:'16px'}}>Help other students from Bangladesh and Nepal choose the right school</p>
+          <Link href="/schools" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'12px 24px',borderRadius:'8px',fontSize:'14px',fontWeight:'700',display:'inline-block'}}>
+            Write a Review ⭐
+          </Link>
         </div>
       </div>
     </main>

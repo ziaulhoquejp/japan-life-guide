@@ -2,472 +2,369 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 
-const ADMIN_EMAILS = ['ziaulhoquejp@gmail.com', 'sacrifice4ever@gmail.com']
-
-type TabType = 'overview' | 'users' | 'applications' | 'feedback' | 'newsletter' | 'crm' | 'jobseekers' | 'analytics'
-
-
-function JobSeekersTab() {
-const [seekers, setSeekers] = useState<any[]>([])
-const [loading, setLoading] = useState(true)
-const [sending, setSending] = useState<string|null>(null)
-
-useEffect(() => {
-supabase.from('job_seekers').select('*').order('created_at', { ascending: false }).then(({ data }) => {
-if (data) setSeekers(data)
-setLoading(false)
-})
-}, [])
-
-async function sendOutreach(seekerId: string) {
-setSending(seekerId)
-try {
-const res = await fetch('/api/company-outreach', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ jobSeekerId: seekerId }),
-})
-const data = await res.json()
-alert(`✅ ${data.emailsSent}社に営業メールを送信しました！`)
-setSeekers(prev => prev.map(s => s.id === seekerId ? {...s, status: 'contacted'} : s))
-} catch (error) {
-alert('エラーが発生しました')
-}
-setSending(null)
-}
-
-if (loading) return <div style={{color:'white',padding:'20px'}}>Loading...</div>
-
-return (
-<div style={{display:'flex',flexDirection:'column',gap:'12px'}}>
-<div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'8px'}}>
-<h2 style={{color:'white',fontSize:'16px',fontWeight:'700'}}>💼 Job Seekers ({seekers.length})</h2>
-<span style={{color:'rgba(255,255,255,0.4)',fontSize:'12px'}}>{seekers.filter(s=>s.status==='new').length} new</span>
-</div>
-{seekers.length === 0 ? (
-<div style={{textAlign:'center',padding:'48px',background:'#1A2035',borderRadius:'12px'}}>
-<p style={{color:'rgba(255,255,255,0.4)'}}>No job seekers yet</p>
-</div>
-) : seekers.map(seeker => (
-<div key={seeker.id} style={{background:'#1A2035',borderRadius:'12px',padding:'16px',border:'1px solid ' + (seeker.status==='new' ? 'rgba(196,32,32,0.3)' : 'rgba(255,255,255,0.08)')}}>
-<div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:'10px',marginBottom:'10px'}}>
-<div>
-<div style={{color:'white',fontSize:'14px',fontWeight:'700'}}>{seeker.full_name}</div>
-<div style={{color:'rgba(255,255,255,0.4)',fontSize:'12px'}}>{seeker.email} · {seeker.country}</div>
-</div>
-<div style={{display:'flex',gap:'8px',alignItems:'center'}}>
-<span style={{background: seeker.status==='new' ? 'rgba(196,32,32,0.2)' : 'rgba(46,200,122,0.2)',color: seeker.status==='new' ? '#FF8070' : '#2EC87A',padding:'2px 8px',borderRadius:'20px',fontSize:'10px',fontWeight:'700'}}>
-{seeker.status === 'new' ? '🆕 New' : '✅ Contacted'}
-</span>
-{seeker.status === 'new' && (
-<button onClick={()=>sendOutreach(seeker.id)} disabled={sending===seeker.id} style={{background:'#C42020',color:'white',border:'none',borderRadius:'6px',padding:'6px 12px',fontSize:'11px',fontWeight:'700',cursor:'pointer'}}>
-{sending===seeker.id ? '送信中...' : '🤖 企業に営業メール送信'}
-</button>
-)}
-</div>
-</div>
-<div style={{display:'flex',gap:'8px',flexWrap:'wrap'}}>
-<span style={{background:'rgba(255,255,255,0.06)',color:'rgba(255,255,255,0.5)',padding:'2px 8px',borderRadius:'4px',fontSize:'11px'}}>{seeker.job_type}</span>
-<span style={{background:'rgba(255,255,255,0.06)',color:'rgba(255,255,255,0.5)',padding:'2px 8px',borderRadius:'4px',fontSize:'11px'}}>日本語: {seeker.japanese_level || 'N/A'}</span>
-<span style={{background:'rgba(255,255,255,0.06)',color:'rgba(255,255,255,0.5)',padding:'2px 8px',borderRadius:'4px',fontSize:'11px'}}>{new Date(seeker.created_at).toLocaleDateString()}</span>
-</div>
-{seeker.experience && (
-<p style={{color:'rgba(255,255,255,0.4)',fontSize:'12px',marginTop:'8px',lineHeight:'1.5'}}>{seeker.experience.slice(0,150)}{seeker.experience.length > 150 ? '...' : ''}</p>
-)}
-</div>
-))}
-</div>
-)
-}
+type TabType = 'overview' | 'users' | 'applications' | 'jobs' | 'jobseekers' | 'schools' | 'analytics'
 
 export default function AdminPage() {
-const [user, setUser] = useState<any>(null)
-const [stats, setStats] = useState<any>({})
-const [users, setUsers] = useState<any[]>([])
-const [feedback, setFeedback] = useState<any[]>([])
-const [applications, setApplications] = useState<any[]>([])
-const [activeTab, setActiveTab] = useState<TabType>('overview')
-const [loading, setLoading] = useState(true)
-const [newsletter, setNewsletter] = useState({subject:'',message:''})
-const [sending, setSending] = useState(false)
-const [sent, setSent] = useState(false)
+  const [activeTab, setActiveTab] = useState<TabType>('overview')
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    totalApplications: 0,
+    totalSchools: 0,
+    totalJobs: 0,
+    totalJobSeekers: 0,
+    proUsers: 0,
+    newUsersToday: 0,
+    newApplicationsToday: 0,
+  })
+  const [users, setUsers] = useState<any[]>([])
+  const [applications, setApplications] = useState<any[]>([])
+  const [jobs, setJobs] = useState<any[]>([])
+  const [jobSeekers, setJobSeekers] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
 
-useEffect(() => {
-async function load() {
-const { data: userData } = await supabase.auth.getUser()
-if (!userData.user || !ADMIN_EMAILS.includes(userData.user.email || '')) {
-window.location.href = '/'
-return
+  useEffect(() => {
+    async function load() {
+      const today = new Date().toISOString().split('T')[0]
+
+      const [
+        usersData, appsData, schoolsData, jobsData,
+        jobSeekersData, proUsersData, newUsersData, newAppsData
+      ] = await Promise.all([
+        supabase.from('profiles').select('*').order('created_at', { ascending: false }).limit(50),
+        supabase.from('applications').select('*, schools(name_en)').order('created_at', { ascending: false }).limit(50),
+        supabase.from('schools').select('id', { count: 'exact', head: true }),
+        supabase.from('jobs').select('*').order('created_at', { ascending: false }),
+        supabase.from('job_seekers').select('*').order('created_at', { ascending: false }).limit(50),
+        supabase.from('profiles').select('id', { count: 'exact', head: true }).in('plan', ['pro', 'lifetime']),
+        supabase.from('profiles').select('id', { count: 'exact', head: true }).gte('created_at', today),
+        supabase.from('applications').select('id', { count: 'exact', head: true }).gte('created_at', today),
+      ])
+
+      setStats({
+        totalUsers: usersData.data?.length || 0,
+        totalApplications: appsData.data?.length || 0,
+        totalSchools: schoolsData.count || 0,
+        totalJobs: jobsData.data?.length || 0,
+        totalJobSeekers: jobSeekersData.data?.length || 0,
+        proUsers: proUsersData.count || 0,
+        newUsersToday: newUsersData.count || 0,
+        newApplicationsToday: newAppsData.count || 0,
+      })
+
+      if (usersData.data) setUsers(usersData.data)
+      if (appsData.data) setApplications(appsData.data)
+      if (jobsData.data) setJobs(jobsData.data)
+      if (jobSeekersData.data) setJobSeekers(jobSeekersData.data)
+      setLoading(false)
+    }
+    load()
+  }, [])
+
+  async function updateJobStatus(jobId: string, isActive: boolean) {
+    await supabase.from('jobs').update({ is_active: isActive }).eq('id', jobId)
+    setJobs(prev => prev.map(j => j.id === jobId ? {...j, is_active: isActive} : j))
+  }
+
+  async function updateJobSeekerStatus(id: string, status: string) {
+    await supabase.from('job_seekers').update({ status }).eq('id', id)
+    setJobSeekers(prev => prev.map(j => j.id === id ? {...j, status} : j))
+  }
+
+  if (loading) return <div style={{minHeight:'100vh',background:'#0D0907',display:'flex',alignItems:'center',justifyContent:'center',color:'white'}}>Loading...</div>
+
+  const TABS = [
+    {key:'overview' as TabType, label:'📊 Overview'},
+    {key:'users' as TabType, label:`👤 Users (${stats.totalUsers})`},
+    {key:'applications' as TabType, label:`📝 Applications (${stats.totalApplications})`},
+    {key:'jobs' as TabType, label:`💼 Jobs (${stats.totalJobs})`},
+    {key:'jobseekers' as TabType, label:`🔍 Job Seekers (${stats.totalJobSeekers})`},
+    {key:'schools' as TabType, label:`🏫 Schools (${stats.totalSchools})`},
+    {key:'analytics' as TabType, label:'📈 Analytics'},
+  ]
+
+  return (
+    <main style={{minHeight:'100vh',background:'#0D0907',fontFamily:'sans-serif'}}>
+      <div style={{background:'#1A2035',padding:'32px 20px',borderBottom:'3px solid #C42020'}}>
+        <div style={{maxWidth:'1200px',margin:'0 auto'}}>
+          <h1 style={{color:'white',fontSize:'28px',fontWeight:'700',marginBottom:'20px'}}>🛠️ Admin Dashboard</h1>
+
+          {/* Stats Grid */}
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(160px,1fr))',gap:'12px',marginBottom:'20px'}}>
+            {[
+              {label:'Total Users',value:stats.totalUsers,color:'#4A8EFF',icon:'👤'},
+              {label:'New Today',value:stats.newUsersToday,color:'#2EC87A',icon:'🆕'},
+              {label:'Pro Members',value:stats.proUsers,color:'#F0A830',icon:'💎'},
+              {label:'Applications',value:stats.totalApplications,color:'#C42020',icon:'📝'},
+              {label:'New Apps Today',value:stats.newApplicationsToday,color:'#FF8070',icon:'📋'},
+              {label:'Job Seekers',value:stats.totalJobSeekers,color:'#A855F7',icon:'🔍'},
+              {label:'Active Jobs',value:jobs.filter(j=>j.is_active).length,color:'#2EC87A',icon:'💼'},
+              {label:'Schools',value:stats.totalSchools,color:'#4A8EFF',icon:'🏫'},
+            ].map(stat => (
+              <div key={stat.label} style={{background:'rgba(255,255,255,0.06)',borderRadius:'10px',padding:'14px',textAlign:'center',border:'1px solid rgba(255,255,255,0.08)'}}>
+                <div style={{fontSize:'20px',marginBottom:'4px'}}>{stat.icon}</div>
+                <div style={{color:stat.color,fontSize:'22px',fontWeight:'800'}}>{stat.value}</div>
+                <div style={{color:'rgba(255,255,255,0.4)',fontSize:'10px',marginTop:'2px'}}>{stat.label}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Tabs */}
+          <div style={{display:'flex',gap:'6px',flexWrap:'wrap'}}>
+            {TABS.map(tab => (
+              <button key={tab.key} onClick={()=>setActiveTab(tab.key)} style={{background:activeTab===tab.key?'#C42020':'rgba(255,255,255,0.08)',border:'none',borderRadius:'20px',padding:'8px 16px',color:'white',fontSize:'11px',fontWeight:'600',cursor:'pointer'}}>
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div style={{maxWidth:'1200px',margin:'0 auto',padding:'24px 20px'}}>
+
+        {/* Overview Tab */}
+        {activeTab === 'overview' && (
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'16px'}}>
+            {/* Recent Users */}
+            <div style={{background:'#1A2035',borderRadius:'12px',padding:'20px',border:'1px solid rgba(255,255,255,0.08)'}}>
+              <h3 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'14px'}}>👤 Recent Users</h3>
+              {users.slice(0,5).map(user => (
+                <div key={user.id} style={{display:'flex',gap:'10px',alignItems:'center',padding:'8px 0',borderBottom:'1px solid rgba(255,255,255,0.04)'}}>
+                  <div style={{width:'32px',height:'32px',borderRadius:'50%',background:'linear-gradient(135deg,#C42020,#FF8070)',display:'flex',alignItems:'center',justifyContent:'center',color:'white',fontSize:'12px',fontWeight:'700',flexShrink:0}}>
+                    {user.full_name?.[0]?.toUpperCase() || '?'}
+                  </div>
+                  <div style={{flex:1}}>
+                    <p style={{color:'white',fontSize:'12px',fontWeight:'600'}}>{user.full_name || 'Unknown'}</p>
+                    <p style={{color:'rgba(255,255,255,0.4)',fontSize:'10px'}}>{user.country} · {user.plan || 'free'}</p>
+                  </div>
+                  <span style={{color:'rgba(255,255,255,0.3)',fontSize:'10px'}}>{new Date(user.created_at).toLocaleDateString()}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Recent Applications */}
+            <div style={{background:'#1A2035',borderRadius:'12px',padding:'20px',border:'1px solid rgba(255,255,255,0.08)'}}>
+              <h3 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'14px'}}>📝 Recent Applications</h3>
+              {applications.slice(0,5).map(app => (
+                <div key={app.id} style={{display:'flex',gap:'10px',alignItems:'center',padding:'8px 0',borderBottom:'1px solid rgba(255,255,255,0.04)'}}>
+                  <span style={{fontSize:'20px'}}>🏫</span>
+                  <div style={{flex:1}}>
+                    <p style={{color:'white',fontSize:'12px',fontWeight:'600'}}>{app.schools?.name_en || 'School'}</p>
+                    <p style={{color:'rgba(255,255,255,0.4)',fontSize:'10px'}}>{app.full_name} · {app.country}</p>
+                  </div>
+                  <span style={{background:'rgba(74,142,255,0.2)',color:'#4A8EFF',padding:'2px 8px',borderRadius:'20px',fontSize:'10px',fontWeight:'700'}}>{app.status}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Recent Job Seekers */}
+            <div style={{background:'#1A2035',borderRadius:'12px',padding:'20px',border:'1px solid rgba(255,255,255,0.08)'}}>
+              <h3 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'14px'}}>🔍 Recent Job Seekers</h3>
+              {jobSeekers.slice(0,5).map(seeker => (
+                <div key={seeker.id} style={{display:'flex',gap:'10px',alignItems:'center',padding:'8px 0',borderBottom:'1px solid rgba(255,255,255,0.04)'}}>
+                  <span style={{fontSize:'20px'}}>💼</span>
+                  <div style={{flex:1}}>
+                    <p style={{color:'white',fontSize:'12px',fontWeight:'600'}}>{seeker.full_name}</p>
+                    <p style={{color:'rgba(255,255,255,0.4)',fontSize:'10px'}}>{seeker.job_type} · {seeker.country}</p>
+                  </div>
+                  <span style={{background: seeker.status === 'new' ? 'rgba(196,32,32,0.2)' : 'rgba(46,200,122,0.2)',color: seeker.status === 'new' ? '#FF8070' : '#2EC87A',padding:'2px 8px',borderRadius:'20px',fontSize:'10px',fontWeight:'700'}}>{seeker.status}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Quick Links */}
+            <div style={{background:'#1A2035',borderRadius:'12px',padding:'20px',border:'1px solid rgba(255,255,255,0.08)'}}>
+              <h3 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'14px'}}>🔗 Quick Links</h3>
+              <div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
+                {[
+                  {label:'View Live Site',href:'https://japanlifeguide.app',icon:'🌐'},
+                  {label:'Supabase Dashboard',href:'https://supabase.com',icon:'🗄️'},
+                  {label:'Vercel Dashboard',href:'https://vercel.com',icon:'▲'},
+                  {label:'Google Analytics',href:'https://analytics.google.com',icon:'📈'},
+                  {label:'Google Search Console',href:'https://search.google.com/search-console',icon:'🔍'},
+                  {label:'App Store Connect',href:'https://appstoreconnect.apple.com',icon:'🍎'},
+                  {label:'Google Play Console',href:'https://play.google.com/console',icon:'🤖'},
+                  {label:'Resend Dashboard',href:'https://resend.com',icon:'📧'},
+                ].map(link => (
+                  <a key={link.href} href={link.href} target="_blank" rel="noopener noreferrer" style={{display:'flex',gap:'10px',alignItems:'center',padding:'8px 12px',background:'#0D0907',borderRadius:'8px',textDecoration:'none',border:'1px solid rgba(255,255,255,0.04)'}}>
+                    <span style={{fontSize:'16px'}}>{link.icon}</span>
+                    <span style={{color:'rgba(255,255,255,0.7)',fontSize:'12px'}}>{link.label}</span>
+                    <span style={{color:'#C42020',marginLeft:'auto',fontSize:'12px'}}>→</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Users Tab */}
+        {activeTab === 'users' && (
+          <div style={{background:'#1A2035',borderRadius:'12px',padding:'20px',border:'1px solid rgba(255,255,255,0.08)'}}>
+            <h3 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'16px'}}>👤 All Users</h3>
+            <div style={{overflowX:'auto'}}>
+              <table style={{width:'100%',borderCollapse:'collapse',minWidth:'600px'}}>
+                <thead>
+                  <tr style={{borderBottom:'1px solid rgba(255,255,255,0.1)'}}>
+                    {['Name','Email','Country','Japanese','Plan','Joined'].map(h => (
+                      <th key={h} style={{color:'rgba(255,255,255,0.4)',fontSize:'11px',textAlign:'left',padding:'8px 12px',fontWeight:'600'}}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map(user => (
+                    <tr key={user.id} style={{borderBottom:'1px solid rgba(255,255,255,0.04)'}}>
+                      <td style={{padding:'10px 12px',color:'white',fontSize:'12px',fontWeight:'600'}}>{user.full_name || 'Unknown'}</td>
+                      <td style={{padding:'10px 12px',color:'rgba(255,255,255,0.5)',fontSize:'11px'}}>{user.email}</td>
+                      <td style={{padding:'10px 12px',color:'rgba(255,255,255,0.6)',fontSize:'12px'}}>{user.country === 'Bangladesh' ? '🇧🇩' : user.country === 'Nepal' ? '🇳🇵' : '🌍'} {user.country}</td>
+                      <td style={{padding:'10px 12px',color:'rgba(255,255,255,0.6)',fontSize:'12px'}}>{user.japanese_level || 'N/A'}</td>
+                      <td style={{padding:'10px 12px'}}>
+                        <span style={{background: user.plan === 'pro' || user.plan === 'lifetime' ? 'rgba(240,168,48,0.2)' : 'rgba(255,255,255,0.06)',color: user.plan === 'pro' || user.plan === 'lifetime' ? '#F0A830' : 'rgba(255,255,255,0.4)',padding:'2px 8px',borderRadius:'20px',fontSize:'10px',fontWeight:'700'}}>
+                          {user.plan || 'free'}
+                        </span>
+                      </td>
+                      <td style={{padding:'10px 12px',color:'rgba(255,255,255,0.3)',fontSize:'11px'}}>{new Date(user.created_at).toLocaleDateString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Applications Tab */}
+        {activeTab === 'applications' && (
+          <div style={{background:'#1A2035',borderRadius:'12px',padding:'20px',border:'1px solid rgba(255,255,255,0.08)'}}>
+            <h3 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'16px'}}>📝 All Applications</h3>
+            <div style={{overflowX:'auto'}}>
+              <table style={{width:'100%',borderCollapse:'collapse',minWidth:'600px'}}>
+                <thead>
+                  <tr style={{borderBottom:'1px solid rgba(255,255,255,0.1)'}}>
+                    {['Student','School','Country','Status','Date'].map(h => (
+                      <th key={h} style={{color:'rgba(255,255,255,0.4)',fontSize:'11px',textAlign:'left',padding:'8px 12px',fontWeight:'600'}}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {applications.map(app => (
+                    <tr key={app.id} style={{borderBottom:'1px solid rgba(255,255,255,0.04)'}}>
+                      <td style={{padding:'10px 12px',color:'white',fontSize:'12px',fontWeight:'600'}}>{app.full_name || 'Unknown'}</td>
+                      <td style={{padding:'10px 12px',color:'rgba(255,255,255,0.6)',fontSize:'12px'}}>{app.schools?.name_en || 'N/A'}</td>
+                      <td style={{padding:'10px 12px',color:'rgba(255,255,255,0.6)',fontSize:'12px'}}>{app.country}</td>
+                      <td style={{padding:'10px 12px'}}>
+                        <span style={{background:'rgba(74,142,255,0.2)',color:'#4A8EFF',padding:'2px 8px',borderRadius:'20px',fontSize:'10px',fontWeight:'700'}}>{app.status}</span>
+                      </td>
+                      <td style={{padding:'10px 12px',color:'rgba(255,255,255,0.3)',fontSize:'11px'}}>{new Date(app.created_at).toLocaleDateString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Jobs Tab */}
+        {activeTab === 'jobs' && (
+          <div style={{background:'#1A2035',borderRadius:'12px',padding:'20px',border:'1px solid rgba(255,255,255,0.08)'}}>
+            <h3 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'16px'}}>💼 Job Listings Management</h3>
+            <div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
+              {jobs.map(job => (
+                <div key={job.id} style={{background:'#0D0907',borderRadius:'10px',padding:'14px',display:'flex',gap:'14px',alignItems:'center',border:'1px solid rgba(255,255,255,0.06)',flexWrap:'wrap'}}>
+                  <div style={{flex:1}}>
+                    <p style={{color:'white',fontSize:'13px',fontWeight:'700',marginBottom:'2px'}}>{job.title}</p>
+                    <p style={{color:'rgba(255,255,255,0.4)',fontSize:'11px'}}>{job.company_name} · {job.location} · {job.job_type}</p>
+                    <p style={{color:'#2EC87A',fontSize:'11px',marginTop:'2px'}}>¥{job.salary_min?.toLocaleString()}-¥{job.salary_max?.toLocaleString()}/mo</p>
+                  </div>
+                  <div style={{display:'flex',gap:'8px',alignItems:'center'}}>
+                    {job.is_featured && <span style={{background:'rgba(240,168,48,0.2)',color:'#F0A830',padding:'2px 8px',borderRadius:'20px',fontSize:'10px',fontWeight:'700'}}>⭐ Featured</span>}
+                    <button onClick={()=>updateJobStatus(job.id, !job.is_active)} style={{background: job.is_active ? 'rgba(46,200,122,0.2)' : 'rgba(196,32,32,0.2)',color: job.is_active ? '#2EC87A' : '#FF8070',border:'none',borderRadius:'20px',padding:'4px 12px',fontSize:'11px',cursor:'pointer',fontWeight:'700'}}>
+                      {job.is_active ? '✅ Active' : '❌ Inactive'}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Job Seekers Tab */}
+        {activeTab === 'jobseekers' && (
+          <div style={{background:'#1A2035',borderRadius:'12px',padding:'20px',border:'1px solid rgba(255,255,255,0.08)'}}>
+            <h3 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'16px'}}>🔍 Job Seekers</h3>
+            <div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
+              {jobSeekers.map(seeker => (
+                <div key={seeker.id} style={{background:'#0D0907',borderRadius:'10px',padding:'16px',border:'1px solid rgba(255,255,255,0.06)'}}>
+                  <div style={{display:'flex',gap:'12px',alignItems:'flex-start',flexWrap:'wrap'}}>
+                    <div style={{flex:1}}>
+                      <p style={{color:'white',fontSize:'13px',fontWeight:'700',marginBottom:'4px'}}>{seeker.full_name}</p>
+                      <p style={{color:'rgba(255,255,255,0.5)',fontSize:'11px',marginBottom:'2px'}}>📧 {seeker.email} · {seeker.country === 'Bangladesh' ? '🇧🇩' : '🇳🇵'} {seeker.country}</p>
+                      <p style={{color:'rgba(255,255,255,0.5)',fontSize:'11px',marginBottom:'2px'}}>💼 {seeker.job_type} · 🗣️ {seeker.japanese_level}</p>
+                      <p style={{color:'rgba(255,255,255,0.3)',fontSize:'11px'}}>{new Date(seeker.created_at).toLocaleDateString()}</p>
+                    </div>
+                    <div style={{display:'flex',gap:'6px',flexWrap:'wrap'}}>
+                      {['new','contacted','matched','placed'].map(status => (
+                        <button key={status} onClick={()=>updateJobSeekerStatus(seeker.id, status)} style={{background: seeker.status === status ? '#C42020' : 'rgba(255,255,255,0.06)',color:'white',border:'none',borderRadius:'6px',padding:'4px 10px',fontSize:'10px',cursor:'pointer',fontWeight: seeker.status === status ? '700' : '400'}}>
+                          {status}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  {seeker.ai_analysis && (
+                    <div style={{background:'rgba(74,142,255,0.1)',borderRadius:'8px',padding:'10px',marginTop:'10px',border:'1px solid rgba(74,142,255,0.2)'}}>
+                      <p style={{color:'#4A8EFF',fontSize:'10px',fontWeight:'700',marginBottom:'4px'}}>🤖 AI Analysis</p>
+                      <p style={{color:'rgba(255,255,255,0.5)',fontSize:'11px',lineHeight:'1.6'}}>{seeker.ai_analysis.slice(0,200)}...</p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Schools Tab */}
+        {activeTab === 'schools' && (
+          <div style={{background:'#1A2035',borderRadius:'12px',padding:'20px',border:'1px solid rgba(255,255,255,0.08)',textAlign:'center'}}>
+            <h3 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'16px'}}>🏫 Schools Database</h3>
+            <p style={{color:'rgba(255,255,255,0.5)',fontSize:'14px',marginBottom:'16px'}}>
+              {stats.totalSchools} verified schools in database
+            </p>
+            <div style={{display:'flex',gap:'10px',justifyContent:'center',flexWrap:'wrap'}}>
+              <a href="https://supabase.com" target="_blank" rel="noopener noreferrer" style={{background:'#2EC87A',color:'#0D0907',textDecoration:'none',padding:'12px 24px',borderRadius:'8px',fontSize:'13px',fontWeight:'700'}}>
+                Manage in Supabase →
+              </a>
+              <a href="/schools" target="_blank" rel="noopener noreferrer" style={{background:'rgba(255,255,255,0.08)',color:'white',textDecoration:'none',padding:'12px 24px',borderRadius:'8px',fontSize:'13px',border:'1px solid rgba(255,255,255,0.15)'}}>
+                View Schools Page →
+              </a>
+            </div>
+          </div>
+        )}
+
+        {/* Analytics Tab */}
+        {activeTab === 'analytics' && (
+          <div style={{display:'flex',flexDirection:'column',gap:'16px'}}>
+            <div style={{background:'#1A2035',borderRadius:'12px',padding:'24px',border:'1px solid rgba(255,255,255,0.08)'}}>
+              <h3 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'16px'}}>📈 Analytics</h3>
+              <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))',gap:'12px',marginBottom:'20px'}}>
+                {[
+                  {label:'Total Users',value:stats.totalUsers,color:'#4A8EFF',icon:'👤'},
+                  {label:'Pro Members',value:stats.proUsers,color:'#F0A830',icon:'💎'},
+                  {label:'Conversion Rate',value: stats.totalUsers > 0 ? Math.round((stats.proUsers/stats.totalUsers)*100)+'%' : '0%',color:'#2EC87A',icon:'📊'},
+                  {label:'Total Applications',value:stats.totalApplications,color:'#C42020',icon:'📝'},
+                  {label:'Job Seekers',value:stats.totalJobSeekers,color:'#A855F7',icon:'🔍'},
+                  {label:'Active Jobs',value:jobs.filter(j=>j.is_active).length,color:'#2EC87A',icon:'💼'},
+                ].map(item => (
+                  <div key={item.label} style={{background:'#0D0907',borderRadius:'10px',padding:'14px'}}>
+                    <div style={{fontSize:'20px',marginBottom:'6px'}}>{item.icon}</div>
+                    <div style={{color:item.color,fontSize:'20px',fontWeight:'700',marginBottom:'2px'}}>{item.value}</div>
+                    <div style={{color:'rgba(255,255,255,0.4)',fontSize:'11px'}}>{item.label}</div>
+                  </div>
+                ))}
+              </div>
+              <a href="https://analytics.google.com" target="_blank" rel="noopener noreferrer" style={{background:'#4A8EFF',color:'white',textDecoration:'none',padding:'12px 24px',borderRadius:'8px',fontSize:'13px',fontWeight:'700',display:'inline-block'}}>
+                Open Google Analytics →
+              </a>
+            </div>
+          </div>
+        )}
+      </div>
+    </main>
+  )
 }
-setUser(userData.user)
-
-const [profilesData, feedbackData, appsData, schoolsData] = await Promise.all([
-supabase.from('profiles').select('*').order('created_at', { ascending: false }),
-supabase.from('feedback').select('*').order('created_at', { ascending: false }),
-supabase.from('applications').select('*, schools(name_en), profiles(id)').order('created_at', { ascending: false }),
-supabase.from('schools').select('id', { count: 'exact', head: true }),
-])
-
-const profiles = profilesData.data || []
-setUsers(profiles)
-setFeedback(feedbackData.data || [])
-setApplications(appsData.data || [])
-
-setStats({
-totalUsers: profiles.length,
-proUsers: profiles.filter(p => p.plan === 'pro' || p.plan === 'lifetime').length,
-totalSchools: schoolsData.count || 0,
-totalApplications: appsData.data?.length || 0,
-totalFeedback: feedbackData.data?.length || 0,
-newUsersToday: profiles.filter(p => new Date(p.created_at).toDateString() === new Date().toDateString()).length,
-})
-setLoading(false)
-}
-load()
-}, [])
-
-async function sendNewsletter() {
-if (!newsletter.subject || !newsletter.message) return
-setSending(true)
-try {
-await fetch('/api/send-newsletter', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({
-subject: newsletter.subject,
-message: newsletter.message,
-emails: users.map(u => u.email).filter(Boolean),
-}),
-})
-setSent(true)
-setNewsletter({subject:'',message:''})
-} catch (error) {
-console.error('Newsletter error:', error)
-}
-setSending(false)
-}
-
-async function updateApplicationStatus(id: string, status: string) {
-await supabase.from('applications').update({ status }).eq('id', id)
-setApplications(prev => prev.map(a => a.id === id ? {...a, status} : a))
-}
-
-if (loading) return <div style={{minHeight:'100vh',background:'#0D0907',display:'flex',alignItems:'center',justifyContent:'center',color:'white'}}>Loading Admin...</div>
-
-const statusColors: any = {
-pending: '#F0A830',
-applied: '#4A8EFF',
-accepted: '#2EC87A',
-rejected: '#C42020',
-withdrawn: 'rgba(255,255,255,0.3)',
-}
-
-const TABS: {key: TabType, label: string}[] = [
-{key:'overview', label:'📊 Overview'},
-{key:'users', label:`👤 Users (${stats.totalUsers})`},
-{key:'applications', label:`📝 Applications (${stats.totalApplications})`},
-{key:'feedback', label:`💬 Feedback (${stats.totalFeedback})`},
-{key:'newsletter', label:'📧 Newsletter'},
-{key:'crm', label:'📊 CRM'},
-{key:'jobseekers', label:'💼 Job Seekers'},
-{key:'analytics' as TabType, label:'📈 Analytics'},
-]
-
-return (
-<main style={{minHeight:'100vh',background:'#0D0907',fontFamily:'sans-serif'}}>
-<div style={{background:'linear-gradient(135deg,#1A2035,#0D1520)',padding:'32px 20px',borderBottom:'3px solid #C42020'}}>
-<div style={{maxWidth:'1200px',margin:'0 auto',display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:'12px'}}>
-<div>
-<h1 style={{color:'white',fontSize:'28px',fontWeight:'700',marginBottom:'4px'}}>🛠 Admin Dashboard</h1>
-<p style={{color:'rgba(255,255,255,0.4)',fontSize:'14px'}}>Welcome back, {user?.email}</p>
-</div>
-<a href="/" style={{background:'rgba(255,255,255,0.08)',color:'white',textDecoration:'none',padding:'8px 16px',borderRadius:'8px',fontSize:'13px',border:'1px solid rgba(255,255,255,0.15)'}}>← Back to Site</a>
-</div>
-</div>
-
-<div style={{maxWidth:'1200px',margin:'0 auto',padding:'32px 20px'}}>
-
-{/* Stats */}
-<div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(160px,1fr))',gap:'12px',marginBottom:'24px'}}>
-{[
-{label:'Total Users',value:stats.totalUsers,color:'#4A8EFF',icon:'👤'},
-{label:'Pro Members',value:stats.proUsers,color:'#F0A830',icon:'💎'},
-{label:'New Today',value:stats.newUsersToday,color:'#2EC87A',icon:'🆕'},
-{label:'Total Schools',value:stats.totalSchools,color:'#C42020',icon:'🏫'},
-{label:'Applications',value:stats.totalApplications,color:'#A855F7',icon:'📝'},
-{label:'Feedback',value:stats.totalFeedback,color:'#FF8070',icon:'💬'},
-].map(stat => (
-<div key={stat.label} style={{background:'#1A2035',borderRadius:'12px',padding:'16px',border:'1px solid rgba(255,255,255,0.08)',textAlign:'center'}}>
-<div style={{fontSize:'24px',marginBottom:'6px'}}>{stat.icon}</div>
-<div style={{color:stat.color,fontSize:'24px',fontWeight:'800',marginBottom:'2px'}}>{stat.value}</div>
-<div style={{color:'rgba(255,255,255,0.4)',fontSize:'11px'}}>{stat.label}</div>
-</div>
-))}
-</div>
-
-{/* Tabs */}
-<div style={{display:'flex',gap:'8px',marginBottom:'20px',flexWrap:'wrap'}}>
-{TABS.map(tab => (
-<button key={tab.key} onClick={()=>setActiveTab(tab.key)} style={{background:activeTab===tab.key?'#C42020':'#1A2035',border:'none',borderRadius:'20px',padding:'8px 18px',color:'white',fontSize:'12px',fontWeight:'600',cursor:'pointer'}}>
-{tab.label}
-</button>
-))}
-</div>
-
-{/* Overview */}
-{activeTab === 'overview' && (
-<div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'16px'}}>
-<div style={{background:'#1A2035',borderRadius:'12px',padding:'20px',border:'1px solid rgba(255,255,255,0.08)'}}>
-<h3 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'14px'}}>📊 User Plan Distribution</h3>
-{[
-{plan:'Free',count:stats.totalUsers-stats.proUsers,color:'#4A8EFF'},
-{plan:'Pro',count:stats.proUsers,color:'#F0A830'},
-].map(item => (
-<div key={item.plan} style={{marginBottom:'12px'}}>
-<div style={{display:'flex',justifyContent:'space-between',marginBottom:'4px'}}>
-<span style={{color:'rgba(255,255,255,0.6)',fontSize:'13px'}}>{item.plan}</span>
-<span style={{color:item.color,fontSize:'13px',fontWeight:'700'}}>{item.count}</span>
-</div>
-<div style={{height:'6px',background:'rgba(255,255,255,0.08)',borderRadius:'3px',overflow:'hidden'}}>
-<div style={{width: stats.totalUsers > 0 ? (item.count/stats.totalUsers*100)+'%' : '0%',height:'100%',background:item.color,borderRadius:'3px'}}/>
-</div>
-</div>
-))}
-</div>
-<div style={{background:'#1A2035',borderRadius:'12px',padding:'20px',border:'1px solid rgba(255,255,255,0.08)'}}>
-<h3 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'14px'}}>📝 Recent Applications</h3>
-{applications.slice(0,5).map(app => (
-<div key={app.id} style={{display:'flex',justifyContent:'space-between',padding:'6px 0',borderBottom:'1px solid rgba(255,255,255,0.04)'}}>
-<span style={{color:'rgba(255,255,255,0.6)',fontSize:'12px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',flex:1}}>{app.schools?.name_en || 'Unknown School'}</span>
-<span style={{background:statusColors[app.status]+'20',color:statusColors[app.status],padding:'2px 8px',borderRadius:'20px',fontSize:'10px',fontWeight:'700',marginLeft:'8px',flexShrink:0,textTransform:'capitalize'}}>{app.status}</span>
-</div>
-))}
-</div>
-</div>
-)}
-
-{/* Users */}
-{activeTab === 'users' && (
-<div style={{background:'#1A2035',borderRadius:'12px',padding:'20px',border:'1px solid rgba(255,255,255,0.08)'}}>
-<h3 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'14px'}}>👤 All Users</h3>
-<div style={{overflowX:'auto'}}>
-<table style={{width:'100%',borderCollapse:'collapse'}}>
-<thead>
-<tr>
-{['Email','Country','Plan','Joined'].map(h => (
-<th key={h} style={{color:'rgba(255,255,255,0.4)',fontSize:'11px',textAlign:'left',padding:'8px',borderBottom:'1px solid rgba(255,255,255,0.08)'}}>{h}</th>
-))}
-</tr>
-</thead>
-<tbody>
-{users.slice(0,20).map(u => (
-<tr key={u.id}>
-<td style={{color:'white',fontSize:'12px',padding:'10px 8px',borderBottom:'1px solid rgba(255,255,255,0.04)'}}>{u.email || 'N/A'}</td>
-<td style={{color:'rgba(255,255,255,0.5)',fontSize:'12px',padding:'10px 8px',borderBottom:'1px solid rgba(255,255,255,0.04)'}}>{u.country || 'N/A'}</td>
-<td style={{padding:'10px 8px',borderBottom:'1px solid rgba(255,255,255,0.04)'}}>
-<span style={{background: u.plan==='pro'||u.plan==='lifetime' ? 'rgba(240,168,48,0.2)' : 'rgba(255,255,255,0.06)',color: u.plan==='pro'||u.plan==='lifetime' ? '#F0A830' : 'rgba(255,255,255,0.4)',padding:'2px 8px',borderRadius:'20px',fontSize:'10px',fontWeight:'700',textTransform:'capitalize'}}>
-{u.plan || 'free'}
-</span>
-</td>
-<td style={{color:'rgba(255,255,255,0.4)',fontSize:'11px',padding:'10px 8px',borderBottom:'1px solid rgba(255,255,255,0.04)'}}>{new Date(u.created_at).toLocaleDateString()}</td>
-</tr>
-))}
-</tbody>
-</table>
-</div>
-</div>
-)}
-
-{/* Applications */}
-{activeTab === 'applications' && (
-<div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
-{applications.length === 0 ? (
-<div style={{textAlign:'center',padding:'48px',background:'#1A2035',borderRadius:'12px'}}>
-<p style={{color:'rgba(255,255,255,0.4)'}}>No applications yet</p>
-</div>
-) : applications.map(app => (
-<div key={app.id} style={{background:'#1A2035',borderRadius:'12px',padding:'16px',display:'flex',gap:'14px',alignItems:'center',flexWrap:'wrap',border:'1px solid rgba(255,255,255,0.08)'}}>
-<div style={{flex:1}}>
-<div style={{color:'white',fontSize:'13px',fontWeight:'600',marginBottom:'2px'}}>{app.schools?.name_en || 'Unknown School'}</div>
-<div style={{color:'rgba(255,255,255,0.4)',fontSize:'11px'}}>{app.full_name} · {app.email} · {new Date(app.created_at).toLocaleDateString()}</div>
-</div>
-<select value={app.status} onChange={e=>updateApplicationStatus(app.id, e.target.value)} style={{background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'6px 12px',color:'white',fontSize:'12px',cursor:'pointer',outline:'none'}}>
-{['pending','applied','accepted','rejected','withdrawn'].map(s => (
-<option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
-))}
-</select>
-</div>
-))}
-</div>
-)}
-
-{/* Feedback */}
-{activeTab === 'feedback' && (
-<div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
-{feedback.length === 0 ? (
-<div style={{textAlign:'center',padding:'48px',background:'#1A2035',borderRadius:'12px'}}>
-<p style={{color:'rgba(255,255,255,0.4)'}}>No feedback yet</p>
-</div>
-) : feedback.map(item => (
-<div key={item.id} style={{background:'#1A2035',borderRadius:'12px',padding:'16px',border:'1px solid rgba(255,255,255,0.08)'}}>
-<div style={{display:'flex',justifyContent:'space-between',marginBottom:'8px',flexWrap:'wrap',gap:'8px'}}>
-<span style={{background:'rgba(196,32,32,0.15)',color:'#FF8070',padding:'2px 8px',borderRadius:'20px',fontSize:'10px',fontWeight:'700'}}>{item.type || 'feedback'}</span>
-<span style={{color:'rgba(255,255,255,0.3)',fontSize:'11px'}}>{new Date(item.created_at).toLocaleDateString()}</span>
-</div>
-<p style={{color:'rgba(255,255,255,0.6)',fontSize:'13px',lineHeight:'1.6',whiteSpace:'pre-wrap'}}>{item.message}</p>
-</div>
-))}
-</div>
-)}
-
-{/* Newsletter */}
-{activeTab === 'newsletter' && (
-<div style={{background:'#1A2035',borderRadius:'12px',padding:'24px',border:'1px solid rgba(255,255,255,0.08)'}}>
-<h3 style={{color:'white',fontSize:'16px',fontWeight:'700',marginBottom:'16px'}}>📧 Send Newsletter</h3>
-<p style={{color:'rgba(255,255,255,0.4)',fontSize:'13px',marginBottom:'16px'}}>Send to {users.length} registered users</p>
-{sent ? (
-<div style={{background:'rgba(46,200,122,0.1)',borderRadius:'10px',padding:'20px',textAlign:'center',border:'1px solid rgba(46,200,122,0.3)'}}>
-<p style={{color:'#2EC87A',fontWeight:'700',fontSize:'15px'}}>✅ Newsletter sent successfully!</p>
-</div>
-) : (
-<div style={{display:'flex',flexDirection:'column',gap:'12px'}}>
-<input value={newsletter.subject} onChange={e=>setNewsletter(prev=>({...prev,subject:e.target.value}))} placeholder="Email subject..." style={{background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none'}}/>
-<textarea value={newsletter.message} onChange={e=>setNewsletter(prev=>({...prev,message:e.target.value}))} placeholder="Newsletter message..." style={{background:'#0D0907',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'8px',padding:'12px',color:'white',fontSize:'14px',outline:'none',resize:'vertical',minHeight:'150px'}}/>
-<button onClick={sendNewsletter} disabled={sending||!newsletter.subject||!newsletter.message} style={{background: newsletter.subject&&newsletter.message ? '#C42020' : 'rgba(255,255,255,0.1)',color:'white',border:'none',borderRadius:'8px',padding:'14px',fontSize:'14px',fontWeight:'700',cursor: newsletter.subject&&newsletter.message ? 'pointer' : 'not-allowed'}}>
-{sending ? 'Sending...' : `Send to ${users.length} Users`}
-</button>
-</div>
-)}
-</div>
-)}
-
-{/* CRM */}
-{activeTab === 'crm' && (
-<div style={{display:'flex',flexDirection:'column',gap:'16px'}}>
-<div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))',gap:'12px'}}>
-{[
-{label:'Total Users',value:stats.totalUsers,color:'#4A8EFF',icon:'👤'},
-{label:'Pro Members',value:stats.proUsers,color:'#F0A830',icon:'💎'},
-{label:'Conversion Rate',value: stats.totalUsers > 0 ? Math.round((stats.proUsers/stats.totalUsers)*100)+'%' : '0%',color:'#2EC87A',icon:'📈'},
-{label:'Applications',value:stats.totalApplications,color:'#C42020',icon:'📝'},
-].map(stat => (
-<div key={stat.label} style={{background:'#1A2035',borderRadius:'12px',padding:'16px',border:'1px solid rgba(255,255,255,0.08)',textAlign:'center'}}>
-<div style={{fontSize:'24px',marginBottom:'6px'}}>{stat.icon}</div>
-<div style={{color:stat.color,fontSize:'22px',fontWeight:'800',marginBottom:'2px'}}>{stat.value}</div>
-<div style={{color:'rgba(255,255,255,0.4)',fontSize:'11px'}}>{stat.label}</div>
-</div>
-))}
-</div>
-<div style={{background:'#1A2035',borderRadius:'12px',padding:'24px',border:'1px solid rgba(255,255,255,0.08)'}}>
-<h3 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'16px'}}>📊 User Journey Funnel</h3>
-{[
-{stage:'Registered',count:stats.totalUsers,color:'#4A8EFF'},
-{stage:'Applied to School',count:stats.totalApplications,color:'#F0A830'},
-{stage:'Upgraded to Pro',count:stats.proUsers,color:'#2EC87A'},
-].map(item => (
-<div key={item.stage} style={{marginBottom:'14px'}}>
-<div style={{display:'flex',justifyContent:'space-between',marginBottom:'6px'}}>
-<span style={{color:'rgba(255,255,255,0.6)',fontSize:'13px'}}>{item.stage}</span>
-<span style={{color:item.color,fontSize:'13px',fontWeight:'700'}}>{item.count}</span>
-</div>
-<div style={{height:'8px',background:'rgba(255,255,255,0.06)',borderRadius:'4px',overflow:'hidden'}}>
-<div style={{width: stats.totalUsers > 0 ? (item.count/stats.totalUsers*100)+'%' : '0%',height:'100%',background:item.color,borderRadius:'4px'}}/>
-</div>
-</div>
-))}
-</div>
-<div style={{background:'#1A2035',borderRadius:'12px',padding:'24px',border:'1px solid rgba(255,255,255,0.08)'}}>
-<h3 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'16px'}}>🕐 Recent Users</h3>
-<div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
-{users.slice(0,10).map(u => (
-<div key={u.id} style={{display:'flex',gap:'12px',alignItems:'center',padding:'8px',background:'#0D0907',borderRadius:'8px'}}>
-<div style={{width:'32px',height:'32px',borderRadius:'50%',background:'#C42020',display:'flex',alignItems:'center',justifyContent:'center',color:'white',fontSize:'12px',fontWeight:'700',flexShrink:0}}>
-{u.full_name?.[0]?.toUpperCase() || '?'}
-</div>
-<div style={{flex:1}}>
-<div style={{color:'white',fontSize:'12px',fontWeight:'600'}}>{u.full_name || u.email}</div>
-<div style={{color:'rgba(255,255,255,0.3)',fontSize:'11px'}}>{u.country || 'Unknown'} · {new Date(u.created_at).toLocaleDateString()}</div>
-</div>
-<span style={{background: u.plan==='pro'||u.plan==='lifetime' ? 'rgba(240,168,48,0.2)' : 'rgba(255,255,255,0.06)',color: u.plan==='pro'||u.plan==='lifetime' ? '#F0A830' : 'rgba(255,255,255,0.3)',padding:'2px 8px',borderRadius:'20px',fontSize:'10px',fontWeight:'700',textTransform:'capitalize'}}>
-{u.plan || 'free'}
-</span>
-</div>
-))}
-</div>
-</div>
-</div>
-)}
-
-{/* Job Seekers */}
-{activeTab === 'jobseekers' && <JobSeekersTab />}
-{/* Analytics */}
-{activeTab === 'analytics' && (
-<div style={{display:'flex',flexDirection:'column',gap:'16px'}}>
-<div style={{background:'#1A2035',borderRadius:'12px',padding:'24px',border:'1px solid rgba(255,255,255,0.08)'}}>
-<h3 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'16px'}}>📈 Google Analytics</h3>
-<p style={{color:'rgba(255,255,255,0.5)',fontSize:'13px',marginBottom:'16px'}}>View detailed analytics in Google Analytics dashboard.</p>
-<a href="https://analytics.google.com" target="_blank" rel="noopener noreferrer" style={{background:'#4A8EFF',color:'white',textDecoration:'none',padding:'12px 24px',borderRadius:'8px',fontSize:'13px',fontWeight:'700',display:'inline-block',marginBottom:'24px'}}>
-Open Google Analytics →
-</a>
-
-<div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))',gap:'12px',marginBottom:'20px'}}>
-{[
-{label:'GA Property ID',value:process.env.NEXT_PUBLIC_GA_ID || 'Not set',color:'#4A8EFF',icon:'🔑'},
-{label:'Total Users (DB)',value:stats.totalUsers,color:'#2EC87A',icon:'👤'},
-{label:'Total Applications',value:stats.totalApplications,color:'#F0A830',icon:'📝'},
-{label:'Pro Members',value:stats.proUsers,color:'#A855F7',icon:'💎'},
-].map(item => (
-<div key={item.label} style={{background:'#0D0907',borderRadius:'10px',padding:'14px'}}>
-<div style={{fontSize:'20px',marginBottom:'6px'}}>{item.icon}</div>
-<div style={{color:item.color,fontSize:'16px',fontWeight:'700',marginBottom:'2px'}}>{item.value}</div>
-<div style={{color:'rgba(255,255,255,0.4)',fontSize:'11px'}}>{item.label}</div>
-</div>
-))}
-</div>
-
-<div style={{background:'rgba(74,142,255,0.1)',borderRadius:'10px',padding:'16px',border:'1px solid rgba(74,142,255,0.2)'}}>
-<h4 style={{color:'#4A8EFF',fontSize:'13px',fontWeight:'700',marginBottom:'12px'}}>📊 Key Pages to Track</h4>
-<div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
-{[
-{page:'/schools',label:'School Search'},
-{page:'/apply',label:'Apply Page'},
-{page:'/chat',label:'Sakura AI Chat'},
-{page:'/pricing',label:'Pricing Page'},
-{page:'/register',label:'Registration'},
-{page:'/jobs',label:'Jobs Page'},
-{page:'/visa-consult',label:'Visa Consultation'},
-{page:'/recruit',label:'Company Recruitment'},
-].map(item => (
-<div key={item.page} style={{display:'flex',justifyContent:'space-between',padding:'6px 0',borderBottom:'1px solid rgba(255,255,255,0.04)'}}>
-<span style={{color:'rgba(255,255,255,0.6)',fontSize:'12px'}}>{item.label}</span>
-<span style={{color:'rgba(255,255,255,0.3)',fontSize:'12px'}}>{item.page}</span>
-</div>
-))}
-</div>
-</div>
-</div>
-
-<div style={{background:'#1A2035',borderRadius:'12px',padding:'24px',border:'1px solid rgba(255,255,255,0.08)'}}>
-<h3 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'16px'}}>🎯 Conversion Goals</h3>
-<div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
-{[
-{label:'Registration → School Apply',rate: stats.totalUsers > 0 ? Math.round((stats.totalApplications/stats.totalUsers)*100) + '%' : '0%',color:'#F0A830'},
-{label:'Free → Pro Conversion',rate: stats.totalUsers > 0 ? Math.round((stats.proUsers/stats.totalUsers)*100) + '%' : '0%',color:'#2EC87A'},
-{label:'Total Pro Members',rate: stats.proUsers + ' users',color:'#A855F7'},
-].map(item => (
-<div key={item.label} style={{display:'flex',justifyContent:'space-between',alignItems:'center',background:'#0D0907',borderRadius:'8px',padding:'12px'}}>
-<span style={{color:'rgba(255,255,255,0.6)',fontSize:'13px'}}>{item.label}</span>
-<span style={{color:item.color,fontSize:'14px',fontWeight:'700'}}>{item.rate}</span>
-</div>
-))}
-</div>
-</div>
-</div>
-)}
-
-
-</div>
-</main>
-)
-}
-

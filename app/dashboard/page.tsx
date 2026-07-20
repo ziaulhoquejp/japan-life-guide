@@ -4,235 +4,231 @@ import { supabase } from '../../lib/supabase'
 import Link from 'next/link'
 
 export default function DashboardPage() {
-const [user, setUser] = useState<any>(null)
-const [profile, setProfile] = useState<any>(null)
-const [applications, setApplications] = useState<any[]>([])
-const [favorites, setFavorites] = useState<any[]>([])
-const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState<any>(null)
+  const [profile, setProfile] = useState<any>(null)
+  const [applications, setApplications] = useState<any[]>([])
+  const [favorites, setFavorites] = useState<any[]>([])
+  const [visaDocs, setVisaDocs] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
 
-useEffect(() => {
-async function load() {
-const { data: userData } = await supabase.auth.getUser()
-if (!userData.user) { window.location.href = '/login'; return }
-setUser(userData.user)
+  useEffect(() => {
+    async function load() {
+      const { data: userData } = await supabase.auth.getUser()
+      if (!userData.user) { window.location.href = '/login'; return }
+      setUser(userData.user)
 
-const [profileData, appsData, favsData] = await Promise.all([
-supabase.from('profiles').select('*').eq('id', userData.user.id).single(),
-supabase.from('applications').select('*, schools(name_en, icon, city)').eq('user_id', userData.user.id).order('created_at', { ascending: false }).limit(5),
-supabase.from('favorites').select('*, schools(name_en, icon, city, annual_fee_jpy)').eq('user_id', userData.user.id).limit(4),
-])
+      const [profileData, appsData, favsData, visaData] = await Promise.all([
+        supabase.from('profiles').select('*').eq('id', userData.user.id).single(),
+        supabase.from('applications').select('*, schools(name_en, city, icon)').eq('user_id', userData.user.id).order('created_at', { ascending: false }).limit(5),
+        supabase.from('favorites').select('*, schools(name_en, city, icon)').eq('user_id', userData.user.id).limit(5),
+        supabase.from('visa_tracker').select('*').eq('user_id', userData.user.id).order('expiry_date', { ascending: true }).limit(5),
+      ])
 
-if (profileData.data) setProfile(profileData.data)
-if (appsData.data) setApplications(appsData.data)
-if (favsData.data) setFavorites(favsData.data)
-setLoading(false)
-}
-load()
-}, [])
+      if (profileData.data) setProfile(profileData.data)
+      if (appsData.data) setApplications(appsData.data)
+      if (favsData.data) setFavorites(favsData.data)
+      if (visaData.data) setVisaDocs(visaData.data)
+      setLoading(false)
+    }
+    load()
+  }, [])
 
-if (loading) return <div style={{minHeight:'100vh',background:'#0D0907',display:'flex',alignItems:'center',justifyContent:'center',color:'white'}}>Loading...</div>
+  function getDaysUntil(dateStr: string) {
+    const today = new Date()
+    today.setHours(0,0,0,0)
+    const expiry = new Date(dateStr)
+    return Math.ceil((expiry.getTime() - today.getTime()) / (1000*60*60*24))
+  }
 
-const isPro = profile?.plan === 'pro' || profile?.plan === 'lifetime'
+  function getStatusColor(days: number) {
+    if (days < 0) return '#FF8070'
+    if (days <= 30) return '#C42020'
+    if (days <= 90) return '#F0A830'
+    return '#2EC87A'
+  }
 
-const statusColors: any = {
-pending: '#F0A830',
-applied: '#4A8EFF',
-accepted: '#2EC87A',
-rejected: '#C42020',
-withdrawn: 'rgba(255,255,255,0.3)',
-}
+  const isPro = profile?.plan === 'pro' || profile?.plan === 'lifetime'
 
-const QUICK_ACTIONS = [
-{href:'/schools', icon:'🏫', label:'Browse Schools'},
-{href:'/chat', icon:'🌸', label:'Ask Sakura AI'},
-{href:'/visa-calculator', icon:'🛂', label:'Visa Calculator'},
-{href:'/cost-calculator', icon:'💰', label:'Cost Calculator'},
-{href:'/jlpt-test', icon:'📝', label:'JLPT Practice'},
-{href:'/visa-consult', icon:'👨‍💼', label:'Free Visa Consult'},
-{href:'/scholarships', icon:'🎓', label:'Scholarships'},
-{href:'/compare', icon:'⚖️', label:'Compare Schools'},
-]
+  if (loading) return <div style={{minHeight:'100vh',background:'#0D0907',display:'flex',alignItems:'center',justifyContent:'center',color:'white'}}>Loading...</div>
 
-return (
-<main style={{minHeight:'100vh',background:'#0D0907',fontFamily:'sans-serif'}}>
-{/* Header */}
-<div style={{background:'linear-gradient(135deg,#1A2035,#0D1520)',padding:'32px 20px',borderBottom:'3px solid #C42020'}}>
-<div style={{maxWidth:'1000px',margin:'0 auto',display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexWrap:'wrap',gap:'16px'}}>
-<div>
-<p style={{color:'rgba(255,255,255,0.5)',fontSize:'14px',marginBottom:'4px'}}>Welcome back,</p>
-<h1 style={{color:'white',fontSize:'28px',fontWeight:'700',marginBottom:'8px'}}>{profile?.full_name || user?.email} 🌸</h1>
-<div style={{display:'flex',gap:'8px',flexWrap:'wrap'}}>
-<span style={{background: isPro ? 'rgba(240,168,48,0.2)' : 'rgba(255,255,255,0.08)',color: isPro ? '#F0A830' : 'rgba(255,255,255,0.5)',padding:'4px 12px',borderRadius:'20px',fontSize:'12px',fontWeight:'700'}}>
-{isPro ? '💎 Pro Member' : '🆓 Free Plan'}
-</span>
-{profile?.country && (
-<span style={{background:'rgba(255,255,255,0.08)',color:'rgba(255,255,255,0.5)',padding:'4px 12px',borderRadius:'20px',fontSize:'12px'}}>
-{profile.country === 'Bangladesh' ? '🇧🇩' : profile.country === 'Nepal' ? '🇳🇵' : '🌍'} {profile.country}
-</span>
-)}
-{profile?.japanese_level && (
-<span style={{background:'rgba(255,255,255,0.08)',color:'rgba(255,255,255,0.5)',padding:'4px 12px',borderRadius:'20px',fontSize:'12px'}}>
-📝 JLPT {profile.japanese_level.toUpperCase()}
-</span>
-)}
-</div>
-</div>
-<a href="/profile" style={{background:'rgba(255,255,255,0.08)',color:'white',textDecoration:'none',padding:'10px 20px',borderRadius:'8px',fontSize:'13px',border:'1px solid rgba(255,255,255,0.15)'}}>
-Edit Profile →
-</a>
-</div>
-</div>
+  return (
+    <main style={{minHeight:'100vh',background:'#0D0907',fontFamily:'sans-serif'}}>
+      {/* Header */}
+      <div style={{background:'linear-gradient(135deg,#1A2035,#0D1520)',padding:'40px 20px',borderBottom:'3px solid #C42020'}}>
+        <div style={{maxWidth:'900px',margin:'0 auto'}}>
+          <div style={{display:'flex',gap:'16px',alignItems:'center',marginBottom:'20px',flexWrap:'wrap'}}>
+            <div style={{width:'60px',height:'60px',borderRadius:'50%',background:'linear-gradient(135deg,#C42020,#FF8070)',display:'flex',alignItems:'center',justifyContent:'center',color:'white',fontSize:'24px',fontWeight:'700',flexShrink:0}}>
+              {profile?.full_name?.[0]?.toUpperCase() || '?'}
+            </div>
+            <div>
+              <h1 style={{color:'white',fontSize:'24px',fontWeight:'700',marginBottom:'4px'}}>
+                Welcome back, {profile?.full_name?.split(' ')[0] || 'Friend'}! 🌸
+              </h1>
+              <div style={{display:'flex',gap:'8px',flexWrap:'wrap'}}>
+                <span style={{background: isPro ? 'rgba(240,168,48,0.2)' : 'rgba(255,255,255,0.1)',color: isPro ? '#F0A830' : 'rgba(255,255,255,0.5)',padding:'3px 10px',borderRadius:'20px',fontSize:'11px',fontWeight:'700'}}>
+                  {isPro ? '💎 Pro Member' : '🆓 Free Plan'}
+                </span>
+                {profile?.country && (
+                  <span style={{background:'rgba(255,255,255,0.08)',color:'rgba(255,255,255,0.5)',padding:'3px 10px',borderRadius:'20px',fontSize:'11px'}}>
+                    {profile.country === 'Bangladesh' ? '🇧🇩' : profile.country === 'Nepal' ? '🇳🇵' : '🌍'} {profile.country}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
 
-<div style={{maxWidth:'1000px',margin:'0 auto',padding:'32px 20px'}}>
+          {/* Quick Stats */}
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(140px,1fr))',gap:'12px'}}>
+            {[
+              {icon:'📝',label:'Applications',value:applications.length,color:'#C42020',href:'/applications'},
+              {icon:'❤️',label:'Saved Schools',value:favorites.length,color:'#FF8070',href:'/schools'},
+              {icon:'🪪',label:'Documents',value:visaDocs.length,color:'#A855F7',href:'/visa-tracker'},
+              {icon:'💎',label:'Plan',value: isPro ? 'Pro' : 'Free',color:'#F0A830',href:'/pricing'},
+            ].map(stat => (
+              <Link key={stat.label} href={stat.href} style={{background:'rgba(255,255,255,0.06)',borderRadius:'12px',padding:'14px',textDecoration:'none',border:'1px solid rgba(255,255,255,0.08)',textAlign:'center',display:'block'}}>
+                <div style={{fontSize:'24px',marginBottom:'4px'}}>{stat.icon}</div>
+                <div style={{color:stat.color,fontSize:'20px',fontWeight:'800'}}>{stat.value}</div>
+                <div style={{color:'rgba(255,255,255,0.4)',fontSize:'11px'}}>{stat.label}</div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
 
-{/* Pro Banner */}
-{!isPro && (
-<div style={{background:'linear-gradient(135deg,rgba(196,32,32,0.2),rgba(139,0,0,0.1))',borderRadius:'12px',padding:'20px',marginBottom:'24px',border:'1px solid rgba(196,32,32,0.3)',display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:'12px'}}>
-<div>
-<p style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'4px'}}>💎 Upgrade to Pro</p>
-<p style={{color:'rgba(255,255,255,0.5)',fontSize:'13px'}}>Unlock unlimited AI chat, applications, and more!</p>
-</div>
-<a href="/pricing" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'10px 24px',borderRadius:'8px',fontSize:'13px',fontWeight:'700',whiteSpace:'nowrap'}}>
-Upgrade Now →
-</a>
-</div>
-)}
+      <div style={{maxWidth:'900px',margin:'0 auto',padding:'32px 20px'}}>
 
-{/* Stats */}
-<div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(160px,1fr))',gap:'12px',marginBottom:'24px'}}>
-{[
-{label:'Applications',value:applications.length,icon:'📝',color:'#C42020',href:'/applications'},
-{label:'Saved Schools',value:favorites.length,icon:'❤️',color:'#F0A830',href:'/schools'},
-{label:'Plan',value: isPro ? 'Pro' : 'Free',icon:'💎',color: isPro ? '#F0A830' : '#4A8EFF',href:'/pricing'},
-{label:'JLPT Level',value: profile?.japanese_level?.toUpperCase() || 'N/A',icon:'📝',color:'#2EC87A',href:'/jlpt-test'},
-].map(stat => (
-<a key={stat.label} href={stat.href} style={{background:'#1A2035',borderRadius:'12px',padding:'16px',border:'1px solid rgba(255,255,255,0.08)',textAlign:'center',textDecoration:'none',display:'block'}}
-onMouseEnter={e=>(e.currentTarget.style.borderColor='rgba(196,32,32,0.3)')}
-onMouseLeave={e=>(e.currentTarget.style.borderColor='rgba(255,255,255,0.08)')}>
-<div style={{fontSize:'24px',marginBottom:'6px'}}>{stat.icon}</div>
-<div style={{color:stat.color,fontSize:'20px',fontWeight:'800',marginBottom:'2px'}}>{stat.value}</div>
-<div style={{color:'rgba(255,255,255,0.4)',fontSize:'11px'}}>{stat.label}</div>
-</a>
-))}
-</div>
+        {/* Urgent Visa Alerts */}
+        {visaDocs.filter(d => getDaysUntil(d.expiry_date) <= 30).length > 0 && (
+          <div style={{background:'rgba(196,32,32,0.15)',borderRadius:'12px',padding:'16px',marginBottom:'24px',border:'1px solid rgba(196,32,32,0.4)'}}>
+            <p style={{color:'#FF8070',fontSize:'14px',fontWeight:'700',marginBottom:'8px'}}>🚨 Urgent: Documents expiring soon!</p>
+            {visaDocs.filter(d => getDaysUntil(d.expiry_date) <= 30).map(doc => {
+              const days = getDaysUntil(doc.expiry_date)
+              return (
+                <p key={doc.id} style={{color:'rgba(255,255,255,0.7)',fontSize:'13px',marginBottom:'4px'}}>
+                  🪪 {doc.document_type} - {days < 0 ? 'EXPIRED!' : `${days} days left`}
+                </p>
+              )
+            })}
+            <Link href="/visa-tracker" style={{color:'#FF8070',fontSize:'12px',fontWeight:'700',textDecoration:'none'}}>Manage Documents →</Link>
+          </div>
+        )}
 
-{/* Quick Actions */}
-<div style={{background:'#1A2035',borderRadius:'12px',padding:'20px',marginBottom:'24px',border:'1px solid rgba(255,255,255,0.08)'}}>
-<h2 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'14px'}}>⚡ Quick Actions</h2>
-<div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(110px,1fr))',gap:'8px'}}>
-{QUICK_ACTIONS.map(action => (
-<a key={action.href} href={action.href} style={{background:'#0D0907',borderRadius:'10px',padding:'14px 8px',textAlign:'center',textDecoration:'none',border:'1px solid rgba(255,255,255,0.06)',display:'block'}}
-onMouseEnter={e=>(e.currentTarget.style.borderColor='rgba(196,32,32,0.3)')}
-onMouseLeave={e=>(e.currentTarget.style.borderColor='rgba(255,255,255,0.06)')}>
-<div style={{fontSize:'24px',marginBottom:'6px'}}>{action.icon}</div>
-<div style={{color:'rgba(255,255,255,0.7)',fontSize:'11px',fontWeight:'600',lineHeight:'1.3'}}>{action.label}</div>
-</a>
-))}
-</div>
-</div>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'20px'}}>
 
-<div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'16px',marginBottom:'24px'}}>
+          {/* Quick Actions */}
+          <div style={{background:'#1A2035',borderRadius:'14px',padding:'22px',border:'1px solid rgba(255,255,255,0.08)'}}>
+            <h2 style={{color:'white',fontSize:'16px',fontWeight:'700',marginBottom:'16px'}}>🚀 Quick Actions</h2>
+            <div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
+              {[
+                {icon:'🏫',label:'Browse Schools',href:'/schools',color:'#C42020'},
+                {icon:'🌸',label:'Ask Sakura AI',href:'/chat',color:'#FF8070'},
+                {icon:'💼',label:'Browse Jobs',href:'/jobs',color:'#2EC87A'},
+                {icon:'🛂',label:'Visa Guide',href:'/visa',color:'#4A8EFF'},
+                {icon:'📝',label:'JLPT Practice',href:'/jlpt-test',color:'#F0A830'},
+                {icon:'🏭',label:'SSW Test',href:'/ssw-test',color:'#A855F7'},
+                {icon:'🎤',label:'Interview Practice',href:'/interview-practice',color:'#2EC87A'},
+                {icon:'📄',label:'Motivation Letter',href:'/motivation-letter',color:'#F0A830'},
+                {icon:'✅',label:'Visa Checker',href:'/visa-check',color:'#4A8EFF'},
+                {icon:'🕌',label:'Halal Scanner',href:'/halal-scanner',color:'#2EC87A'},
+              ].map(action => (
+                <Link key={action.href} href={action.href} style={{display:'flex',gap:'10px',alignItems:'center',padding:'10px',background:'#0D0907',borderRadius:'8px',textDecoration:'none',border:'1px solid rgba(255,255,255,0.04)'}}>
+                  <span style={{fontSize:'18px'}}>{action.icon}</span>
+                  <span style={{color:'rgba(255,255,255,0.7)',fontSize:'13px'}}>{action.label}</span>
+                  <span style={{color:action.color,marginLeft:'auto',fontSize:'12px'}}>→</span>
+                </Link>
+              ))}
+            </div>
+          </div>
 
-{/* Recent Applications */}
-<div style={{background:'#1A2035',borderRadius:'12px',padding:'20px',border:'1px solid rgba(255,255,255,0.08)'}}>
-<div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'14px'}}>
-<h2 style={{color:'white',fontSize:'15px',fontWeight:'700'}}>📝 My Applications</h2>
-<a href="/applications" style={{color:'#C42020',fontSize:'12px',textDecoration:'none'}}>View all →</a>
-</div>
-{applications.length === 0 ? (
-<div style={{textAlign:'center',padding:'20px'}}>
-<p style={{color:'rgba(255,255,255,0.3)',fontSize:'13px',marginBottom:'12px'}}>No applications yet</p>
-<a href="/schools" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'8px 16px',borderRadius:'8px',fontSize:'12px',fontWeight:'700'}}>Browse Schools</a>
-</div>
-) : applications.map(app => (
-<div key={app.id} style={{display:'flex',gap:'10px',alignItems:'center',padding:'8px 0',borderBottom:'1px solid rgba(255,255,255,0.04)'}}>
-<span style={{fontSize:'20px'}}>{app.schools?.icon || '🏫'}</span>
-<div style={{flex:1}}>
-<div style={{color:'white',fontSize:'12px',fontWeight:'600',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{app.schools?.name_en}</div>
-<div style={{color:'rgba(255,255,255,0.3)',fontSize:'11px'}}>{app.schools?.city}</div>
-</div>
-<span style={{background:statusColors[app.status]+'20',color:statusColors[app.status],padding:'2px 8px',borderRadius:'20px',fontSize:'10px',fontWeight:'700',textTransform:'capitalize',flexShrink:0}}>
-{app.status}
-</span>
-</div>
-))}
-</div>
+          <div style={{display:'flex',flexDirection:'column',gap:'20px'}}>
 
-{/* Saved Schools */}
-<div style={{background:'#1A2035',borderRadius:'12px',padding:'20px',border:'1px solid rgba(255,255,255,0.08)'}}>
-<div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'14px'}}>
-<h2 style={{color:'white',fontSize:'15px',fontWeight:'700'}}>❤️ Saved Schools</h2>
-<a href="/schools" style={{color:'#C42020',fontSize:'12px',textDecoration:'none'}}>Browse more →</a>
-</div>
-{favorites.length === 0 ? (
-<div style={{textAlign:'center',padding:'20px'}}>
-<p style={{color:'rgba(255,255,255,0.3)',fontSize:'13px',marginBottom:'12px'}}>No saved schools yet</p>
-<a href="/schools" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'8px 16px',borderRadius:'8px',fontSize:'12px',fontWeight:'700'}}>Browse Schools</a>
-</div>
-) : favorites.map(fav => (
-<a key={fav.id} href={'/schools/' + fav.school_id} style={{display:'flex',gap:'10px',alignItems:'center',padding:'8px 0',borderBottom:'1px solid rgba(255,255,255,0.04)',textDecoration:'none'}}>
-<span style={{fontSize:'20px'}}>{fav.schools?.icon || '🏫'}</span>
-<div style={{flex:1}}>
-<div style={{color:'white',fontSize:'12px',fontWeight:'600',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{fav.schools?.name_en}</div>
-<div style={{color:'rgba(255,255,255,0.3)',fontSize:'11px'}}>{fav.schools?.city} · ¥{fav.schools?.annual_fee_jpy?.toLocaleString()}</div>
-</div>
-</a>
-))}
-</div>
-</div>
+            {/* Recent Applications */}
+            <div style={{background:'#1A2035',borderRadius:'14px',padding:'22px',border:'1px solid rgba(255,255,255,0.08)'}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'14px'}}>
+                <h2 style={{color:'white',fontSize:'16px',fontWeight:'700'}}>📝 Applications</h2>
+                <Link href="/applications" style={{color:'#C42020',fontSize:'12px',textDecoration:'none'}}>View all →</Link>
+              </div>
+              {applications.length === 0 ? (
+                <div style={{textAlign:'center',padding:'20px'}}>
+                  <p style={{color:'rgba(255,255,255,0.3)',fontSize:'13px',marginBottom:'10px'}}>No applications yet</p>
+                  <Link href="/schools" style={{background:'#C42020',color:'white',textDecoration:'none',padding:'8px 16px',borderRadius:'8px',fontSize:'12px',fontWeight:'700'}}>Browse Schools</Link>
+                </div>
+              ) : applications.map(app => (
+                <div key={app.id} style={{display:'flex',gap:'10px',alignItems:'center',padding:'8px 0',borderBottom:'1px solid rgba(255,255,255,0.04)'}}>
+                  <span style={{fontSize:'20px'}}>{app.schools?.icon || '🏫'}</span>
+                  <div style={{flex:1}}>
+                    <p style={{color:'white',fontSize:'12px',fontWeight:'600'}}>{app.schools?.name_en || 'School'}</p>
+                    <p style={{color:'rgba(255,255,255,0.4)',fontSize:'11px'}}>{app.schools?.city}</p>
+                  </div>
+                  <span style={{background: app.status === 'applied' ? 'rgba(74,142,255,0.2)' : 'rgba(46,200,122,0.2)',color: app.status === 'applied' ? '#4A8EFF' : '#2EC87A',padding:'2px 8px',borderRadius:'20px',fontSize:'10px',fontWeight:'700'}}>
+                    {app.status}
+                  </span>
+                </div>
+              ))}
+            </div>
 
-{/* Visa Progress */}
-<div style={{background:'#1A2035',borderRadius:'12px',padding:'20px',marginBottom:'24px',border:'1px solid rgba(255,255,255,0.08)'}}>
-<h2 style={{color:'white',fontSize:'15px',fontWeight:'700',marginBottom:'16px'}}>🛂 Your Japan Journey Progress</h2>
-<div style={{display:'flex',flexDirection:'column',gap:'12px'}}>
-{[
-{step:'Create Account', done:true, href:'/dashboard'},
-{step:'Browse Schools', done:applications.length > 0 || favorites.length > 0, href:'/schools'},
-{step:'Apply to a School', done:applications.length > 0, href:'/apply'},
-{step:'Check Visa Requirements', done:false, href:'/visa'},
-{step:'Free Visa Consultation', done:false, href:'/visa-consult'},
-].map((item, i) => (
-<a key={i} href={item.href} style={{display:'flex',gap:'12px',alignItems:'center',textDecoration:'none'}}>
-<div style={{width:'24px',height:'24px',borderRadius:'50%',background: item.done ? '#2EC87A' : 'rgba(255,255,255,0.1)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'12px',fontWeight:'700',color:'white',flexShrink:0}}>
-{item.done ? '✓' : i+1}
-</div>
-<div style={{flex:1,height:'2px',background: item.done ? '#2EC87A' : 'rgba(255,255,255,0.1)',borderRadius:'1px'}}/>
-<span style={{color: item.done ? '#2EC87A' : 'rgba(255,255,255,0.5)',fontSize:'13px',whiteSpace:'nowrap'}}>{item.step}</span>
-</a>
-))}
-</div>
-</div>
+            {/* Visa Documents */}
+            <div style={{background:'#1A2035',borderRadius:'14px',padding:'22px',border:'1px solid rgba(255,255,255,0.08)'}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'14px'}}>
+                <h2 style={{color:'white',fontSize:'16px',fontWeight:'700'}}>🪪 Documents</h2>
+                <Link href="/visa-tracker" style={{color:'#C42020',fontSize:'12px',textDecoration:'none'}}>Manage →</Link>
+              </div>
+              {visaDocs.length === 0 ? (
+                <div style={{textAlign:'center',padding:'20px'}}>
+                  <p style={{color:'rgba(255,255,255,0.3)',fontSize:'13px',marginBottom:'10px'}}>No documents tracked</p>
+                  <Link href="/visa-tracker" style={{background:'#A855F7',color:'white',textDecoration:'none',padding:'8px 16px',borderRadius:'8px',fontSize:'12px',fontWeight:'700'}}>Add Document</Link>
+                </div>
+              ) : visaDocs.map(doc => {
+                const days = getDaysUntil(doc.expiry_date)
+                const color = getStatusColor(days)
+                return (
+                  <div key={doc.id} style={{display:'flex',gap:'10px',alignItems:'center',padding:'8px 0',borderBottom:'1px solid rgba(255,255,255,0.04)'}}>
+                    <span style={{fontSize:'18px'}}>🪪</span>
+                    <div style={{flex:1}}>
+                      <p style={{color:'white',fontSize:'12px',fontWeight:'600'}}>{doc.document_type}</p>
+                      <p style={{color:'rgba(255,255,255,0.4)',fontSize:'11px'}}>{new Date(doc.expiry_date).toLocaleDateString()}</p>
+                    </div>
+                    <span style={{color,fontSize:'11px',fontWeight:'700'}}>{days < 0 ? 'Expired!' : `${days}d`}</span>
+                  </div>
+                )
+              })}
+            </div>
 
-{/* Recommended Actions */}
-<div style={{background:'rgba(46,200,122,0.05)',borderRadius:'12px',padding:'20px',border:'1px solid rgba(46,200,122,0.2)'}}>
-<h2 style={{color:'#2EC87A',fontSize:'15px',fontWeight:'700',marginBottom:'14px'}}>💡 Recommended Next Steps</h2>
-<div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
-{applications.length === 0 && (
-<a href="/schools" style={{display:'flex',gap:'12px',alignItems:'center',textDecoration:'none',background:'rgba(255,255,255,0.04)',borderRadius:'8px',padding:'12px'}}>
-<span style={{fontSize:'20px'}}>🏫</span>
-<div>
-<div style={{color:'white',fontSize:'13px',fontWeight:'600'}}>Find your perfect school</div>
-<div style={{color:'rgba(255,255,255,0.4)',fontSize:'12px'}}>Browse 724+ verified Japanese language schools</div>
-</div>
-</a>
-)}
-<a href="/chat" style={{display:'flex',gap:'12px',alignItems:'center',textDecoration:'none',background:'rgba(255,255,255,0.04)',borderRadius:'8px',padding:'12px'}}>
-<span style={{fontSize:'20px'}}>🌸</span>
-<div>
-<div style={{color:'white',fontSize:'13px',fontWeight:'600'}}>Ask Sakura AI</div>
-<div style={{color:'rgba(255,255,255,0.4)',fontSize:'12px'}}>Get personalized advice in Bengali, Nepali, or English</div>
-</div>
-</a>
-<a href="/visa-consult" style={{display:'flex',gap:'12px',alignItems:'center',textDecoration:'none',background:'rgba(255,255,255,0.04)',borderRadius:'8px',padding:'12px'}}>
-<span style={{fontSize:'20px'}}>👨‍💼</span>
-<div>
-<div style={{color:'white',fontSize:'13px',fontWeight:'600'}}>Free Visa Consultation</div>
-<div style={{color:'rgba(255,255,255,0.4)',fontSize:'12px'}}>Get matched with an immigration specialist</div>
-</div>
-</a>
-</div>
-</div>
-</div>
-</main>
-)
+            {/* Upgrade to Pro */}
+            {!isPro && (
+              <div style={{background:'linear-gradient(135deg,rgba(240,168,48,0.2),rgba(240,168,48,0.05))',borderRadius:'14px',padding:'22px',border:'1px solid rgba(240,168,48,0.3)',textAlign:'center'}}>
+                <div style={{fontSize:'32px',marginBottom:'8px'}}>💎</div>
+                <h3 style={{color:'#F0A830',fontSize:'15px',fontWeight:'700',marginBottom:'8px'}}>Upgrade to Pro</h3>
+                <p style={{color:'rgba(255,255,255,0.5)',fontSize:'12px',marginBottom:'14px',lineHeight:'1.6'}}>
+                  Unlimited AI chat, priority support, and exclusive features
+                </p>
+                <Link href="/pricing" style={{background:'#F0A830',color:'#0D0907',textDecoration:'none',padding:'10px 20px',borderRadius:'8px',fontSize:'13px',fontWeight:'700',display:'inline-block'}}>
+                  View Plans →
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Saved Schools */}
+        {favorites.length > 0 && (
+          <div style={{background:'#1A2035',borderRadius:'14px',padding:'22px',marginTop:'20px',border:'1px solid rgba(255,255,255,0.08)'}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'14px'}}>
+              <h2 style={{color:'white',fontSize:'16px',fontWeight:'700'}}>❤️ Saved Schools</h2>
+              <Link href="/schools" style={{color:'#C42020',fontSize:'12px',textDecoration:'none'}}>Browse more →</Link>
+            </div>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(180px,1fr))',gap:'10px'}}>
+              {favorites.map(fav => (
+                <Link key={fav.id} href={`/schools/${fav.school_id}`} style={{background:'#0D0907',borderRadius:'10px',padding:'12px',textDecoration:'none',border:'1px solid rgba(255,255,255,0.06)',display:'block'}}>
+                  <div style={{fontSize:'24px',marginBottom:'6px'}}>{fav.schools?.icon || '🏫'}</div>
+                  <p style={{color:'white',fontSize:'12px',fontWeight:'600',marginBottom:'2px'}}>{fav.schools?.name_en}</p>
+                  <p style={{color:'rgba(255,255,255,0.4)',fontSize:'11px'}}>📍 {fav.schools?.city}</p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </main>
+  )
 }

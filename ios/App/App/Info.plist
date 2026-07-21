@@ -45,5 +45,13 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>Japan Life Guide uses your location to find nearby halal restaurants, mosques, and Japanese language schools in Japan.</string>
+<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+<string>Japan Life Guide uses your location to find nearby halal restaurants, mosques, and Japanese language schools in Japan.</string>
+<key>NSCameraUsageDescription</key>
+<string>Japan Life Guide uses the camera to scan food ingredient labels to check if they are halal compliant.</string>
+<key>NSPhotoLibraryUsageDescription</key>
+<string>Japan Life Guide needs access to your photo library to scan food ingredient images for halal compliance checking.</string>
 </dict>
 </plist>

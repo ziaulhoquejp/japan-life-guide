@@ -89,6 +89,7 @@ export default function Navbar() {
     {href:'/admin',label:'Admin'},
     {href:'/recruit', label:'企業様へ（求人掲載）'},
     {href:'/halal-scanner', label:'🕌 Halal Scanner'},
+    {href:'/offline-practice', label:'📝 Offline JLPT Practice'},
     {href:'/native-features', label:'📱 App Features'},
     {href:'/interview-practice', label:'🎤 Interview Practice'},
     {href:'/bulk-apply', label:'📨 Bulk School Inquiry'},

@@ -127,27 +127,13 @@ export default function PricingPage() {
   }, [])
 
   async function handleCheckout(plan: any) {
-    if (!user) { window.location.href = '/register'; return }
-    if (!plan.priceId) return
-    setLoading(true)
-    try {
-      const res = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          priceId: plan.priceId,
-          userId: user.id,
-          email: user.email,
-          mode: plan.id === 'lifetime' ? 'payment' : 'subscription',
-        }),
-      })
-      const data = await res.json()
-      if (data.url) window.location.href = data.url
-    } catch (error) {
-      console.error(error)
-    }
-    setLoading(false)
+  if (plan.id === 'free') {
+    window.location.href = '/register'
+    return
   }
+  window.open('https://japanlifeguide.app/pricing', '_blank')
+}
+
 
   const isPro = profile?.plan === 'pro' || profile?.plan === 'lifetime'
 

@@ -337,7 +337,7 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* Analytics Tab */}
+       {/* Analytics Tab */}
         {activeTab === 'analytics' && (
           <div style={{display:'flex',flexDirection:'column',gap:'16px'}}>
             <div style={{background:'#1A2035',borderRadius:'12px',padding:'24px',border:'1px solid rgba(255,255,255,0.08)'}}>
@@ -350,6 +350,8 @@ export default function AdminPage() {
                   {label:'Total Applications',value:stats.totalApplications,color:'#C42020',icon:'📝'},
                   {label:'Job Seekers',value:stats.totalJobSeekers,color:'#A855F7',icon:'🔍'},
                   {label:'Active Jobs',value:jobs.filter(j=>j.is_active).length,color:'#2EC87A',icon:'💼'},
+                  {label:'New Users Today',value:stats.newUsersToday,color:'#FF8070',icon:'🆕'},
+                  {label:'New Apps Today',value:stats.newApplicationsToday,color:'#F0A830',icon:'📋'},
                 ].map(item => (
                   <div key={item.label} style={{background:'#0D0907',borderRadius:'10px',padding:'14px'}}>
                     <div style={{fontSize:'20px',marginBottom:'6px'}}>{item.icon}</div>
@@ -358,9 +360,35 @@ export default function AdminPage() {
                   </div>
                 ))}
               </div>
-              <a href="https://analytics.google.com" target="_blank" rel="noopener noreferrer" style={{background:'#4A8EFF',color:'white',textDecoration:'none',padding:'12px 24px',borderRadius:'8px',fontSize:'13px',fontWeight:'700',display:'inline-block'}}>
-                Open Google Analytics →
-              </a>
+
+              <div style={{display:'flex',gap:'10px',flexWrap:'wrap',marginBottom:'20px'}}>
+                <a href="https://vercel.com/ziaulhoquejp/japan-life-guide/analytics" target="_blank" rel="noopener noreferrer" style={{background:'#000',color:'white',textDecoration:'none',padding:'12px 20px',borderRadius:'8px',fontSize:'13px',fontWeight:'700'}}>
+                  ▲ Vercel Analytics →
+                </a>
+                <a href="https://analytics.google.com" target="_blank" rel="noopener noreferrer" style={{background:'#4A8EFF',color:'white',textDecoration:'none',padding:'12px 20px',borderRadius:'8px',fontSize:'13px',fontWeight:'700'}}>
+                  📈 Google Analytics →
+                </a>
+              </div>
+
+              <div style={{background:'#0D0907',borderRadius:'10px',padding:'16px',border:'1px solid rgba(255,255,255,0.06)'}}>
+                <h4 style={{color:'white',fontSize:'13px',fontWeight:'700',marginBottom:'12px'}}>🌍 Users by Country</h4>
+                <div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
+                  {[
+                    {country:'Bangladesh',flag:'🇧🇩',count: users.filter(u=>u.country==='Bangladesh').length},
+                    {country:'Nepal',flag:'🇳🇵',count: users.filter(u=>u.country==='Nepal').length},
+                    {country:'Other',flag:'🌍',count: users.filter(u=>u.country!=='Bangladesh'&&u.country!=='Nepal').length},
+                  ].map(item => (
+                    <div key={item.country} style={{display:'flex',gap:'12px',alignItems:'center'}}>
+                      <span style={{fontSize:'18px'}}>{item.flag}</span>
+                      <span style={{color:'rgba(255,255,255,0.6)',fontSize:'13px',flex:1}}>{item.country}</span>
+                      <span style={{color:'#4A8EFF',fontSize:'14px',fontWeight:'700'}}>{item.count}</span>
+                      <div style={{width:'100px',height:'6px',background:'rgba(255,255,255,0.1)',borderRadius:'3px',overflow:'hidden'}}>
+                        <div style={{width: stats.totalUsers > 0 ? (item.count/stats.totalUsers*100)+'%' : '0%',height:'100%',background:'#4A8EFF',borderRadius:'3px'}}/>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         )}

@@ -72,7 +72,7 @@ export default function HomePage() {
   ]
 
   const STEPS = [
-    {step:'1',icon:'📱',title:'Download the App',desc:'Available on Google Play. iOS coming soon!',color:'#C42020'},
+    {step:'1',icon:'📱',title:'Download the App',desc:'Available on mobile. Download and study Japan anytime!',color:'#C42020'},
     {step:'2',icon:'🏫',title:'Find Your School or Job',desc:'Browse 724+ schools and real job listings in Japan',color:'#4A8EFF'},
     {step:'3',icon:'🌸',title:'Ask Sakura AI',desc:'Get instant answers in Bengali or Nepali about Japan',color:'#2EC87A'},
     {step:'4',icon:'✈️',title:'Come to Japan!',desc:'We support you from application to arrival in Japan',color:'#F0A830'},
@@ -239,8 +239,8 @@ export default function HomePage() {
             Android available now. iOS coming soon!
           </p>
           <div style={{display:'flex',gap:'12px',justifyContent:'center',flexWrap:'wrap'}}>
-            <a href="https://play.google.com/store" target="_blank" rel="noopener noreferrer" style={{background:'#2EC87A',color:'#0D0907',textDecoration:'none',padding:'14px 32px',borderRadius:'12px',fontSize:'15px',fontWeight:'700',display:'inline-flex',alignItems:'center',gap:'8px'}}>
-              📱 Google Play
+            <a href="https://japanlifeguide.app" style={{background:'#2EC87A',color:'#0D0907',textDecoration:'none',padding:'14px 32px',borderRadius:'12px',fontSize:'15px',fontWeight:'700',display:'inline-flex',alignItems:'center',gap:'8px'}}>
+  📱 Download App
             </a>
             <span style={{background:'rgba(255,255,255,0.06)',color:'rgba(255,255,255,0.3)',padding:'14px 32px',borderRadius:'12px',fontSize:'15px',display:'inline-flex',alignItems:'center',gap:'8px',border:'1px solid rgba(255,255,255,0.08)'}}>
               🍎 App Store (Coming Soon)

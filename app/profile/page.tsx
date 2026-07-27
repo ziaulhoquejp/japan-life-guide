@@ -239,9 +239,19 @@ Actions here are permanent and cannot be undone. Please be careful.
 <p style={{color:'rgba(255,255,255,0.5)',fontSize:'13px',marginBottom:'16px',lineHeight:'1.6'}}>
 This will permanently delete your account, all applications, saved schools, and personal data.
 </p>
-<button onClick={deleteAccount} style={{background:'rgba(196,32,32,0.2)',color:'#FF8070',border:'1px solid rgba(196,32,32,0.3)',borderRadius:'8px',padding:'12px 24px',fontSize:'13px',fontWeight:'700',cursor:'pointer'}}>
-Delete My Account
-</button>
+<div style={{background:'rgba(196,32,32,0.1)',borderRadius:'12px',padding:'20px',border:'1px solid rgba(196,32,32,0.3)',marginBottom:'16px'}}>
+  <h3 style={{color:'#FF8070',fontSize:'15px',fontWeight:'700',marginBottom:'8px'}}>⚠️ Delete Account</h3>
+  <p style={{color:'rgba(255,255,255,0.5)',fontSize:'13px',lineHeight:'1.6',marginBottom:'16px'}}>
+    This will permanently delete your account and all associated data including your profile, applications, saved schools, and visa documents. This action cannot be undone.
+  </p>
+  <button
+    type="button"
+    onClick={deleteAccount}
+    style={{background:'#C42020',color:'white',border:'none',borderRadius:'8px',padding:'14px 28px',fontSize:'14px',fontWeight:'700',cursor:'pointer',WebkitAppearance:'none'}}
+  >
+    🗑️ Delete My Account Permanently
+  </button>
+</div>
 </div>
 </div>
 )}

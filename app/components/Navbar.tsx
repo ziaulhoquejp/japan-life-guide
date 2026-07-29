@@ -98,6 +98,7 @@ export default function Navbar() {
     {href:'/referral', label:'🎁 Refer & Earn'},
     {href:'/visa-check', label:'✅ Visa Document Checker'},
     {href:'/visa-tracker', label:'🪪 Visa & Document Tracker'},
+    {href:'/settings', label:'⚙️ Settings'},
 
 
 

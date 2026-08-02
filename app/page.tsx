@@ -242,9 +242,9 @@ export default function HomePage() {
             <a href="https://japanlifeguide.app" style={{background:'#2EC87A',color:'#0D0907',textDecoration:'none',padding:'14px 32px',borderRadius:'12px',fontSize:'15px',fontWeight:'700',display:'inline-flex',alignItems:'center',gap:'8px'}}>
   📱 Download App
             </a>
-            <span style={{background:'rgba(255,255,255,0.06)',color:'rgba(255,255,255,0.3)',padding:'14px 32px',borderRadius:'12px',fontSize:'15px',display:'inline-flex',alignItems:'center',gap:'8px',border:'1px solid rgba(255,255,255,0.08)'}}>
-              🍎 App Store (Coming Soon)
-            </span>
+            <a href="https://apps.apple.com/app/japan-life-guide/id6787833688" target="_blank" rel="noopener noreferrer" style={{background:'#000',color:'white',textDecoration:'none',padding:'14px 32px',borderRadius:'12px',fontSize:'15px',fontWeight:'700',display:'inline-flex',alignItems:'center',gap:'8px'}}>
+  🍎 App Store
+</a>
           </div>
         </div>
       </div>

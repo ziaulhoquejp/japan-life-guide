@@ -41,3 +41,21 @@ workflows:
             --scheme App
     artifacts:
       - build/ios/ipa/*.ipa # Codemagic's default output path for build-ipa
+      android:
+    name: Android
+    max_build_duration: 60
+    instance_type: mac_mini_m1
+    environment:
+      node: latest
+    scripts:
+      - name: Install dependencies
+        script: npm install
+      - name: Sync Capacitor
+        script: npx cap sync android
+      - name: Build AAB
+        script: |
+          cd android
+          chmod +x gradlew
+          ./gradlew bundleRelease
+    artifacts:
+      - android/app/build/outputs/bundle/release/*.aab

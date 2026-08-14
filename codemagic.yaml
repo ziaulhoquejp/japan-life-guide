@@ -60,5 +60,15 @@ workflows:
           cd android
           chmod +x gradlew
           ./gradlew bundleRelease
+      - name: Sign AAB
+        script: |
+          jarsigner -verbose \
+            -sigalg SHA256withRSA \
+            -digestalg SHA-256 \
+            -keystore $CM_KEYSTORE_PATH \
+            -storepass $CM_KEYSTORE_PASSWORD \
+            -keypass $CM_KEY_PASSWORD \
+            android/app/build/outputs/bundle/release/app-release.aab \
+            $CM_KEY_ALIAS
     artifacts:
       - android/app/build/outputs/bundle/release/*.aab

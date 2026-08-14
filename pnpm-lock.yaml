@@ -27,8 +27,8 @@ importers:
         specifier: ^8.0.2
         version: 8.0.2(@capacitor/core@8.5.0)
       '@capacitor/ios':
-        specifier: ^5.7.8
-        version: 5.7.8(@capacitor/core@8.5.0)
+        specifier: ^8.5.0
+        version: 8.5.0(@capacitor/core@8.5.0)
       '@capacitor/push-notifications':
         specifier: ^8.1.2
         version: 8.1.2(@capacitor/core@8.5.0)
@@ -210,10 +210,10 @@ packages:
     peerDependencies:
       '@capacitor/core': '>=8.0.0'
 
-  '@capacitor/ios@5.7.8':
-    resolution: {integrity: sha512-XhGrziBnlRmCJ97LdPXOJquHPpYTwSJZIxYSXuPl7SDDuAEve8vs2wY76gLdaaFH2Z6ctdugUX+jR6VNu+ds+w==}
+  '@capacitor/ios@8.5.0':
+    resolution: {integrity: sha512-7k1TfohJu5BzRXc1F3g04Q8QQ0fyQgms6h1AvhnHb04VaNr9EdHOx03hL8O+OigEKMQnyJd1ZOjTPPNHCqL5Yw==}
     peerDependencies:
-      '@capacitor/core': ^5.7.0
+      '@capacitor/core': ^8.5.0
 
   '@capacitor/push-notifications@8.1.2':
     resolution: {integrity: sha512-TQl4XxqJfNF+KbSYBFMXYYT5WXUaleVKXlByhh/8+KySMVNjp+l5OqAUoGe/sY1IAnGXEuUeCjA/WLZEVvGwrA==}
@@ -3867,7 +3867,7 @@ snapshots:
     dependencies:
       '@capacitor/core': 8.5.0
 
-  '@capacitor/ios@5.7.8(@capacitor/core@8.5.0)':
+  '@capacitor/ios@8.5.0(@capacitor/core@8.5.0)':
     dependencies:
       '@capacitor/core': 8.5.0
 

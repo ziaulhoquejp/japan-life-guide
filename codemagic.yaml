@@ -40,8 +40,8 @@ workflows:
             --workspace ios/App/App.xcworkspace \
             --scheme App
     artifacts:
-      - build/ios/ipa/*.ipa # Codemagic's default output path for build-ipa
-      android:
+      - build/ios/ipa/*.ipa
+  android:
     name: Android
     max_build_duration: 60
     instance_type: mac_mini_m1
